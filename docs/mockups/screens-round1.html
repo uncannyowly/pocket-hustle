@@ -113,7 +113,7 @@ kbd{font:11px/1 var(--pixel); background:var(--chip); border:1px solid var(--rul
 .toggle:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 .questions{border-top:1px solid var(--rule); padding-top:24px}
 .questions ol{margin:0; padding-left:1.4em; display:grid; gap:10px; max-width:70ch}
-.questions li::marker{font-family:var(--pixel); font-size:11px; color:var(--accent)}
+.questions ul{margin:0; padding-left:1.2em; display:grid; gap:10px; max-width:70ch}
 @media (prefers-reduced-motion: reduce){ .pad button{transition:none} }
 </style>
 
@@ -178,13 +178,13 @@ kbd{font:11px/1 var(--pixel); background:var(--chip); border:1px solid var(--rul
   </main>
 
   <section class="questions">
-    <h2>What I most need from you</h2>
-    <ol>
-      <li><strong>The font.</strong> The game text is Press Start 2P, a free pixel font under the OFL license, so we can ship it with a credit line. Keep it, or should I draw our own?</li>
-      <li><strong>The look.</strong> Do the colors and the seven skylines fit the game? Each city has its own sky, landmarks and weather.</li>
-      <li><strong>The market screen.</strong> It carries the whole game. Anything you'd cut, move or add?</li>
-      <li><strong>The free bank.</strong> Still open from the rules review. The Bank screen has the question.</li>
-    </ol>
+    <h2>Settled in round 1</h2>
+    <ul class="settled">
+      <li><strong>Font:</strong> Press Start 2P stays. It's free under the OFL license and ships with a credit line.</li>
+      <li><strong>Look:</strong> the colors and the seven skylines stay, with tweaks later.</li>
+      <li><strong>Bank:</strong> no longer free everywhere. Two branches per city bank for free; ATMs anywhere else charge 3% (at least $5). It's in the rules code now, and the Bank, Get around and Money dial screens show it.</li>
+    </ul>
+    <p class="caption">The per-screen questions on the right are still open. Answer any you have a view on; the rest I'll decide while building.</p>
   </section>
 </div>
 
@@ -285,13 +285,13 @@ function arrowIcon(rows,x,y,c){for(let j=0;j<rows.length;j++)for(let i=0;i<rows[
 const GOODS=[['Carts',30,220],['Weed',300,1150],['Shrooms',450,1500],['Ketamine',600,2000],['Molly',1000,3600],
   ['Acid',1800,5000],['DMT',2600,7500],['Meth',3500,11000],['Heroin',6500,20000],['Cocaine',12500,33000]];
 const CITIES=[
-  {name:'Oklahoma City',code:'OKC',transit:'OKC Streetcar',hoods:['Bricktown','Midtown','Deep Deuce','Plaza District','Paseo Arts','Stockyards City'],bias:[70,60,100,110,130,100,100,100,100,135],lender:'Tornado Terry',bp:950,limit:15000,line:'#d94f8a'},
-  {name:'Houston',code:'IAH',transit:'METRORail',hoods:['Montrose','The Heights','EaDo','Galleria','Rice Village','Downtown'],bias:[100,115,130,100,100,130,100,80,100,75],lender:'Lone Star Lou',bp:700,limit:25000,line:'#e0463c'},
-  {name:'San Jose',code:'SJC',transit:'VTA Light Rail',hoods:['Downtown','Japantown','Willow Glen','Santana Row','Rose Garden','Little Portugal'],bias:[100,80,75,100,110,70,110,130,125,140],lender:'Angel Investor Al',bp:500,limit:60000,line:'#3c8fe0'},
-  {name:'New York City',code:'JFK',transit:'the Subway',hoods:['Times Square','SoHo','Williamsburg','Astoria','Lower East Side','Chelsea'],bias:[80,130,140,100,80,100,125,100,100,100],lender:'Rent-Stabilized Ray',bp:1200,limit:40000,line:'#f2a33a'},
-  {name:'Miami',code:'MIA',transit:'Metrorail',hoods:['South Beach','Wynwood','Little Havana','Brickell','Coconut Grove','Design District'],bias:[100,100,125,110,75,100,100,135,100,60],lender:'Flamingo Flo',bp:800,limit:30000,line:'#3cc47a'},
-  {name:'New Orleans',code:'MSY',transit:'the St. Charles streetcar',hoods:['French Quarter','Marigny','Bywater','Garden District','Uptown','Mid-City'],bias:[100,75,80,130,100,110,100,100,100,125],lender:'Mardi Gras Marge',bp:1100,limit:20000,line:'#2fa36a'},
-  {name:'Portland',code:'PDX',transit:'MAX',hoods:['Pearl District','Alberta Arts','Hawthorne','Sellwood','St. Johns','Mississippi Ave'],bias:[90,65,55,100,100,100,110,125,100,130],lender:'Kombucha Kyle',bp:600,limit:18000,line:'#e0b43c'}];
+  {name:'Oklahoma City',code:'OKC',transit:'OKC Streetcar',hoods:['Bricktown','Midtown','Deep Deuce','Plaza District','Paseo Arts','Stockyards City'],bias:[70,60,100,110,130,100,100,100,100,135],lender:'Tornado Terry',bp:950,limit:15000,bank:0x03,line:'#d94f8a'},
+  {name:'Houston',code:'IAH',transit:'METRORail',hoods:['Montrose','The Heights','EaDo','Galleria','Rice Village','Downtown'],bias:[100,115,130,100,100,130,100,80,100,75],lender:'Lone Star Lou',bp:700,limit:25000,bank:0x28,line:'#e0463c'},
+  {name:'San Jose',code:'SJC',transit:'VTA Light Rail',hoods:['Downtown','Japantown','Willow Glen','Santana Row','Rose Garden','Little Portugal'],bias:[100,80,75,100,110,70,110,130,125,140],lender:'Angel Investor Al',bp:500,limit:60000,bank:0x09,line:'#3c8fe0'},
+  {name:'New York City',code:'JFK',transit:'the Subway',hoods:['Times Square','SoHo','Williamsburg','Astoria','Lower East Side','Chelsea'],bias:[80,130,140,100,80,100,125,100,100,100],lender:'Rent-Stabilized Ray',bp:1200,limit:40000,bank:0x22,line:'#f2a33a'},
+  {name:'Miami',code:'MIA',transit:'Metrorail',hoods:['South Beach','Wynwood','Little Havana','Brickell','Coconut Grove','Design District'],bias:[100,100,125,110,75,100,100,135,100,60],lender:'Flamingo Flo',bp:800,limit:30000,bank:0x18,line:'#3cc47a'},
+  {name:'New Orleans',code:'MSY',transit:'the St. Charles streetcar',hoods:['French Quarter','Marigny','Bywater','Garden District','Uptown','Mid-City'],bias:[100,75,80,130,100,110,100,100,100,125],lender:'Mardi Gras Marge',bp:1100,limit:20000,bank:0x28,line:'#2fa36a'},
+  {name:'Portland',code:'PDX',transit:'MAX',hoods:['Pearl District','Alberta Arts','Hawthorne','Sellwood','St. Johns','Mississippi Ave'],bias:[90,65,55,100,100,100,110,125,100,130],lender:'Kombucha Kyle',bp:600,limit:18000,bank:0x05,line:'#e0b43c'}];
 const GEAR=[['Pool Noodle','Foam justice.','W',80,150,-1],['Selfie Stick','Extends your reach and your follower count.','W',300,250,-1],
   ['Leaf Blower','Loud enough to scare anyone over forty.','W',900,350,-1],['Rodeo Lasso','Yee, and indeed, haw.','W',1800,450,1],
   ['Paintball Gun','Leaves a mark and a dry-cleaning bill.','W',2500,500,-1],['Brass Section','Four trombones who owe you a favor.','W',4000,550,5],
@@ -347,6 +347,9 @@ function moneyShort(n){return Math.abs(n)>=1e7?(n<0?'-$':'$')+(Math.abs(n)/1e6).
 function kfmt(v){if(v>=1e6)return '$'+(+(v/1e6).toFixed(1))+'M';if(v>=1e3)return '$'+(+(v/1e3).toFixed(1))+'K';return '$'+v;}
 function cityLabel(c){return c===0?'LOUD CITY':CITIES[c].name.toUpperCase();}
 function rateTxt(bp){return (bp/100)+'%';}
+const branchAt=(c,h)=>(CITIES[c].bank>>h)&1;
+const branchHere=()=>branchAt(G.city,G.hood);
+const feeFor=a=>a<=0||branchHere()?0:Math.max(5,Math.floor(a*3/100));
 
 /* ---------- the sample game ---------- */
 let G;
@@ -470,12 +473,16 @@ const PK={
   heal:{title:()=>'THE DOCTOR',unit:()=>'$60 A POINT',max:()=>Math.max(0,Math.min(100-G.health,Math.floor(G.cash/60))),
     total:p=>['COST',money(p.q*60),K.gold],info:p=>'Health '+G.health+' > '+(G.health+p.q)+'.',
     ok:p=>{G.health+=p.q;G.cash-=p.q*60;SFX.ok();toast('The doctor patches you up. (+'+p.q+' health)');}},
-  deposit:{money:true,title:()=>'DEPOSIT',unit:()=>'4% A DAY',max:()=>G.cash,
-    total:p=>['BANK',money(G.bank)+' > '+money(G.bank+p.q),K.mint],info:()=>'Safe from muggers. 4% a day.',
-    ok:p=>{G.cash-=p.q;G.bank+=p.q;SFX.cash();toast('Deposited '+money(p.q)+'.');}},
-  withdraw:{money:true,title:()=>'WITHDRAW',unit:()=>'',max:()=>G.bank,
-    total:p=>['CASH',money(G.cash)+' > '+money(G.cash+p.q),K.gold],info:()=>'In the bank: '+money(G.bank)+'.',
-    ok:p=>{G.bank-=p.q;G.cash+=p.q;SFX.cash();toast('Took out '+money(p.q)+'.');}},
+  deposit:{money:true,title:()=>'DEPOSIT',unit:()=>branchHere()?'BRANCH, NO FEE':'ATM FEE 3%',max:()=>G.cash,
+    total:p=>['BANK',money(G.bank)+' > '+money(G.bank+Math.max(0,p.q-feeFor(p.q))),K.mint],
+    info:p=>branchHere()?'Branch here. No fee.':'Fee '+money(feeFor(p.q))+'. 3%, at least $5.',
+    ok:p=>{const f=feeFor(p.q);if(p.q<=f){toast("That won't even cover the ATM fee.");SFX.deny();return;}
+      G.cash-=p.q;G.bank+=p.q-f;SFX.cash();toast(f?'Deposited '+money(p.q)+', minus a '+money(f)+' ATM fee.':'Deposited '+money(p.q)+'.');}},
+  withdraw:{money:true,title:()=>'WITHDRAW',unit:()=>branchHere()?'BRANCH, NO FEE':'ATM FEE 3%',max:()=>G.bank,
+    total:p=>['CASH',money(G.cash)+' > '+money(G.cash+Math.max(0,p.q-feeFor(p.q))),K.gold],
+    info:p=>branchHere()?'Branch here. No fee.':'Fee '+money(feeFor(p.q))+'. 3%, at least $5.',
+    ok:p=>{const f=feeFor(p.q);if(p.q<=f){toast("That won't even cover the ATM fee.");SFX.deny();return;}
+      G.bank-=p.q;G.cash+=p.q-f;SFX.cash();toast(f?'Took out '+money(p.q)+', minus a '+money(f)+' ATM fee.':'Took out '+money(p.q)+'.');}},
   borrow:{money:true,title:()=>'BORROW',unit:()=>rateTxt(CITIES[G.city].bp)+' A DAY',max:()=>Math.max(0,CITIES[G.city].limit-G.debt[G.city]),
     total:p=>['OWE',money(G.debt[G.city])+' > '+money(G.debt[G.city]+p.q),K.coral],
     info:()=>'Limit '+money(CITIES[G.city].limit)+'. '+money(Math.max(0,CITIES[G.city].limit-G.debt[G.city]))+' more.',
@@ -732,10 +739,10 @@ function drawNews(){const n=ui.news,m=n.list[n.i],x=20,y=36,w=280,h=168;
 function inNews(b){if(b!=='a'&&b!=='b')return;const n=ui.news;if(n.i<n.list.length-1){n.i++;SFX.move();}else{ui.news=null;afterNews(n.after);}}
 
 function drawMove(){const c=CITIES[G.city],lc=c.line;topBar();backdrop(G.city,12,56);placeLabel(G.city,c.hoods[G.hood],68);
-  rect(0,68,W,156,K.panel);rect(0,68,W,1,K.line);text(c.transit.replace(/^the /,'').toUpperCase(),8,74,K.gold);text('PICK A STOP',8,84,K.dim);
+  rect(0,68,W,156,K.panel);rect(0,68,W,1,K.line);text(c.transit.replace(/^the /,'').toUpperCase(),8,74,K.gold);text('PICK A STOP',8,84,K.dim);icon(I.bank,112,84);text('= BANK BRANCH',122,84,K.dim);
   rect(22,100,4,100,lc);
   c.hoods.forEach((hd,i)=>{const y=100+i*20,sel=ui.moveRow===i,here=G.hood===i;if(sel)rect(34,y-6,166,13,K.hot);
-    disc(24,y,5,lc);disc(24,y,3,here?K.gold:K.white);text(hd,40,y-3,sel?K.white:here?K.gold:K.text);
+    disc(24,y,5,lc);disc(24,y,3,here?K.gold:K.white);text(hd,40,y-3,sel?K.white:here?K.gold:K.text);if(branchAt(G.city,i))icon(I.bank,6,y-3);
     if(here)text('HERE',196,y-3,sel?K.white:K.gold,1,'r');hit(10,y-8,192,16,()=>{ui.moveRow=i;press('a');});});
   const tx=212,ty=96,tw=100,th=72;rect(tx,ty,tw,th,K.paper);disc(tx,ty+36,5,K.panel);disc(tx+tw,ty+36,5,K.panel);
   for(let k=0;k<23;k++)rect(tx+4+k*4,ty+14,2,1,K.ink);text('ADMIT ONE',tx+tw/2,ty+4,K.ink,1,'c');text('FREE RIDE',tx+tw/2,ty+20,K.ink,1,'c');
@@ -761,8 +768,9 @@ function inFly(b){if(b==='up')ui.flyRow=(ui.flyRow+5)%6;else if(b==='down')ui.fl
   else if(b==='b'){go('market');SFX.back();return;}else if(b==='a'){doFly(flyList()[ui.flyRow]);return;}else return;SFX.move();}
 
 function drawBank(){topBar();backdrop(G.city,12,56);placeLabel(G.city,CITIES[G.city].hoods[G.hood],68);rect(0,68,W,156,K.panel);rect(0,68,W,1,K.line);
-  vault(56,144);text('THE BANK',112,76,K.gold);wrap('Safe from muggers. Pays 4% a day, in every city.',25).forEach((l,i)=>text(l,112,90+i*10,K.dim));
-  text('IN THE BANK',112,116,K.dim);text(moneyShort(G.bank),112,128,K.mint,2);text('CASH',112,152,K.dim);text(moneyShort(G.cash),152,152,K.gold);
+  vault(56,144);const br=branchHere();text(br?'YOUR BRANCH':'ATM',112,76,K.gold);text(br?'NO FEES':'FEE 3%, MIN $5',312,76,br?K.mint:K.coral,1,'r');
+  wrap(br?'Safe from muggers. Pays 4% a day.':'No branch here. The bank symbol on the map marks free banking.',25).forEach((l,i)=>text(l,112,90+i*10,K.dim));
+  text('IN THE BANK',112,122,K.dim);text(moneyShort(G.bank),112,132,K.mint,2);text('CASH',112,156,K.dim);text(moneyShort(G.cash),152,156,K.gold);
   button(112,176,96,18,'DEPOSIT',ui.bankRow===0,()=>{ui.bankRow=0;press('a');});button(214,176,98,18,'WITHDRAW',ui.bankRow===1,()=>{ui.bankRow=1;press('a');});
   hints([['A','Choose'],['B','Back'],['START','Menu']]);}
 function inBank(b){if(b==='left'||b==='right'||b==='up'||b==='down')ui.bankRow^=1;else if(b==='b'){go('market');SFX.back();return;}
@@ -948,12 +956,12 @@ const NOTES={
   newgame:['New game','Pick how many days, then type a name on the D-pad keyboard. L1/R1 jumps between the length, the keyboard and the start button. B deletes a letter.',["Is typing a name worth it on a handheld, or should it just reuse the name from last time?"]],
   market:['Market',"The main screen. Top to bottom: the day and your health, the city skyline with where you are, then your cash, your bank balance and what you owe (the coin, the bank and the shark fin). MARKET is what's for sale here. BAG is what you carry, and the percent compares today's price with what you paid. L1/R1 (Tab here) jumps between Market, Bag and the six buttons. A buys from the market and sells from the bag. SELECT opens the price chart.",['Is the percent in the bag useful, or would you rather see what you paid?','Are the coin, bank and shark fin clear enough without words?']],
   picker:['Buy and sell','One picker for buying and selling. Up and down change the amount by 1, left and right by 10, Y jumps to the most you can afford or carry, and X goes back to zero.',['Should it open at the max instead of zero? Most of the time you buy all you can.']],
-  dial:['Money dial','Deposits, withdrawals and loans use a digit dial, because amounts run from $10 to $1,000,000. Left and right pick a digit, up and down change it, Y is everything and X is zero.',['Dial, or the same plus and minus picker as goods, with bigger steps?']],
+  dial:['Money dial','Deposits, withdrawals and loans use a digit dial, because amounts run from $10 to $1,000,000. Left and right pick a digit, up and down change it, Y is everything and X is zero. Away from a branch the dial shows the ATM fee before you confirm.',['Dial, or the same plus and minus picker as goods, with bigger steps?']],
   news:['Morning news',"After every move the day's news comes in as cards, one at a time: the ride, price spikes and crashes, trouble, and Podcast Pete. A shows the next card. Click the screen to advance too.",["One card at a time, or all of a day's news on one screen?"]],
   chart:['Price chart','SELECT on any good shows every price you have seen for it this game. The checkered band is its usual range in this city. Pink dots are spikes and green dots are crashes. Left and right switch goods.',['Should the chart also show which city each price was in?']],
-  move:['Get around',"Moving inside a city. Each city's transit is drawn as a strip map in its own line color, with your stop marked. Riding is free and takes a day.",['Strip map, or a plain list of neighborhoods?']],
+  move:['Get around',"Moving inside a city. Each city's transit is drawn as a strip map in its own line color, with your stop marked. The bank symbol marks the two stops with a branch. Riding is free and takes a day.",['Strip map, or a plain list of neighborhoods?']],
   fly:['Fly','Flying to another city. The skyline at the top switches to the city you point at, and the boarding pass shows the fare and where you land. A flight also takes a day.',['Do the seven skylines feel like their cities? Point at each one to see it.']],
-  bank:['Bank','Money in the bank is safe from muggers and grows 4% a day.',['The bank works in every city for free, so moving your cash in before each move makes muggings and jail fines almost harmless. Keep it as is, add a fee, or only put banks in some cities?']],
+  bank:['Bank','Money in the bank is safe from muggers and grows 4% a day. Each city has two branches of your bank, marked with the bank symbol on the Get around map, where banking is free. Anywhere else the ATM takes an out-of-network fee: 3% of the amount, at least $5. This sample day is at Plaza District, which has no branch; ride to Bricktown or Midtown to bank for free.',['Is 3% the right sting? At ATMs, a deposit and withdrawal overnight costs more than the interest it earns.']],
   lender:['Loan shark','Each city has its own lender with their own rate and limit, and debt in one city only gets you hurt in that city. Paying at least 10% resets the clock. Let it run past 8 days and their crew comes for you.',['Portraits for all seven lenders like this one, or names only? Fly somewhere to meet the others.']],
   store:['Shop','Weapons set your aim in a chase, and you carry one at a time. Room items add space and stack. Gear sold in only one city shows up grayed out with where to find it.',["Show other cities' gear grayed out like this, or hide it?"]],
   doc:['Doctor','The hospital uses the same picker as goods: points of health at $60 each.',[]],
