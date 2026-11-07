@@ -13,5 +13,6 @@ void tests_chase(void);
 void tests_shop(void);
 void tests_rumor(void);
 void tests_text(void);
+void tests_save(void);
 
 #endif

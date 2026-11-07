@@ -58,3 +58,4 @@ Task 6 done: lenders, bank, goons (src/core/finance.c, encounter.c).
 Task 7 done: cops, chases, jail, muggings, hospital, store (chase.c, shop.c, encounter.c).
 Task 8 done: rumors and true tips (rumor.c; tip handling in market.c, expiry in game.c).
 Task 9 done: game text and jokes (src/content/text.c), awaiting Seth's tone review.
+Task 10 done: saves and high scores (src/core/save.c). ARM runs under QEMU need binfmt registered (docker run --privileged --rm tonistiigi/binfmt --install arm), not done yet.
