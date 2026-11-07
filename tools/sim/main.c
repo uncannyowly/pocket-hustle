@@ -100,10 +100,12 @@ static void compare_targets(const char *path, Vec *prices)
 				char k[96];
 				if (!target_matches_good(name, GOODS[i].name) || prices[i].n == 0)
 					continue;
+				/* their few observed days ~ the tails of their prices: compare with
+				 * our 5th and 95th percentiles, not our rare extremes */
 				snprintf(k, sizeof k, "price_lo:%s", GOODS[i].name);
-				cmp_line(k, prices[i].v[0], atof(lo_s), 1);
+				cmp_line(k, prices[i].v[prices[i].n / 20], atof(lo_s), 1);
 				snprintf(k, sizeof k, "price_hi:%s", GOODS[i].name);
-				cmp_line(k, prices[i].v[prices[i].n - 1], atof(hi_s), 1);
+				cmp_line(k, prices[i].v[prices[i].n * 19 / 20], atof(hi_s), 1);
 			}
 			continue;
 		}
@@ -209,7 +211,8 @@ int main(int argc, char **argv)
 		if (!a->n)
 			printf("price %s - - -\n", GOODS[k].name);
 		else
-			printf("price %s %d %d %d\n", GOODS[k].name, (int)a->v[0], (int)a->v[a->n / 2], (int)a->v[a->n - 1]);
+			printf("price %s %d %d %d (p5 %d, p95 %d)\n", GOODS[k].name, (int)a->v[0], (int)a->v[a->n / 2],
+			       (int)a->v[a->n - 1], (int)a->v[a->n / 20], (int)a->v[a->n * 19 / 20]);
 	}
 	if (targets)
 		compare_targets(targets, prices);

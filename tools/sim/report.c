@@ -33,7 +33,7 @@ const char *verdict_name(Verdict v)
 int target_matches_good(const char *target_name, const char *good_name)
 {
 	static const char *const alias[][2] = {
-		{"Mushrooms", "Shrooms"}, {"Ecstasy", "Molly"}, {"Special K", "Ketamine"},
+		{"Mushrooms", "Shrooms"}, {"Special K", "Ketamine"},
 	};
 	size_t i;
 

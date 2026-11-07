@@ -22,7 +22,7 @@ static void test_target_names(void)
 {
 	CHECK(target_matches_good("Weed", "Weed"));
 	CHECK(target_matches_good("Mushrooms", "Shrooms"));
-	CHECK(target_matches_good("Ecstasy", "Molly"));
+	CHECK(!target_matches_good("Ecstasy", "Molly"));	/* different rung of the price ladder */
 	CHECK(target_matches_good("Special K", "Ketamine"));
 	CHECK(!target_matches_good("Crack", "Cocaine"));
 }

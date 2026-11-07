@@ -6,36 +6,36 @@ Params params_default(void)
 {
 	Params p;
 
-	p.start_cash = 1800;
-	p.start_debt = 5000;
+	p.start_cash = 2600;
+	p.start_debt = 4200;
 	p.start_city = 0;		/* Oklahoma City */
-	p.start_capacity = 100;
+	p.start_capacity = 150;
 
 	p.min_goods = 5;
 	p.absent_permille = 200;
-	p.spike_permille = 15;
-	p.crash_permille = 15;
+	p.spike_permille = 30;
+	p.crash_permille = 6;
 	p.spike_lo_pct = 250;
 	p.spike_hi_pct = 450;
 	p.crash_lo_pct = 20;
 	p.crash_hi_pct = 45;
 
-	p.bank_rate_bp = 150;
+	p.bank_rate_bp = 400;
 	p.min_payment_pct = 10;
-	p.enforce_days = 6;
-	p.enforce_dmg_lo = 8;
-	p.enforce_dmg_hi = 20;
+	p.enforce_days = 8;
+	p.enforce_dmg_lo = 12;
+	p.enforce_dmg_hi = 26;
 
-	p.cop_base_permille = 60;
-	p.cop_per_10k_permille = 8;
+	p.cop_base_permille = 100;
+	p.cop_per_10k_permille = 12;
 	p.cop_max_permille = 400;
 	p.posse_start = 1;
 	p.posse_growth = 1;
 	p.max_shooters = 3;
 	p.run_permille = 550;
 	p.cop_hit_permille = 300;
-	p.cop_dmg_lo = 3;
-	p.cop_dmg_hi = 9;
+	p.cop_dmg_lo = 4;
+	p.cop_dmg_hi = 12;
 	p.loot_lo = 200;
 	p.loot_hi = 2500;
 

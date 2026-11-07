@@ -49,15 +49,28 @@ New source files are picked up by the Makefile's wildcards; new test modules nee
 
 ## State
 
-Task 1 done: repo, test harness, PCG32 random numbers, copy check, ARM check.
-Task 2 done: first content draft (src/content), awaiting Seth's name review.
-Task 3 done: Params (src/core/params.c), Game state, message log, daily market.
-Task 4 done: buying and selling (src/core/trade.c).
-Task 5 done: travel, days, interest, final day (src/core/move.c, game.c).
-Task 6 done: lenders, bank, goons (src/core/finance.c, encounter.c).
-Task 7 done: cops, chases, jail, muggings, hospital, store (chase.c, shop.c, encounter.c).
-Task 8 done: rumors and true tips (rumor.c; tip handling in market.c, expiry in game.c).
-Task 9 done: game text and jokes (src/content/text.c), awaiting Seth's tone review.
-Task 10 done: saves and high scores (src/core/save.c). ARM runs under QEMU need binfmt registered (docker run --privileged --rm tonistiigi/binfmt --install arm), not done yet.
-Task 11 done: ph-text terminal version (src/text), golden transcript tests/golden. Regenerate basic.out after deliberate rules or text changes (see tests/golden/run.sh).
-Task 13 done: ph-sim balance simulator (tools/sim): bots, report, --targets comparison (targets live in ../pocket-hustle-research).
+Plan 1 (the rules, ph-text, ph-sim) is done as of 2026-11-06:
+
+- `src/core`, `src/content`: the whole rule set (market, travel, lenders, bank, goons, cops,
+  jail, muggings, hospital, store, rumors), game text and jokes, saves and high scores.
+- `src/text`: ph-text, the terminal version (`make text && build/host/ph-text`).
+- `tools/sim`: ph-sim, the balance simulator. Tuned values and results: `docs/balance.md`.
+- Golden transcript: `tests/golden` (regenerate after deliberate rules or text changes; see
+  `tests/golden/run.sh`).
+
+Waiting on Seth: review of the content names and joke tone (sent during Plan 1), and a
+playtest of ph-text. His notes become follow-up tasks.
+
+How to tune: change `src/core/params.c` or the content ranges, then run ph-sim with
+`--targets ../pocket-hustle-research/targets.txt --strict` (observations of Beermat's
+game, outside the repo; screen-only, see that folder's notes.md). The check flags our
+numbers that land within 5% of theirs (TOO_CLOSE) as well as ones too far off.
+
+ARM: `scripts/arm-check.sh` compiles and links for the Mini. Running ARM binaries under
+QEMU (`docker run --platform linux/arm/v7 ...`) needs binfmt registered on the host
+(`docker run --privileged --rm tonistiigi/binfmt --install arm`); ask Seth first.
+
+## Next
+
+Plan 2: screens and sound on the PC (mockups for Seth first). Plan 3: the Miyoo build,
+packaging and release. Both are outlined at the end of the Plan 1 document.
