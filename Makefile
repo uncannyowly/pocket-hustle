@@ -11,7 +11,8 @@ MIYOO_CC ?= arm-linux-gnueabihf-gcc
 MIYOO_CFLAGS := $(CFLAGS) -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
 
 CORE_SRC = $(sort $(wildcard src/core/*.c src/content/*.c))
-HEADERS = $(wildcard src/core/*.h src/content/*.h tests/*.h tools/sim/*.h)
+UI_SRC = $(sort $(wildcard src/gfx/*.c src/sfx/*.c src/ui/*.c))
+HEADERS = $(wildcard src/core/*.h src/content/*.h src/gfx/*.h src/sfx/*.h src/ui/*.h src/plat/*.h src/text/*.h tests/*.h tools/sim/*.h)
 TEST_SRC = $(sort $(wildcard tests/*.c)) $(wildcard tools/sim/report.c tools/sim/bots.c)
 TEXT_SRC = $(sort $(wildcard src/text/*.c))
 SIM_SRC = $(sort $(wildcard tools/sim/*.c))
@@ -20,9 +21,9 @@ SIM_SRC = $(sort $(wildcard tools/sim/*.c))
 
 all: build/host/run-tests
 
-build/host/run-tests: $(CORE_SRC) $(TEST_SRC) $(HEADERS)
+build/host/run-tests: $(CORE_SRC) $(UI_SRC) $(TEST_SRC) $(HEADERS)
 	@mkdir -p $(dir $@)
-	$(HOST_CC) $(CFLAGS) -Itests -Itools/sim -o $@ $(CORE_SRC) $(TEST_SRC)
+	$(HOST_CC) $(CFLAGS) -Itests -Itools/sim -o $@ $(CORE_SRC) $(UI_SRC) $(TEST_SRC) -lm
 
 build/host/ph-text: $(CORE_SRC) $(TEXT_SRC) $(HEADERS)
 	@mkdir -p $(dir $@)
@@ -50,7 +51,7 @@ arm-check:
 
 arm-check-inner:
 	@mkdir -p build/arm
-	$(MIYOO_CC) $(MIYOO_CFLAGS) -Itests -Itools/sim -o build/arm/run-tests $(CORE_SRC) $(TEST_SRC)
+	$(MIYOO_CC) $(MIYOO_CFLAGS) -Itests -Itools/sim -o build/arm/run-tests $(CORE_SRC) $(UI_SRC) $(TEST_SRC) -lm
 
 clean:
 	rm -rf build
