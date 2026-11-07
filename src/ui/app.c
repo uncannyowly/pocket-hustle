@@ -115,11 +115,40 @@ int app_new_game(App *a, int days, const char *name)
 	return 0;
 }
 
+/* Writes a pending high score table; only once it is on disk is the finished game's save removed. */
+static int flush_scores(App *a)
+{
+	if (!a->scores_dirty)
+		return 0;
+	if (a->scores_path[0] && hiscores_write(&a->scores, a->scores_path) != 0) {
+		a->io_failed = 1;
+		return -1;
+	}
+	a->scores_dirty = 0;
+	a->io_failed = 0;
+	if (a->save_path[0])
+		unlink(a->save_path);
+	return 0;
+}
+
+static void io_ok(App *a)
+{
+	if (!a->scores_dirty)
+		a->io_failed = 0;
+}
+
 int app_save_now(App *a)
 {
+	int r = flush_scores(a);
+
 	if (!a->has_game || !a->save_path[0])
-		return 0;
-	return save_write(&a->g, a->save_path);
+		return r;
+	if (save_write(&a->g, a->save_path) != 0) {
+		a->io_failed = 1;
+		return -1;
+	}
+	io_ok(a);
+	return r;
 }
 
 int app_after_action(App *a, int16_t day_before, Phase phase_before)
@@ -127,31 +156,41 @@ int app_after_action(App *a, int16_t day_before, Phase phase_before)
 	Game *g = &a->g;
 	int rank = -1;
 
-	if (!a->has_game)
+	if (!a->has_game) {
+		flush_scores(a);		/* retry a score write that failed earlier */
 		return -1;
+	}
 	if (g->phase == PH_OVER) {
-		if (a->recorded)
-			return -1;
-		rank = hiscore_insert(&a->scores, g->last_day, g->name, game_net_worth(g), g->end);
-		if (a->scores_path[0])
-			hiscores_write(&a->scores, a->scores_path);
-		if (a->save_path[0])
-			unlink(a->save_path);
-		a->recorded = 1;
-		a->last_rank = rank;
+		if (!a->recorded) {
+			rank = hiscore_insert(&a->scores, g->last_day, g->name, game_net_worth(g), g->end);
+			a->recorded = 1;
+			a->last_rank = rank;
+			a->scores_dirty = 1;
+		}
+		flush_scores(a);
 		a->has_game = 0;
 		return rank;
 	}
-	if ((g->day != day_before || g->phase != phase_before) && a->save_path[0])
-		save_write(g, a->save_path);
+	if ((g->day != day_before || g->phase != phase_before) && a->save_path[0]) {
+		if (save_write(g, a->save_path) != 0)
+			a->io_failed = 1;
+		else
+			io_ok(a);
+	}
 	return -1;
 }
 
-int app_options_write(const App *a)
+int app_options_write(App *a)
 {
 	const char *s = a->sound_on ? "sound=1\n" : "sound=0\n";
+	int r;
 
 	if (!a->options_path[0])
 		return 0;
-	return atomic_write_file(a->options_path, s, strlen(s));
+	r = atomic_write_file(a->options_path, s, strlen(s));
+	if (r != 0)
+		a->io_failed = 1;
+	else if (!a->scores_dirty)
+		a->io_failed = 0;
+	return r;
 }

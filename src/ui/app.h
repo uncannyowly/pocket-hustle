@@ -18,6 +18,8 @@ typedef struct {
 	int sound_on;
 	int last_rank;			/* rank of the score just recorded, -1 if none */
 	uint64_t next_seed;
+	int scores_dirty;		/* a recorded score is not on disk yet; the save is kept until it is */
+	int io_failed;			/* the last save, score or options write failed (cleared by a success) */
 } App;
 
 int  app_default_dir(char *buf, size_t n);	/* XDG_DATA_HOME or HOME based; 0 or -1 */
@@ -26,6 +28,6 @@ void app_load(App *a);				/* scores, options, resumable save; bad files mean emp
 int  app_new_game(App *a, int days, const char *name);	/* game_new with next_seed */
 int  app_after_action(App *a, int16_t day_before, Phase phase_before);	/* returns rank 0..9, -1 */
 int  app_save_now(App *a);
-int  app_options_write(const App *a);
+int  app_options_write(App *a);
 
 #endif
