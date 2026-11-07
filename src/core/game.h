@@ -72,4 +72,10 @@ int     game_move(Game *g, Loc dest);
 int64_t game_flight_cost(const Game *g, int city);	/* 0 inside the current city */
 int     game_end(Game *g);				/* quit early */
 
+/* Money: the current city's lender, and the bank (any city). */
+int     game_borrow(Game *g, int64_t amt);
+int     game_repay(Game *g, int64_t amt);
+int     game_deposit(Game *g, int64_t amt);
+int     game_withdraw(Game *g, int64_t amt);
+
 #endif

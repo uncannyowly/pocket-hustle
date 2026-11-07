@@ -54,3 +54,4 @@ Task 2 done: first content draft (src/content), awaiting Seth's name review.
 Task 3 done: Params (src/core/params.c), Game state, message log, daily market.
 Task 4 done: buying and selling (src/core/trade.c).
 Task 5 done: travel, days, interest, final day (src/core/move.c, game.c).
+Task 6 done: lenders, bank, goons (src/core/finance.c, encounter.c).

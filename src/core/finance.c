@@ -1,0 +1,78 @@
+/* Loan sharks (one per city) and the bank (works anywhere, safe from muggers). */
+#include "core/game_internal.h"
+
+int game_borrow(Game *g, int64_t amt)
+{
+	int c = g->loc.city;
+
+	if (g->phase != PH_TRADING)
+		return E_PHASE;
+	if (amt <= 0)
+		return E_BAD_ARG;
+	if (amt > CITIES[c].lender_max - g->debt[c])
+		return E_LIMIT;
+
+	game_clear_msgs(g);
+	if (g->debt[c] == 0)
+		g->debt_age[c] = 0;
+	g->debt[c] += amt;
+	g->cash += amt;
+	if (g->cash > MONEY_MAX)
+		g->cash = MONEY_MAX;
+	return OK;
+}
+
+int game_repay(Game *g, int64_t amt)
+{
+	int c = g->loc.city;
+	int64_t needed;
+
+	if (g->phase != PH_TRADING)
+		return E_PHASE;
+	if (amt <= 0 || amt > g->debt[c])
+		return E_BAD_ARG;
+	if (amt > g->cash)
+		return E_NO_CASH;
+
+	game_clear_msgs(g);
+	needed = g->debt[c] * g->p.min_payment_pct / 100;
+	if (needed < 1)
+		needed = 1;
+	if (amt == g->debt[c] || amt >= needed)
+		g->debt_age[c] = 0;
+	g->debt[c] -= amt;
+	g->cash -= amt;
+	return OK;
+}
+
+int game_deposit(Game *g, int64_t amt)
+{
+	if (g->phase != PH_TRADING)
+		return E_PHASE;
+	if (amt <= 0)
+		return E_BAD_ARG;
+	if (amt > g->cash)
+		return E_NO_CASH;
+	game_clear_msgs(g);
+	g->cash -= amt;
+	g->bank += amt;
+	if (g->bank > MONEY_MAX)
+		g->bank = MONEY_MAX;
+	return OK;
+}
+
+int game_withdraw(Game *g, int64_t amt)
+{
+	if (g->phase != PH_TRADING)
+		return E_PHASE;
+	if (amt <= 0)
+		return E_BAD_ARG;
+	if (amt > g->bank)
+		return E_NO_CASH;
+	game_clear_msgs(g);
+	g->bank -= amt;
+	g->cash += amt;
+	if (g->cash > MONEY_MAX)
+		g->cash = MONEY_MAX;
+	return OK;
+}
