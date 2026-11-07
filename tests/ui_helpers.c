@@ -1,0 +1,86 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "helpers.h"
+#include "ui_helpers.h"
+#include "ui/input.h"
+#include "ui/ui_internal.h"
+
+void ui_test_setup(App *a, Ui *u, int days)
+{
+	Params p = test_params();
+
+	app_init(a, NULL);
+	new_test_game(&a->g, &p, days);
+	a->has_game = 1;
+	ui_init(u, a);
+	go(u, SCR_MARKET);
+}
+
+static const struct { const char *tok; int pad; } TOKENS[] = {
+	{"U", PAD_UP}, {"D", PAD_DOWN}, {"L", PAD_LEFT}, {"R", PAD_RIGHT},
+	{"A", PAD_A}, {"B", PAD_B}, {"X", PAD_X}, {"Y", PAD_Y},
+	{"L1", PAD_L1}, {"R1", PAD_R1}, {"SEL", PAD_SELECT}, {"START", PAD_START},
+};
+
+void press_seq(Ui *u, const char *seq)
+{
+	char tok[8];
+	size_t n, i;
+
+	for (;;) {
+		while (*seq == ' ')
+			seq++;
+		if (!*seq)
+			return;
+		for (n = 0; seq[n] && seq[n] != ' '; n++)
+			;
+		for (i = 0; i < sizeof TOKENS / sizeof TOKENS[0]; i++)
+			if (strncmp(seq, TOKENS[i].tok, n) == 0 && TOKENS[i].tok[n] == '\0')
+				break;
+		if (i == sizeof TOKENS / sizeof TOKENS[0]) {
+			snprintf(tok, sizeof tok, "%.*s", (int)(n < sizeof tok - 1 ? n : sizeof tok - 1), seq);
+			fprintf(stderr, "press_seq: unknown token \"%s\"\n", tok);
+			exit(2);
+		}
+		ui_press(u, TOKENS[i].pad);
+		seq += n;
+	}
+}
+
+int hit_find(const Ui *u, int action, int arg)
+{
+	int i;
+
+	for (i = 0; i < u->nhits; i++)
+		if (u->hits[i].action == action && u->hits[i].arg == arg)
+			return i;
+	return -1;
+}
+
+void click_hit(Ui *u, int i)
+{
+	Hit h;
+
+	if (i < 0 || i >= u->nhits)
+		return;
+	h = u->hits[i];
+	ui_click(u, h.x + h.w / 2, h.y + h.h / 2);
+}
+
+int canvas_colors(const Canvas *c, int cap)
+{
+	uint32_t seen[256];
+	int n = 0, i, k;
+
+	if (cap > 256)
+		cap = 256;
+	for (i = 0; i < CV_W * CV_H && n < cap; i++) {
+		for (k = 0; k < n && seen[k] != c->px[i]; k++)
+			;
+		if (k == n)
+			seen[n++] = c->px[i];
+	}
+	return n;
+}
