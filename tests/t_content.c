@@ -1,6 +1,7 @@
 #include <ctype.h>
 
 #include "check.h"
+#include "core/params.h"
 #include "tests.h"
 #include "content/content.h"
 
@@ -106,6 +107,20 @@ static void test_lenders_differ(void)
 	}
 }
 
+static void test_bank_branches(void)
+{
+	Params p = params_default();
+	int c, h, n;
+	for (c = 0; c < NUM_CITIES; c++) {
+		n = 0;
+		for (h = 0; h < HOODS_PER_CITY; h++)
+			n += (CITIES[c].bank_hoods >> h) & 1;
+		CHECK(n >= 1 && n < HOODS_PER_CITY);
+		CHECK_EQ(CITIES[c].bank_hoods >> HOODS_PER_CITY, 0);
+	}
+	CHECK(CITIES[p.start_city].bank_hoods & 1u);	/* the first deposit is free */
+}
+
 static void test_gear_mix(void)
 {
 	int i, weapons = 0, space = 0, local = 0;
@@ -180,6 +195,7 @@ void tests_content(void)
 	test_price_ranges_sane();
 	test_city_tendencies();
 	test_lenders_differ();
+	test_bank_branches();
 	test_gear_mix();
 	test_strings_ascii();
 	test_strings_not_beermat();

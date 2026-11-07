@@ -13,6 +13,8 @@ typedef struct {
 	int32_t spike_permille, crash_permille;		/* per good per stop */
 	int32_t spike_lo_pct, spike_hi_pct, crash_lo_pct, crash_hi_pct;	/* price multipliers */
 	int32_t bank_rate_bp, min_payment_pct;		/* bank interest; payment that resets a lender's clock */
+	int32_t bank_fee_pct;				/* away from a branch: this pct of the amount, */
+	int64_t bank_fee_min;				/* but at least this much */
 	int32_t enforce_days, enforce_dmg_lo, enforce_dmg_hi;	/* days overdue before goons; their damage */
 	int32_t cop_base_permille, cop_per_10k_permille, cop_max_permille;
 	int32_t posse_start, posse_growth, max_shooters;

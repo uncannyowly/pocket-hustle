@@ -1,6 +1,7 @@
 Pocket Hustle. Seed 1. You have 15 days. Type help for commands.
 Day 1/15  Oklahoma City: Bricktown  Health 100
 Cash $2,600  Bank $0  Owed $4,200
+Your bank has a branch here: no fees.
 Carrying 0/150
  # Good           Price   Have
  0 Carts            $84      0
@@ -13,10 +14,11 @@ Carrying 0/150
  7 Meth          $8,165      0
  8 Heroin       $13,187      0
  9 Cocaine      $34,203      0
-Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+Neighborhoods ($ = bank branch): 0 Bricktown $, 1 Midtown $, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
 > status
 Day 1/15  Oklahoma City: Bricktown  Health 100
 Cash $2,600  Bank $0  Owed $4,200
+Your bank has a branch here: no fees.
 Carrying 0/150
  # Good           Price   Have
  0 Carts            $84      0
@@ -29,7 +31,7 @@ Carrying 0/150
  7 Meth          $8,165      0
  8 Heroin       $13,187      0
  9 Cocaine      $34,203      0
-Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+Neighborhoods ($ = bank branch): 0 Bricktown $, 1 Midtown $, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
 > market
  # Good           Price   Have
  0 Carts            $84      0
@@ -80,6 +82,7 @@ You take OKC Streetcar over to Midtown.
 Heroin went viral overnight. Prices just hit $20,773.
 Day 2/15  Oklahoma City: Midtown  Health 100
 Cash $748  Bank $0  Owed $5,147
+Your bank has a branch here: no fees.
 Carrying 28/150
  # Good           Price   Have
  0 Carts           $128     28
@@ -92,7 +95,7 @@ Carrying 28/150
  7 Meth          $8,304      0
  8 Heroin       $20,773      0
  9 Cocaine      $39,050      0
-Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+Neighborhoods ($ = bank branch): 0 Bricktown $, 1 Midtown $, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
 > market
  # Good           Price   Have
  0 Carts           $128     28
@@ -113,6 +116,7 @@ Bought 3 Shrooms for $2,454.
 You take OKC Streetcar over to Deep Deuce.
 Day 3/15  Oklahoma City: Deep Deuce  Health 100
 Cash $1,878  Bank $0  Owed $5,636
+No branch here: the ATM charges 3% (at least $5).
 Carrying 3/150
  # Good           Price   Have
  0 Carts            $37      0
@@ -125,7 +129,7 @@ Carrying 3/150
  7 Meth         $10,281      0
  8 Heroin       $16,556      0
  9 Cocaine      $31,283      0
-Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+Neighborhoods ($ = bank branch): 0 Bricktown $, 1 Midtown $, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
 > heal 10
 That's over the limit.
 > gear 0
@@ -149,6 +153,7 @@ Carts, prices you've seen:
 You fly to Houston. The ticket cost $264.
 Day 4/15  Houston: Montrose  Health 100
 Cash $1,534  Bank $0  Owed $6,172
+No branch here: the ATM charges 3% (at least $5).
 Carrying 3/150  Packing: Pool Noodle
  # Good           Price   Have
  0 Carts              -      0
@@ -161,7 +166,7 @@ Carrying 3/150  Packing: Pool Noodle
  7 Meth          $3,312      0
  8 Heroin        $7,218      0
  9 Cocaine            -      0
-Neighborhoods: 0 Montrose, 1 The Heights, 2 EaDo, 3 Galleria, 4 Rice Village, 5 Downtown
+Neighborhoods ($ = bank branch): 0 Montrose, 1 The Heights, 2 EaDo, 3 Galleria $, 4 Rice Village, 5 Downtown $
 > flights
 0 Oklahoma City  $334 (lands at Bricktown)
 2 San Jose       $449 (lands at Downtown)
@@ -173,6 +178,7 @@ Neighborhoods: 0 Montrose, 1 The Heights, 2 EaDo, 3 Galleria, 4 Rice Village, 5 
 You take METRORail over to Galleria.
 Day 5/15  Houston: Galleria  Health 100
 Cash $1,534  Bank $0  Owed $6,759
+Your bank has a branch here: no fees.
 Carrying 3/150  Packing: Pool Noodle
  # Good           Price   Have
  0 Carts           $138      0
@@ -185,7 +191,7 @@ Carrying 3/150  Packing: Pool Noodle
  7 Meth               -      0
  8 Heroin             -      0
  9 Cocaine            -      0
-Neighborhoods: 0 Montrose, 1 The Heights, 2 EaDo, 3 Galleria, 4 Rice Village, 5 Downtown
+Neighborhoods ($ = bank branch): 0 Montrose, 1 The Heights, 2 EaDo, 3 Galleria $, 4 Rice Village, 5 Downtown $
 > repay all
 You don't owe anyone here.
 > deposit all
@@ -196,6 +202,7 @@ Withdrew $1,534. Bank balance $0.
 You fly to New York City. The ticket cost $377.
 Day 6/15  New York City: Times Square  Health 100
 Cash $1,157  Bank $0  Owed $7,402
+No branch here: the ATM charges 3% (at least $5).
 Carrying 3/150  Packing: Pool Noodle
  # Good           Price   Have
  0 Carts            $88      0
@@ -208,7 +215,13 @@ Carrying 3/150  Packing: Pool Noodle
  7 Meth          $3,690      0
  8 Heroin       $13,878      0
  9 Cocaine      $15,002      0
-Neighborhoods: 0 Times Square, 1 SoHo, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea
+Neighborhoods ($ = bank branch): 0 Times Square, 1 SoHo $, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea $
+> deposit 1000
+Deposited $1,000, minus a $30 out-of-network fee. Bank balance $970.
+> withdraw 4
+That won't even cover the ATM fee.
+> withdraw all
+Withdrew $970, minus a $29 out-of-network fee. Bank balance $0.
 > buy 1 max
 Bought 1 Weed for $825.
 > go 1
@@ -216,7 +229,8 @@ You take the Subway over to SoHo.
 Weed went viral overnight. Prices just hit $3,020.
 Supply chain problems hit Ketamine. Buyers are paying $7,093!
 Day 7/15  New York City: SoHo  Health 100
-Cash $332  Bank $0  Owed $8,106
+Cash $273  Bank $0  Owed $8,106
+Your bank has a branch here: no fees.
 Carrying 4/150  Packing: Pool Noodle
  # Good           Price   Have
  0 Carts           $132      0
@@ -229,7 +243,7 @@ Carrying 4/150  Packing: Pool Noodle
  7 Meth          $4,398      0
  8 Heroin             -      0
  9 Cocaine      $15,630      0
-Neighborhoods: 0 Times Square, 1 SoHo, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea
+Neighborhoods ($ = bank branch): 0 Times Square, 1 SoHo $, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea $
 > run
 Can't do that now.
 > fight
@@ -239,7 +253,8 @@ Can't do that now.
 > go 2
 You ride the Subway to Williamsburg.
 Day 8/15  New York City: Williamsburg  Health 100
-Cash $332  Bank $0  Owed $8,877
+Cash $273  Bank $0  Owed $8,877
+No branch here: the ATM charges 3% (at least $5).
 Carrying 4/150  Packing: Pool Noodle
  # Good           Price   Have
  0 Carts              -      0
@@ -252,11 +267,12 @@ Carrying 4/150  Packing: Pool Noodle
  7 Meth               -      0
  8 Heroin       $13,038      0
  9 Cocaine      $22,605      0
-Neighborhoods: 0 Times Square, 1 SoHo, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea
+Neighborhoods ($ = bank branch): 0 Times Square, 1 SoHo $, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea $
 > go 3
 You ride the Subway to Astoria.
 Day 9/15  New York City: Astoria  Health 100
-Cash $332  Bank $0  Owed $9,721
+Cash $273  Bank $0  Owed $9,721
+No branch here: the ATM charges 3% (at least $5).
 Carrying 4/150  Packing: Pool Noodle
  # Good           Price   Have
  0 Carts           $164      0
@@ -269,11 +285,12 @@ Carrying 4/150  Packing: Pool Noodle
  7 Meth          $6,235      0
  8 Heroin             -      0
  9 Cocaine      $18,777      0
-Neighborhoods: 0 Times Square, 1 SoHo, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea
+Neighborhoods ($ = bank branch): 0 Times Square, 1 SoHo $, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea $
 > go 4
 You take the Subway over to Lower East Side.
 Day 10/15  New York City: Lower East Side  Health 100
-Cash $332  Bank $0  Owed $10,645
+Cash $273  Bank $0  Owed $10,645
+No branch here: the ATM charges 3% (at least $5).
 Carrying 4/150  Packing: Pool Noodle
  # Good           Price   Have
  0 Carts            $67      0
@@ -286,11 +303,12 @@ Carrying 4/150  Packing: Pool Noodle
  7 Meth          $5,229      0
  8 Heroin       $17,303      0
  9 Cocaine      $16,582      0
-Neighborhoods: 0 Times Square, 1 SoHo, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea
+Neighborhoods ($ = bank branch): 0 Times Square, 1 SoHo $, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea $
 > go 5
 You take the Subway over to Chelsea.
 Day 11/15  New York City: Chelsea  Health 100
-Cash $332  Bank $0  Owed $11,657
+Cash $273  Bank $0  Owed $11,657
+Your bank has a branch here: no fees.
 Carrying 4/150  Packing: Pool Noodle
  # Good           Price   Have
  0 Carts            $44      0
@@ -303,11 +321,12 @@ Carrying 4/150  Packing: Pool Noodle
  7 Meth               -      0
  8 Heroin       $10,696      0
  9 Cocaine      $19,488      0
-Neighborhoods: 0 Times Square, 1 SoHo, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea
+Neighborhoods ($ = bank branch): 0 Times Square, 1 SoHo $, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea $
 > go 0
 You take the Subway over to Times Square.
 Day 12/15  New York City: Times Square  Health 100
-Cash $332  Bank $0  Owed $12,765
+Cash $273  Bank $0  Owed $12,765
+No branch here: the ATM charges 3% (at least $5).
 Carrying 4/150  Packing: Pool Noodle
  # Good           Price   Have
  0 Carts              -      0
@@ -320,7 +339,7 @@ Carrying 4/150  Packing: Pool Noodle
  7 Meth          $6,021      0
  8 Heroin        $8,793      0
  9 Cocaine      $27,400      0
-Neighborhoods: 0 Times Square, 1 SoHo, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea
+Neighborhoods ($ = bank branch): 0 Times Square, 1 SoHo $, 2 Williamsburg, 3 Astoria, 4 Lower East Side, 5 Chelsea $
 > scores
 High scores, 15 days:
   (none yet)
@@ -338,6 +357,6 @@ Commands:
 Huh?
 > quit
 Game over: you retired early.
-Final net worth: -$12,433
+Final net worth: -$12,492
 Moves 11, flights 2, cop chases 0 (beaten 0, escaped 0), jailed 0, mugged 0, goons 0
 High score! You're #1.

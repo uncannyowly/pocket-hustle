@@ -10,7 +10,8 @@
 
 #include "core/save.h"
 
-#define SAVE_VERSION 1
+#define SAVE_VERSION 2		/* 2: bank fee params and stat */
+#define HISCORE_VERSION 1
 #define MAX_FILE (1L << 20)
 
 typedef struct {
@@ -81,6 +82,7 @@ static void io_params(Io *io, Params *p)
 	io_i32(io, &p->spike_lo_pct); io_i32(io, &p->spike_hi_pct);
 	io_i32(io, &p->crash_lo_pct); io_i32(io, &p->crash_hi_pct);
 	io_i32(io, &p->bank_rate_bp); io_i32(io, &p->min_payment_pct);
+	io_i32(io, &p->bank_fee_pct); io_i64(io, &p->bank_fee_min);
 	io_i32(io, &p->enforce_days); io_i32(io, &p->enforce_dmg_lo); io_i32(io, &p->enforce_dmg_hi);
 	io_i32(io, &p->cop_base_permille); io_i32(io, &p->cop_per_10k_permille);
 	io_i32(io, &p->cop_max_permille);
@@ -131,7 +133,7 @@ static void io_game(Io *io, Game *g)
 	io_i32(io, &s->times_mugged); io_i32(io, &s->times_dropped); io_i32(io, &s->goon_visits);
 	io_i32(io, &s->spikes_seen); io_i32(io, &s->crashes_seen); io_i32(io, &s->rumors_true);
 	io_i32(io, &s->rumors_joke);
-	io_i64(io, &s->best_net_worth); io_i64(io, &s->hospital_spent);
+	io_i64(io, &s->best_net_worth); io_i64(io, &s->hospital_spent); io_i64(io, &s->bank_fees_paid);
 }
 
 /* A loaded game must make sense, or the rules could index out of bounds or overflow.
@@ -151,7 +153,8 @@ static int game_sane(const Game *g)
 		return 0;
 	if (g->cash < 0 || g->cash > MONEY_MAX || g->bank < 0 || g->bank > MONEY_MAX ||
 	    g->capacity < 0 || g->capacity > 1000000 || g->health < 0 || g->health > 100 ||
-	    g->chase.posse < 0 || g->chase.cops_left < 0)
+	    g->chase.posse < 0 || g->chase.cops_left < 0 ||
+	    g->stats.bank_fees_paid < 0 || g->stats.bank_fees_paid > MONEY_MAX)
 		return 0;
 	for (i = 0; i < NUM_CITIES; i++)
 		if (g->debt[i] < 0 || g->debt[i] > MONEY_MAX || g->debt_age[i] < 0)
@@ -250,13 +253,13 @@ int atomic_write_file(const char *path, const void *buf, size_t n)
 	return 0;
 }
 
-static void put_header(unsigned char *h, const char *magic, uint32_t len, uint32_t crc)
+static void put_header(unsigned char *h, const char *magic, int version, uint32_t len, uint32_t crc)
 {
 	int i;
 
 	memcpy(h, magic, 4);
-	h[4] = SAVE_VERSION & 0xff;
-	h[5] = SAVE_VERSION >> 8;
+	h[4] = (unsigned char)(version & 0xff);
+	h[5] = (unsigned char)(version >> 8);
 	h[6] = h[7] = 0;
 	for (i = 0; i < 4; i++) {
 		h[8 + i] = (unsigned char)(len >> (8 * i));
@@ -270,7 +273,7 @@ static uint32_t get_u32(const unsigned char *b)
 }
 
 /* Writes magic + payload produced by fn atomically. */
-static int write_file(const char *path, const char *magic, void (*fn)(Io *, void *), void *obj)
+static int write_file(const char *path, const char *magic, int version, void (*fn)(Io *, void *), void *obj)
 {
 	Io io;
 	int rc;
@@ -286,7 +289,7 @@ static int write_file(const char *path, const char *magic, void (*fn)(Io *, void
 		free(io.buf);
 		return -1;
 	}
-	put_header(io.buf, magic, (uint32_t)(io.len - 16), crc32_buf(io.buf + 16, io.len - 16));
+	put_header(io.buf, magic, version, (uint32_t)(io.len - 16), crc32_buf(io.buf + 16, io.len - 16));
 	rc = atomic_write_file(path, io.buf, io.len);
 	free(io.buf);
 	return rc;
@@ -294,7 +297,7 @@ static int write_file(const char *path, const char *magic, void (*fn)(Io *, void
 
 /* Reads and checks the header, then decodes the payload with fn into obj.
  * Returns 0, -1 if the file can't be opened, -2 if anything is wrong with it. */
-static int read_file(const char *path, const char *magic, void (*fn)(Io *, void *), void *obj)
+static int read_file(const char *path, const char *magic, int version, void (*fn)(Io *, void *), void *obj)
 {
 	unsigned char *buf;
 	FILE *f = fopen(path, "rb");
@@ -311,7 +314,7 @@ static int read_file(const char *path, const char *magic, void (*fn)(Io *, void 
 	n = (long)fread(buf, 1, MAX_FILE + 1, f);
 	fclose(f);
 	if (n < 16 || n > MAX_FILE || memcmp(buf, magic, 4) != 0 ||
-	    buf[4] != (SAVE_VERSION & 0xff) || buf[5] != (SAVE_VERSION >> 8) || buf[6] || buf[7] ||
+	    buf[4] != (version & 0xff) || buf[5] != (version >> 8) || buf[6] || buf[7] ||
 	    get_u32(buf + 8) != (uint32_t)(n - 16) || get_u32(buf + 12) != crc32_buf(buf + 16, (size_t)(n - 16))) {
 		free(buf);
 		return -2;
@@ -333,7 +336,7 @@ int save_write(const Game *g, const char *path)
 	Game copy;
 
 	memcpy(&copy, g, sizeof copy);
-	return write_file(path, "PHSV", io_game_cb, &copy);
+	return write_file(path, "PHSV", SAVE_VERSION, io_game_cb, &copy);
 }
 
 int save_read(Game *g, const char *path)
@@ -342,7 +345,7 @@ int save_read(Game *g, const char *path)
 	int rc;
 
 	memset(&tmp, 0, sizeof tmp);
-	rc = read_file(path, "PHSV", io_game_cb, &tmp);
+	rc = read_file(path, "PHSV", SAVE_VERSION, io_game_cb, &tmp);
 	if (rc != 0)
 		return rc;
 	if (!game_sane(&tmp))
@@ -357,7 +360,7 @@ int hiscores_write(const HiTable *t, const char *path)
 	HiTable copy;
 
 	memcpy(&copy, t, sizeof copy);
-	return write_file(path, "PHHS", io_hitable_cb, &copy);
+	return write_file(path, "PHHS", HISCORE_VERSION, io_hitable_cb, &copy);
 }
 
 int hiscores_read(HiTable *t, const char *path)
@@ -366,7 +369,7 @@ int hiscores_read(HiTable *t, const char *path)
 	int rc, k, i;
 
 	memset(&tmp, 0, sizeof tmp);
-	rc = read_file(path, "PHHS", io_hitable_cb, &tmp);
+	rc = read_file(path, "PHHS", HISCORE_VERSION, io_hitable_cb, &tmp);
 	for (k = 0; rc == 0 && k < 4; k++) {
 		if (tmp.n[k] > 10)
 			rc = -2;

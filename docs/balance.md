@@ -23,7 +23,8 @@ build/host/ph-sim --games 2000 --seed 1 --days 30 --bot cautious
 ## Tuned values (src/core/params.c, src/content/*.c)
 
 - Start: $2,600 cash, $4,200 owed to Tornado Terry (Oklahoma City, 9.5% a day), 150 units of space.
-- Bank: 4% a day. Lenders: 5% (San Jose) to 12% (New York) a day.
+- Bank: 4% a day. Free at the two branch neighborhoods in each city; anywhere else the
+  out-of-network fee takes 3% of the amount (at least $5). Lenders: 5% (San Jose) to 12% (New York) a day.
 - Goons: after 8 overdue days, 12 to 26 damage.
 - Market: 20% chance a good is missing, at least 5 on sale; spikes 3.0% per good per stop
   (x2.5 to x4.5), crashes 0.6% (x0.20 to x0.45).
@@ -53,8 +54,11 @@ above a $2,000 trading float. It checks that playing it safe rarely gets you kil
 - The feel targets are provisional: they come from only 20 observed days over two games,
   so the cop and mugging rates in particular are rough (3 and 1 events seen). Seth's
   playtest is the real check; adjust from his notes before trusting these numbers further.
-- The bank works in every city with no fee, so a player who deposits everything before
-  each move dodges muggings and jail fines. That is a design question for Seth.
+- The out-of-network fee is there because a free bank let a player deposit everything
+  before each move and dodge muggings and jail fines. At 3% each way, an overnight
+  deposit and withdrawal at ATMs (about 6%) costs more than the 4% interest plus the
+  mugging risk it avoids (about 1% a stop), so it only pays when you plan your stops
+  around branches. The bots never bank, so the sim numbers above don't move with it.
 - 60 and 90 day games are harder than intended for the greedy bot (more deaths as the
   posse keeps growing); only 30 days were tuned, and they all share these numbers.
 - The bots are simple. A human who repays the loan early and watches for spikes will beat

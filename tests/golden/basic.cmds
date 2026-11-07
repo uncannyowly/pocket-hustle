@@ -26,6 +26,9 @@ repay all
 deposit all
 withdraw all
 fly 3
+deposit 1000
+withdraw 4
+withdraw all
 buy 1 max
 go 1
 run

@@ -18,6 +18,7 @@ typedef struct {
 	const char *lender;			/* this city's loan shark */
 	int32_t lender_rate_bp;			/* daily interest, basis points */
 	int64_t lender_max;			/* most you can owe this lender */
+	uint8_t bank_hoods;			/* bit h set: a bank branch in hoods[h], no fee */
 } CityDef;
 
 typedef enum { GEAR_WEAPON, GEAR_SPACE } GearKind;

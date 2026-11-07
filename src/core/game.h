@@ -16,7 +16,7 @@
 enum { MAX_DAYS = 90, MAX_MSGS = 32 };
 
 typedef enum { OK = 0, E_PHASE = -1, E_BAD_ARG = -2, E_NOT_SOLD = -3, E_NO_CASH = -4,
-	       E_NO_SPACE = -5, E_NO_STOCK = -6, E_LIMIT = -7 } Err;
+	       E_NO_SPACE = -5, E_NO_STOCK = -6, E_LIMIT = -7, E_FEE = -8 } Err;
 typedef enum { PH_TRADING, PH_CHASE, PH_OVER } Phase;
 typedef enum { END_NONE, END_DAYS_UP, END_DEAD, END_QUIT } EndReason;
 typedef enum { CH_RUN, CH_FIGHT, CH_SURRENDER } ChaseAction;
@@ -28,7 +28,7 @@ typedef struct { int16_t posse, cops_left; } Chase;
 typedef struct {
 	int32_t moves, flights, cop_chases, cops_beaten, escapes, times_jailed, times_mugged,
 		times_dropped, goon_visits, spikes_seen, crashes_seen, rumors_true, rumors_joke;
-	int64_t best_net_worth, hospital_spent;
+	int64_t best_net_worth, hospital_spent, bank_fees_paid;
 } Stats;
 
 typedef struct {
@@ -72,11 +72,15 @@ int     game_move(Game *g, Loc dest);
 int64_t game_flight_cost(const Game *g, int city);	/* 0 inside the current city */
 int     game_end(Game *g);				/* quit early */
 
-/* Money: the current city's lender, and the bank (any city). */
+/* Money: the current city's lender, and the bank (any city). Banking is free at a branch
+ * (CITIES[].bank_hoods). Anywhere else the out-of-network fee comes out of the amount moved,
+ * and an amount that doesn't cover the fee returns E_FEE. */
 int     game_borrow(Game *g, int64_t amt);
 int     game_repay(Game *g, int64_t amt);
 int     game_deposit(Game *g, int64_t amt);
 int     game_withdraw(Game *g, int64_t amt);
+int     game_bank_branch_here(const Game *g);
+int64_t game_bank_fee(const Game *g, int64_t amt);	/* 0 at a branch */
 
 /* Trouble: a cop chase (PH_CHASE) is resolved one action at a time. */
 int     game_chase(Game *g, ChaseAction a);

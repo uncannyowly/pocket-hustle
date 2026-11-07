@@ -101,6 +101,77 @@ static void test_bank_moves(void)
 	CHECK_EQ(game_withdraw(&g, -5), E_BAD_ARG);
 }
 
+/* The first hood in city that has (want = 1) or lacks (want = 0) a bank branch. */
+static int branch_hood(int city, int want)
+{
+	int h;
+	for (h = 0; h < HOODS_PER_CITY; h++)
+		if (((CITIES[city].bank_hoods >> h) & 1u) == (unsigned)want)
+			return h;
+	return -1;
+}
+
+static void test_bank_free_at_branch(void)
+{
+	Params p = test_params();
+	Game g;
+	p.bank_fee_pct = 3;
+	p.bank_fee_min = 5;
+	setup(&g, &p);
+	g.loc = at(0, branch_hood(0, 1));
+	g.cash = 1000;
+	g.bank = 0;
+	CHECK(game_bank_branch_here(&g));
+	CHECK_EQ(game_bank_fee(&g, 1000), 0);
+	CHECK_EQ(game_deposit(&g, 1000), OK);
+	CHECK_EQ(g.cash, 0);
+	CHECK_EQ(g.bank, 1000);
+	CHECK_EQ(game_withdraw(&g, 1), OK);
+	CHECK_EQ(g.cash, 1);
+	CHECK_EQ(g.stats.bank_fees_paid, 0);
+}
+
+static void test_bank_fee_out_of_network(void)
+{
+	Params p = test_params();
+	Game g;
+	p.bank_fee_pct = 3;
+	p.bank_fee_min = 5;
+	setup(&g, &p);
+	g.loc = at(1, branch_hood(1, 0));
+	g.cash = 1000;
+	g.bank = 0;
+	CHECK(!game_bank_branch_here(&g));
+	CHECK_EQ(game_bank_fee(&g, 1000), 30);
+	CHECK_EQ(game_bank_fee(&g, 100), 5);		/* the minimum */
+	CHECK_EQ(game_deposit(&g, 1000), OK);		/* the fee comes out of the amount */
+	CHECK_EQ(g.cash, 0);
+	CHECK_EQ(g.bank, 970);
+	CHECK_EQ(game_withdraw(&g, 500), OK);
+	CHECK_EQ(g.bank, 470);
+	CHECK_EQ(g.cash, 485);
+	CHECK_EQ(g.stats.bank_fees_paid, 45);
+}
+
+static void test_bank_fee_must_be_covered(void)
+{
+	Params p = test_params();
+	Game g, snap;
+	p.bank_fee_pct = 3;
+	p.bank_fee_min = 5;
+	setup(&g, &p);
+	g.loc = at(1, branch_hood(1, 0));
+	g.cash = 100;
+	g.bank = 100;
+	memcpy(&snap, &g, sizeof snap);
+	CHECK_EQ(game_deposit(&g, 5), E_FEE);
+	CHECK_EQ(game_withdraw(&g, 5), E_FEE);
+	CHECK(same_game(&g, &snap));
+	CHECK_EQ(game_deposit(&g, 6), OK);
+	CHECK_EQ(g.bank, 101);
+	CHECK_EQ(g.cash, 94);
+}
+
 static void test_goons_when_overdue(void)
 {
 	Params p = test_params();
@@ -164,6 +235,9 @@ void tests_finance(void)
 	test_repay_errors();
 	test_small_payment_keeps_clock();
 	test_bank_moves();
+	test_bank_free_at_branch();
+	test_bank_fee_out_of_network();
+	test_bank_fee_must_be_covered();
 	test_goons_when_overdue();
 	test_goons_only_in_their_city();
 	test_goons_can_kill();

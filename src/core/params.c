@@ -22,6 +22,8 @@ Params params_default(void)
 	p.crash_hi_pct = 45;
 
 	p.bank_rate_bp = 400;
+	p.bank_fee_pct = 3;
+	p.bank_fee_min = 5;
 	p.min_payment_pct = 10;
 	p.enforce_days = 8;
 	p.enforce_dmg_lo = 12;
@@ -72,6 +74,7 @@ int params_sane(const Params *p)
 	       PAIR(p->spike_lo_pct, p->spike_hi_pct, 1, 10000) &&
 	       PAIR(p->crash_lo_pct, p->crash_hi_pct, 1, 10000) &&
 	       IN(p->bank_rate_bp, 0, 3000) && IN(p->min_payment_pct, 0, 100) &&
+	       IN(p->bank_fee_pct, 0, 100) && IN(p->bank_fee_min, 0, MONEY_MAX) &&
 	       IN(p->enforce_days, 0, 30000) && PAIR(p->enforce_dmg_lo, p->enforce_dmg_hi, 0, 1000) &&
 	       IN(p->cop_base_permille, 0, 1000) && IN(p->cop_per_10k_permille, 0, 1000) &&
 	       IN(p->cop_max_permille, 0, 1000) &&

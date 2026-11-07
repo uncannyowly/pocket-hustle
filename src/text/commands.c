@@ -60,14 +60,22 @@ void ph_print_status(const Ctx *c)
 	printf("Day %d/%d  %s: %s  Health %d\n", g->day, g->last_day,
 	       CITIES[g->loc.city].name, CITIES[g->loc.city].hoods[g->loc.hood], g->health);
 	printf("Cash %s  Bank %s  Owed %s\n", cash, bank, owed);
+	if (game_bank_branch_here(g)) {
+		printf("Your bank has a branch here: no fees.\n");
+	} else {
+		char fmin[32];
+		money(g->p.bank_fee_min, fmin, sizeof fmin);
+		printf("No branch here: the ATM charges %d%% (at least %s).\n", (int)g->p.bank_fee_pct, fmin);
+	}
 	printf("Carrying %d/%d", (int)game_carried(g), (int)g->capacity);
 	if (g->weapon >= 0)
 		printf("  Packing: %s", GEAR[g->weapon].name);
 	printf("\n");
 	print_market(g);
-	printf("Neighborhoods:");
+	printf("Neighborhoods ($ = bank branch):");
 	for (h = 0; h < HOODS_PER_CITY; h++)
-		printf(" %d %s%s", h, CITIES[g->loc.city].hoods[h], h + 1 < HOODS_PER_CITY ? "," : "");
+		printf(" %d %s%s%s", h, CITIES[g->loc.city].hoods[h],
+		       (CITIES[g->loc.city].bank_hoods >> h) & 1 ? " $" : "", h + 1 < HOODS_PER_CITY ? "," : "");
 	printf("\n");
 }
 
@@ -93,6 +101,7 @@ static void print_err(int rc)
 	case E_NO_STOCK: printf("You don't have that many.\n"); break;
 	case E_PHASE:    printf("Can't do that now.\n"); break;
 	case E_LIMIT:    printf("That's over the limit.\n"); break;
+	case E_FEE:      printf("That won't even cover the ATM fee.\n"); break;
 	default:         printf("Huh?\n"); break;
 	}
 }
@@ -208,7 +217,7 @@ int ph_command(Ctx *c, const char *line)
 	char verb[32] = "", a1[64] = "", a2[64] = "";
 	int16_t day = g->day;
 	Phase phase = g->phase;
-	int64_t n = 0, m = 0;
+	int64_t n = 0, m = 0, fee = 0;
 	int rc = OK, handled = 1;
 
 	if (sscanf(line, "%31s %63s %63s", verb, a1, a2) < 1)
@@ -321,6 +330,7 @@ int ph_command(Ctx *c, const char *line)
 		} else if (!parse_num(a1, &n)) {
 			n = -1;
 		}
+		fee = n > 0 ? game_bank_fee(g, n) : 0;
 		rc = n < 0 ? E_BAD_ARG : dep ? game_deposit(g, n) : game_withdraw(g, n);
 		if (rc == E_NO_CASH && !dep) {
 			printf("Not enough in the bank.\n");
@@ -330,7 +340,14 @@ int ph_command(Ctx *c, const char *line)
 			char p[32], bank[32];
 			money(n, p, sizeof p);
 			money(g->bank, bank, sizeof bank);
-			printf("%s %s. Bank balance %s.\n", dep ? "Deposited" : "Withdrew", p, bank);
+			if (fee > 0) {
+				char f[32];
+				money(fee, f, sizeof f);
+				printf("%s %s, minus a %s out-of-network fee. Bank balance %s.\n",
+				       dep ? "Deposited" : "Withdrew", p, f, bank);
+			} else {
+				printf("%s %s. Bank balance %s.\n", dep ? "Deposited" : "Withdrew", p, bank);
+			}
 		}
 	} else if (!strcmp(verb, "gear")) {
 		rc = parse_num(a1, &n) && n < NUM_GEAR ? game_buy_gear(g, (int)n) : E_BAD_ARG;

@@ -87,6 +87,24 @@ static void test_save_round_trip(void)
 	CHECK_EQ(g.day, g2.day);
 }
 
+/* Fields added after the first save format must be written and read, not left at zero. */
+static void test_save_keeps_bank_fee_fields(void)
+{
+	char p1[128];
+	static Game g, g2;
+	path_in(p1, sizeof p1, "fee.sav");
+	played_game(&g);
+	g.p.bank_fee_pct = 7;
+	g.p.bank_fee_min = 11;
+	g.stats.bank_fees_paid = 123;
+	CHECK_EQ(save_write(&g, p1), 0);
+	memset(&g2, 0, sizeof g2);
+	CHECK_EQ(save_read(&g2, p1), 0);
+	CHECK_EQ(g2.p.bank_fee_pct, 7);
+	CHECK_EQ(g2.p.bank_fee_min, 11);
+	CHECK_EQ(g2.stats.bank_fees_paid, 123);
+}
+
 static void test_truncated_save(void)
 {
 	static unsigned char a[200000];
@@ -137,7 +155,7 @@ static void test_other_version(void)
 	played_game(&g);
 	save_write(&g, p1);
 	n = read_file(p1, a, sizeof a);
-	a[4] = 2;
+	a[4] = (unsigned char)(a[4] + 1);
 	write_bytes(p1, a, n);
 	CHECK_EQ(save_read(&g, p1), -2);
 }
@@ -150,7 +168,7 @@ static void test_save_rejects_out_of_range_values(void)
 	Game g, target;
 	int k, ok = 1;
 	path_in(p1, sizeof p1, "range.sav");
-	for (k = 0; k < 8; k++) {
+	for (k = 0; k < 11; k++) {
 		played_game(&g);
 		switch (k) {
 		case 0: g.cash = -5; break;
@@ -161,6 +179,9 @@ static void test_save_rejects_out_of_range_values(void)
 		case 5: g.p.mug_permille = 5000; break;
 		case 6: g.p.flight_lo = 900; g.p.flight_hi = 100; break;
 		case 7: g.capacity = 2000000000; break;
+		case 8: g.p.bank_fee_pct = 101; break;
+		case 9: g.p.bank_fee_min = -1; break;
+		case 10: g.stats.bank_fees_paid = -1; break;
 		}
 		save_write(&g, p1);
 		played_game(&target);
@@ -277,6 +298,7 @@ void tests_save(void)
 	}
 	test_crc32_check_value();
 	test_save_round_trip();
+	test_save_keeps_bank_fee_fields();
 	test_truncated_save();
 	test_bitflip_save();
 	test_other_version();

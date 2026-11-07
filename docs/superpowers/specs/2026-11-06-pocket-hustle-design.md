@@ -123,6 +123,11 @@ local research notes, outside the repo.
   catalog (approved as played back: "looks good to go").
 - From the shelved port discussion: a Tab-style button to jump between fields quickly, and he
   wanted the mouse kept as well. How that carries over is under "My calls".
+- (2026-11-07) The bank is not free everywhere: using it outside your bank's network costs
+  an "out of bank network" fee in some areas. Builder's call on the details: two branch
+  neighborhoods per city bank for free, everywhere else pays 3% of the amount (at least $5).
+- (2026-11-07) The round 1 screen mockups: keep the Press Start 2P font and the look, with
+  tweaks expected later.
 
 ## My calls (Claude's; Seth can overrule any of them)
 

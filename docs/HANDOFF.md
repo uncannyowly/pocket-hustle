@@ -58,9 +58,11 @@ Plan 1 (the rules, ph-text, ph-sim) is done as of 2026-11-06:
 - Golden transcript: `tests/golden` (regenerate after deliberate rules or text changes; see
   `tests/golden/run.sh`).
 
-Waiting on Seth: review of the content names and joke tone (sent during Plan 1), a
-playtest of ph-text, and a call on the bank (free in every city, so depositing before each
-move dodges muggings and jail fines). His notes become follow-up tasks. The balance targets
+Waiting on Seth: review of the content names and joke tone (sent during Plan 1) and a
+playtest of ph-text. His notes become follow-up tasks. Settled 2026-11-07: the bank charges an
+out-of-network fee (3%, at least $5) except at the two branch neighborhoods in each city, and
+the round 1 screen mockups (docs/mockups/screens-round1.html) are approved: keep Press Start 2P
+and the look, with tweaks later. The balance targets
 are provisional (20 observed days); see docs/balance.md.
 
 How to tune: change `src/core/params.c` or the content ranges, then run ph-sim with
