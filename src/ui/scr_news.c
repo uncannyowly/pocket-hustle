@@ -36,19 +36,11 @@ void ui_collect_news(Ui *u, Screen after)
 	const Game *g = &u->app->g;
 	int i, n = 0;
 
-	if (u->ann.day != g->day) {		/* the stamp belongs to one day; same-day calls add to it */
-		memset(&u->ann, 0, sizeof u->ann);
-		u->ann.day = g->day;
-	}
 	for (i = 0; i < g->nmsgs && i < MAX_MSGS; i++) {
 		const Msg *m = &g->msgs[i];
 		int k = card_kind(m->kind);
 		Card *cd;
 
-		if (m->kind == M_SPIKE || m->kind == M_CRASH) {
-			if (m->a >= 0 && m->a < NUM_GOODS)
-				u->ann.kind[m->a] = m->kind == M_SPIKE ? PF_SPIKE : PF_CRASH;
-		}
 		if (k < 0)
 			continue;
 		cd = &u->news.cards[n++];
@@ -110,7 +102,8 @@ void news_draw(Ui *u, Canvas *c)
 				s[i] = (char)(s[i] - 'a' + 'A');
 		tx(c, s, X + 12, Y + H - 52, PAL_DIM, 1, TX_LEFT);
 		fmt_money_short(u->app->g.price[cd->good], s, sizeof s);
-		tx(c, s, X + 12, Y + H - 40, ui_price_flag(u, cd->good) == PF_SPIKE ? PAL_HOT : PAL_MINT, 2, TX_LEFT);
+		tx(c, s, X + 12, Y + H - 40, price_flag(&u->app->g, cd->good) == PF_SPIKE ? PAL_HOT : PAL_MINT,
+		   2, TX_LEFT);
 	}
 	last = u->news.i == u->news.n - 1;
 	badge(c, "A", X + W - 12 - 11 - 3 - (last ? 16 : 32), Y + H - 16);

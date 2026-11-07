@@ -62,7 +62,7 @@ const char *err_text(int err);				/* a core Err as a toast */
 
 /* The market (scr_market.c). */
 enum { MKT_MOVE, MKT_FLY, MKT_BANK, MKT_LOAN, MKT_SHOP, MKT_DOC, NUM_MKT_ACTS };	/* its buttons */
-enum { PF_NORMAL, PF_SPIKE, PF_CRASH };
+enum { PF_NORMAL = EV_NONE, PF_SPIKE = EV_SPIKE, PF_CRASH = EV_CRASH };
 void market_draw(Ui *u, Canvas *c);
 void market_press(Ui *u, int pad);
 void market_click(Ui *u, int action, int arg);
@@ -70,11 +70,9 @@ int  bag_list(const Game *g, int out[NUM_GOODS]);	/* the goods held, in order; t
 /* Today's price against what was paid: "+12%", "-99%" (shown range -99..999) or "--" when
  * nobody buys it here or nothing was paid. Returns 1 for gains, -1 for losses, 0 for "--". */
 int  bag_pct(const Game *g, int good, char *buf, size_t n);
-/* PF_SPIKE above anything an ordinary day here can ask (the good's range with this city's
- * bias), PF_CRASH below it, else PF_NORMAL. */
+/* PF_SPIKE or PF_CRASH when the market roll made today's price one (the core's hist_ev),
+ * else PF_NORMAL; PF_NORMAL for a good that is not on sale. */
 int  price_flag(const Game *g, int good);
-/* What the market draws: today's announced spike or crash (u->ann), else price_flag. */
-int  ui_price_flag(const Ui *u, int good);
 
 /* News (scr_news.c), getting around and flying (scr_travel.c). */
 void news_draw(Ui *u, Canvas *c);

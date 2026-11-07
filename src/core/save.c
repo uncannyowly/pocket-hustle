@@ -10,7 +10,7 @@
 
 #include "core/save.h"
 
-#define SAVE_VERSION 2		/* 2: bank fee params and stat */
+#define SAVE_VERSION 3		/* 2: bank fee params and stat; 3: market events per day */
 #define HISCORE_VERSION 1
 #define MAX_FILE (1L << 20)
 
@@ -122,6 +122,9 @@ static void io_game(Io *io, Game *g)
 	for (i = 0; i < NUM_GOODS; i++)
 		for (d = 0; d <= MAX_DAYS; d++)
 			io_i32(io, &g->hist[i][d]);
+	for (i = 0; i < NUM_GOODS; i++)
+		for (d = 0; d <= MAX_DAYS; d++)
+			io_i8(io, &g->hist_ev[i][d]);
 	io_i16(io, &g->tip.day); io_u8(io, &g->tip.loc.city); io_u8(io, &g->tip.loc.hood);
 	io_i8(io, &g->tip.good); io_i8(io, &g->tip.spike);
 	io_i16(io, &g->chase.posse); io_i16(io, &g->chase.cops_left);
@@ -164,7 +167,7 @@ static int game_sane(const Game *g)
 			return 0;
 		carried += g->stash[i];
 		for (d = 0; d <= MAX_DAYS; d++)
-			if (g->hist[i][d] < 0)
+			if (g->hist[i][d] < 0 || g->hist_ev[i][d] < EV_NONE || g->hist_ev[i][d] > EV_CRASH)
 				return 0;
 	}
 	return carried <= g->capacity;

@@ -437,14 +437,30 @@ static void test_chart_text(void)
 	app.g.stash[1] = 12;
 	app.g.stash_paid[1] = 7056;
 	chart_text(&app.g, 1, &t);
-	CHECK_STR(t.have, "YOU HAVE 12, PAID $7,056");
+	CHECK_STR(t.have, "HAVE 12, PAID $588 EACH");	/* the average, and the longest line that fits */
+	app.g.stash[1] = 3;
+	app.g.stash_paid[1] = 1000;		/* 333.33 each */
+	chart_text(&app.g, 1, &t);
+	CHECK_STR(t.have, "HAVE 3, PAID $333 EACH");
+	app.g.stash_paid[1] = 30;
+	chart_text(&app.g, 1, &t);
+	CHECK_STR(t.have, "YOU HAVE 3, PAID $10 EACH");	/* 25 cells: still the full line */
+	app.g.stash_paid[1] = 1000;
+	app.g.stash_paid[1] = 1001;		/* 333.67 rounds up like the sell picker */
+	chart_text(&app.g, 1, &t);
+	CHECK_STR(t.have, "HAVE 3, PAID $334 EACH");
+	app.g.stash[1] = 150;
+	app.g.stash_paid[1] = 150LL * 33000;
+	chart_text(&app.g, 1, &t);
+	CHECK_STR(t.have, "150 AT $33,000 EACH");
 	chart_text(&app.g, 9, &t);
 	CHECK_STR(t.title, "COCAINE PRICES");
 	CHECK_STR(t.range, "USUAL RANGE $12.5K TO $33K");
 }
 
 /* Weed (300 to 1150) over 30 days, on day 3, with a spike on day 1, a crash on day 2 and
- * 700 today. Worked by hand from the mockup: top = niceTop(2000) = 2000, sx(d) = 56 + (d - 1)
+ * 700 today. The colors follow the recorded events, not the band: a 100 that was no crash
+ * and a 2000 that was no spike are plain (checked below). Worked by hand from the mockup: top = niceTop(2000) = 2000, sx(d) = 56 + (d - 1)
  * * 254 / 29, sy(p) = 172 - p * 148 / 2000. */
 static void test_chart_pixels(void)
 {
@@ -454,6 +470,8 @@ static void test_chart_pixels(void)
 	app.g.hist[1][1] = 2000;
 	app.g.hist[1][2] = 100;
 	app.g.hist[1][3] = 700;
+	app.g.hist_ev[1][1] = EV_SPIKE;
+	app.g.hist_ev[1][2] = EV_CRASH;
 	ui.chart_good = 1;
 	go(&ui, SCR_CHART);
 	ui_draw(&ui, &cv);
@@ -464,6 +482,14 @@ static void test_chart_pixels(void)
 	CHECK_EQ(px(65, 165), PAL_MINT);	/* below it: green */
 	CHECK_EQ(px(74, 120), PAL_TEXT);	/* inside it: plain, with the gold ring around */
 	CHECK_EQ(px(78, 120), PAL_GOLD);
+	app.g.hist_ev[1][1] = EV_NONE;		/* the same prices, no events: all plain */
+	app.g.hist_ev[1][2] = EV_NONE;
+	ui_draw(&ui, &cv);
+	CHECK_EQ(px(56, 24), PAL_TEXT);
+	CHECK_EQ(px(65, 165), PAL_TEXT);
+	app.g.hist_ev[1][1] = EV_SPIKE;
+	app.g.hist_ev[1][2] = EV_CRASH;
+	ui_draw(&ui, &cv);
 	CHECK_EQ(px(200, 172), PAL_LINE);	/* the zero line */
 	CHECK_EQ(px(201, 98), PAL_PANEL2);	/* the half line */
 	CHECK_EQ(px(100, 100), PAL_PANEL2);	/* the band's dots: (x + y) even */

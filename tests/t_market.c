@@ -61,6 +61,38 @@ static void test_market_spike_doubles(void)
 	CHECK_EQ(count_msgs(&g, M_SPIKE), NUM_GOODS);
 }
 
+/* The day's event is kept per good beside the price history. */
+static void test_market_events_recorded(void)
+{
+	Params p = test_params();
+	Game g;
+	int i;
+
+	p.spike_permille = 1000;
+	new_test_game(&g, &p, 30);
+	for (i = 0; i < NUM_GOODS; i++)
+		CHECK_EQ(g.hist_ev[i][g.day], EV_SPIKE);
+	CHECK_EQ(g.hist_ev[0][g.day - 1], EV_NONE);
+	p = test_params();
+	p.crash_permille = 1000;
+	new_test_game(&g, &p, 30);
+	for (i = 0; i < NUM_GOODS; i++)
+		CHECK_EQ(g.hist_ev[i][g.day], EV_CRASH);
+	p = test_params();
+	new_test_game(&g, &p, 30);		/* an ordinary day: nothing */
+	for (i = 0; i < NUM_GOODS; i++)
+		CHECK_EQ(g.hist_ev[i][g.day], EV_NONE);
+	p = test_params();
+	p.spike_permille = 1000;
+	p.absent_permille = 1000;
+	p.min_goods = 0;
+	new_test_game(&g, &p, 30);		/* nothing on sale: no event either */
+	for (i = 0; i < NUM_GOODS; i++) {
+		CHECK_EQ(g.price[i], 0);
+		CHECK_EQ(g.hist_ev[i][g.day], EV_NONE);
+	}
+}
+
 static void test_market_history(void)
 {
 	Params p = test_params();
@@ -99,6 +131,7 @@ void tests_market(void)
 	test_market_within_biased_range();
 	test_market_min_goods();
 	test_market_spike_doubles();
+	test_market_events_recorded();
 	test_market_history();
 	test_market_deterministic();
 	test_flavor_independent();

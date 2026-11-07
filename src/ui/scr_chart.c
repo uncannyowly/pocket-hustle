@@ -1,6 +1,6 @@
 /* The price chart: the mockup's drawChart, inChart and niceTop. One good's prices day by day
- * over the whole game, with the good's usual range as a dotted band. Points above the band
- * are pink, below it green. LEFT/RIGHT (or L1/R1) page through the goods; B or SELECT
+ * over the whole game, with the good's usual range as a dotted band. A point the market roll
+ * made a spike (the core's hist_ev) is pink, a crash green. LEFT/RIGHT (or L1/R1) page through the goods; B or SELECT
  * returns to the market. */
 #include <ctype.h>
 #include <stdio.h>
@@ -55,6 +55,7 @@ int64_t chart_top(int64_t v)
 void chart_text(const Game *g, int good, ChartText *t)
 {
 	char a[24], b[24], paid[32];
+	int64_t each;
 	int i;
 
 	memset(t, 0, sizeof *t);
@@ -69,10 +70,16 @@ void chart_text(const Game *g, int good, ChartText *t)
 		snprintf(t->have, sizeof t->have, "YOU HAVE NONE");
 		return;
 	}
-	fmt_money_short(g->stash_paid[good], paid, sizeof paid);
-	snprintf(t->have, sizeof t->have, "YOU HAVE %d, PAID %s", (int)g->stash[good], paid);
-	if (strlen(t->have) > 24)		/* keep clear of the CRASH key */
-		snprintf(t->have, sizeof t->have, "HAVE %d, PAID %s", (int)g->stash[good], paid);
+	each = g->stash_paid[good] / g->stash[good];	/* stash_paid is the total: the rounded average */
+	if ((g->stash_paid[good] % g->stash[good]) * 2 >= g->stash[good])
+		each++;
+	fmt_money_short(each, paid, sizeof paid);
+	/* The longest line that stays clear of the CRASH key (25 cells). */
+	snprintf(t->have, sizeof t->have, "YOU HAVE %d, PAID %s EACH", (int)g->stash[good], paid);
+	if (strlen(t->have) > 25)
+		snprintf(t->have, sizeof t->have, "HAVE %d, PAID %s EACH", (int)g->stash[good], paid);
+	if (strlen(t->have) > 25)
+		snprintf(t->have, sizeof t->have, "%d AT %s EACH", (int)g->stash[good], paid);
 }
 
 void chart_open(Ui *u, int good)
@@ -154,11 +161,13 @@ void chart_draw(Ui *u, Canvas *c)
 		np++;
 	}
 	for (i = 1; i <= today; i++) {
-		int p = g->hist[good][i];
+		int p = g->hist[good][i], ev;
 
 		if (p <= 0)
 			continue;
-		cv_rect(c, sx(i, days) - 1, sy(p, top) - 1, 3, 3, p > hi ? PAL_HOT : p < lo ? PAL_MINT : PAL_TEXT);
+		ev = g->hist_ev[good][i];
+		cv_rect(c, sx(i, days) - 1, sy(p, top) - 1, 3, 3,
+			ev == EV_SPIKE ? PAL_HOT : ev == EV_CRASH ? PAL_MINT : PAL_TEXT);
 		last_d = i;
 		last_p = p;
 	}

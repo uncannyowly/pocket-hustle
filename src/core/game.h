@@ -17,6 +17,7 @@ enum { MAX_DAYS = 90, MAX_MSGS = 32 };
 
 typedef enum { OK = 0, E_PHASE = -1, E_BAD_ARG = -2, E_NOT_SOLD = -3, E_NO_CASH = -4,
 	       E_NO_SPACE = -5, E_NO_STOCK = -6, E_LIMIT = -7, E_FEE = -8 } Err;
+typedef enum { EV_NONE, EV_SPIKE, EV_CRASH } MarketEvent;	/* a good's market event on a day */
 typedef enum { PH_TRADING, PH_CHASE, PH_OVER } Phase;
 typedef enum { END_NONE, END_DAYS_UP, END_DEAD, END_QUIT } EndReason;
 typedef enum { CH_RUN, CH_FIGHT, CH_SURRENDER } ChaseAction;
@@ -48,6 +49,7 @@ typedef struct {
 	uint8_t gear_owned[MAX_GEAR];
 	int32_t price[NUM_GOODS];		/* today's market here, 0 = not sold */
 	int32_t hist[NUM_GOODS][MAX_DAYS + 1];	/* price seen here each day, 0 = none */
+	int8_t hist_ev[NUM_GOODS][MAX_DAYS + 1];	/* MarketEvent of each day's price, 0 = none */
 	Tip tip;
 	Chase chase;
 	Phase phase;

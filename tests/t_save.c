@@ -196,6 +196,29 @@ static void test_save_rejects_out_of_range_values(void)
 	CHECK_EQ(save_read(&target, p1), 0);	/* an honest save still loads */
 }
 
+static void test_save_keeps_events(void)
+{
+	char p1[128];
+	static Game g, g2;
+
+	path_in(p1, sizeof p1, "ev.sav");
+	played_game(&g);
+	g.hist_ev[2][1] = EV_SPIKE;
+	g.hist_ev[3][2] = EV_CRASH;
+	CHECK_EQ(save_write(&g, p1), 0);
+	memset(&g2, 0, sizeof g2);
+	CHECK_EQ(save_read(&g2, p1), 0);
+	CHECK(memcmp(g.hist_ev, g2.hist_ev, sizeof g.hist_ev) == 0);
+	CHECK_EQ(g2.hist_ev[2][1], EV_SPIKE);
+	CHECK_EQ(g2.hist_ev[3][2], EV_CRASH);
+	g.hist_ev[4][3] = 3;			/* not an event: refused */
+	CHECK_EQ(save_write(&g, p1), 0);
+	CHECK_EQ(save_read(&g2, p1), -2);
+	g.hist_ev[4][3] = -1;
+	CHECK_EQ(save_write(&g, p1), 0);
+	CHECK_EQ(save_read(&g2, p1), -2);
+}
+
 static void test_missing_save(void)
 {
 	char p1[128];
@@ -302,6 +325,7 @@ void tests_save(void)
 	test_truncated_save();
 	test_bitflip_save();
 	test_other_version();
+	test_save_keeps_events();
 	test_missing_save();
 	test_save_rejects_out_of_range_values();
 	test_hiscores_order();

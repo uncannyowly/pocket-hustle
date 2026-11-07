@@ -53,29 +53,12 @@ int bag_pct(const Game *g, int good, char *buf, size_t n)
 
 int price_flag(const Game *g, int good)
 {
-	int64_t bias, lo, hi;
+	int ev;
 
-	if (g->price[good] <= 0 || g->loc.city >= NUM_CITIES)
+	if (good < 0 || good >= NUM_GOODS || g->price[good] <= 0 || g->day < 0 || g->day > MAX_DAYS)
 		return PF_NORMAL;
-	/* An ordinary day here asks lo..hi scaled by this city's bias, at least 1 (market.c). */
-	bias = CITIES[g->loc.city].bias_pct[good];
-	lo = (int64_t)GOODS[good].lo * bias / 100;
-	hi = (int64_t)GOODS[good].hi * bias / 100;
-	if (lo < 1)
-		lo = 1;
-	if (hi < 1)
-		hi = 1;
-	return g->price[good] > hi ? PF_SPIKE : g->price[good] < lo ? PF_CRASH : PF_NORMAL;
-}
-
-int ui_price_flag(const Ui *u, int good)
-{
-	const Game *g = &u->app->g;
-
-	if (good >= 0 && good < NUM_GOODS && g->price[good] > 0 && u->ann.day == g->day &&
-	    u->ann.kind[good] != PF_NORMAL)
-		return u->ann.kind[good];
-	return price_flag(g, good);
+	ev = g->hist_ev[good][g->day];		/* what the market roll applied today; saved with the game */
+	return ev == EV_SPIKE ? PF_SPIKE : ev == EV_CRASH ? PF_CRASH : PF_NORMAL;
 }
 
 /* Keeps the highlights on something that exists, whatever changed underneath. */
@@ -101,7 +84,7 @@ static void draw_goods(Ui *u, Canvas *c)
 
 	panel(c, 0, 82, 168, 116, "MARKET", u->panel == 0, NULL);
 	for (i = 0; i < NUM_GOODS; i++) {
-		int y = 96 + i * 10, sel = u->mrow == i, on = sel && u->panel == 0, flag = ui_price_flag(u, i);
+		int y = 96 + i * 10, sel = u->mrow == i, on = sel && u->panel == 0, flag = price_flag(g, i);
 		int32_t p = g->price[i];
 		uint32_t pc = !p ? PAL_FAINT : on ? PAL_WHITE : flag == PF_SPIKE ? PAL_HOT :
 			      flag == PF_CRASH ? PAL_MINT : PAL_TEXT;

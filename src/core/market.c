@@ -31,18 +31,22 @@ void market_roll(Game *g)
 {
 	const Params *p = &g->p;
 	int i, priced = 0, tipped = tip_good_here(g);
+	int8_t ev[NUM_GOODS];
 
 	for (i = 0; i < NUM_GOODS; i++) {
 		int32_t price = 0;
 
+		ev[i] = EV_NONE;
 		if (i == tipped) {
 			price = base_price(g, i);
 			if (g->tip.spike) {
 				price = scale(price, rng_range(&g->rng, p->spike_lo_pct, p->spike_hi_pct));
+				ev[i] = EV_SPIKE;
 				game_msg(g, M_SPIKE, (int16_t)i, 0, 0, price);
 				g->stats.spikes_seen++;
 			} else {
 				price = scale(price, rng_range(&g->rng, p->crash_lo_pct, p->crash_hi_pct));
+				ev[i] = EV_CRASH;
 				game_msg(g, M_CRASH, (int16_t)i, 0, 0, price);
 				g->stats.crashes_seen++;
 			}
@@ -50,10 +54,12 @@ void market_roll(Game *g)
 			price = base_price(g, i);
 			if (rng_permille(&g->rng, p->spike_permille)) {
 				price = scale(price, rng_range(&g->rng, p->spike_lo_pct, p->spike_hi_pct));
+				ev[i] = EV_SPIKE;
 				game_msg(g, M_SPIKE, (int16_t)i, 0, 0, price);
 				g->stats.spikes_seen++;
 			} else if (rng_permille(&g->rng, p->crash_permille)) {
 				price = scale(price, rng_range(&g->rng, p->crash_lo_pct, p->crash_hi_pct));
+				ev[i] = EV_CRASH;
 				game_msg(g, M_CRASH, (int16_t)i, 0, 0, price);
 				g->stats.crashes_seen++;
 			}
@@ -74,8 +80,10 @@ void market_roll(Game *g)
 		}
 	}
 
-	for (i = 0; i < NUM_GOODS; i++)
+	for (i = 0; i < NUM_GOODS; i++) {
 		g->hist[i][g->day] = g->price[i];
+		g->hist_ev[i][g->day] = g->price[i] > 0 ? ev[i] : EV_NONE;
+	}
 	if (tipped >= 0)
 		memset(&g->tip, 0, sizeof g->tip);
 }

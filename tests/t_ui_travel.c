@@ -404,42 +404,34 @@ static void test_goons_kill_on_arrival(void)
 	CHECK_EQ(app.has_game, 0);
 }
 
+/* The market colors today's prices by the core's record of what the roll applied, so a spike
+ * inside the usual range still shows, and a high price that was not one does not. */
 static void test_announced_spike_inside_range(void)
 {
-	Msg m;
 	int y;
 
 	ui_test_setup(&app, &ui, 30);		/* OKC Weed usually 180..690 */
 	app.g.price[1] = 400;
 	app.g.price[5] = 3000;			/* Acid, usually 1800..5000 */
-	CHECK_EQ(ui_price_flag(&ui, 1), PF_NORMAL);
-	memset(&m, 0, sizeof m);
-	m.kind = M_SPIKE;
-	m.a = 1;
-	app.g.msgs[0] = m;
-	m.kind = M_CRASH;
-	m.a = 5;
-	app.g.msgs[1] = m;
-	app.g.nmsgs = 2;
-	ui_collect_news(&ui, SCR_MARKET);
-	CHECK_EQ(ui_price_flag(&ui, 1), PF_SPIKE);
-	CHECK_EQ(ui_price_flag(&ui, 5), PF_CRASH);
-	CHECK_EQ(ui_price_flag(&ui, 4), PF_NORMAL);	/* not announced: the range rule */
-	app.g.price[4] = 9999999;
-	CHECK_EQ(ui_price_flag(&ui, 4), PF_SPIKE);
-	app.g.price[4] = 1;
-	CHECK_EQ(ui_price_flag(&ui, 4), PF_CRASH);
-	press_seq(&ui, "A A");
-	CHECK_EQ(ui.scr, SCR_MARKET);
+	app.g.price[4] = 9999999;		/* far above any range, but nobody's spike */
+	CHECK_EQ(price_flag(&app.g, 1), PF_NORMAL);
+	CHECK_EQ(price_flag(&app.g, 4), PF_NORMAL);
+	app.g.hist_ev[1][app.g.day] = EV_SPIKE;
+	app.g.hist_ev[5][app.g.day] = EV_CRASH;
+	CHECK_EQ(price_flag(&app.g, 1), PF_SPIKE);
+	CHECK_EQ(price_flag(&app.g, 5), PF_CRASH);
+	CHECK_EQ(price_flag(&app.g, 4), PF_NORMAL);
 	ui.mrow = 0;				/* the highlighted row draws its arrow white */
 	ui_draw(&ui, &cv);
 	y = 96 + 1 * 10;
-	CHECK_EQ(px(160, y + 1), PAL_HOT);		/* the announced spike's arrow tip */
+	CHECK_EQ(px(160, y + 1), PAL_HOT);	/* the spike's arrow tip */
 	y = 96 + 5 * 10;
 	CHECK_EQ(px(160, y + 1 + 0), PAL_MINT);
-	app.g.day++;				/* a new day, or a resume: back to the range rule */
-	CHECK_EQ(ui_price_flag(&ui, 1), PF_NORMAL);
-	CHECK_EQ(ui_price_flag(&ui, 5), PF_NORMAL);
+	y = 96 + 4 * 10;
+	CHECK(px(160, y + 1) != PAL_HOT && px(160, y + 1) != PAL_MINT);
+	app.g.day++;				/* tomorrow's roll has recorded nothing yet */
+	CHECK_EQ(price_flag(&app.g, 1), PF_NORMAL);
+	CHECK_EQ(price_flag(&app.g, 5), PF_NORMAL);
 }
 
 void tests_ui_travel(void)

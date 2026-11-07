@@ -25,7 +25,6 @@ typedef struct Ui {
 	int row;				/* the highlighted row on list screens */
 	struct { PickKind kind; int good; int64_t q; int sel; } pk;
 	struct { Card cards[MAX_MSGS + 2]; int n, i; Screen after; } news;
-	struct { int16_t day; uint8_t kind[NUM_GOODS]; } ann;	/* goods today's news called spike/crash (PF_*), by game day */
 	char chase_log[4][TX_LINE_MAX * 2]; int chase_done;
 	struct { int zone, len, kr, kc, shift; char name[16]; } ng;
 	int chart_good, scores_tab, title_row, menu_row;
@@ -46,7 +45,7 @@ void ui_click(Ui *u, int x, int y);
  * the market. */
 void ui_after_action(Ui *u, int16_t day_before, Phase phase_before);
 /* Turns g->msgs into news cards and shows them over the market, then goes to `after`; with
- * no cards, goes straight there. Also remembers the goods the news called spike or crash. */
+ * no cards, goes straight there. */
 void ui_collect_news(Ui *u, Screen after);
 void ui_tick(Ui *u);				/* 20 Hz */
 void ui_draw(Ui *u, Canvas *c);			/* rebuilds hits for the topmost screen only */

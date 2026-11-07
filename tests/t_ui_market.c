@@ -580,26 +580,31 @@ static void test_core_refusal_toasts(void)
 	CHECK(heard(SFX_DENY));
 }
 
+/* The flag is what the market roll recorded for today (hist_ev), never a guess from the price. */
 static void test_price_flags(void)
 {
-	ui_test_setup(&app, &ui, 30);		/* Oklahoma City: Weed usually 180..690 */
-	app.g.price[1] = 690;
+	ui_test_setup(&app, &ui, 30);		/* Oklahoma City */
+	app.g.price[1] = 691;			/* over the usual range, but ordinary today */
 	CHECK_EQ(price_flag(&app.g, 1), PF_NORMAL);
-	app.g.price[1] = 691;
+	app.g.hist_ev[1][app.g.day] = EV_SPIKE;
 	CHECK_EQ(price_flag(&app.g, 1), PF_SPIKE);
-	app.g.price[1] = 180;
-	CHECK_EQ(price_flag(&app.g, 1), PF_NORMAL);
-	app.g.price[1] = 179;
+	app.g.price[1] = 400;			/* a spike inside the range is still one */
+	CHECK_EQ(price_flag(&app.g, 1), PF_SPIKE);
+	app.g.hist_ev[1][app.g.day] = EV_CRASH;
 	CHECK_EQ(price_flag(&app.g, 1), PF_CRASH);
-	app.g.price[1] = 0;
+	app.g.price[1] = 0;			/* not on sale: no flag */
 	CHECK_EQ(price_flag(&app.g, 1), PF_NORMAL);
-	app.g.price[9] = 44550;			/* over Cocaine's base $33,000, ordinary here */
+	app.g.price[9] = 44551;			/* far over Cocaine's base $33,000: ordinary */
 	CHECK_EQ(price_flag(&app.g, 9), PF_NORMAL);
-	app.g.price[9] = 44551;
-	CHECK_EQ(price_flag(&app.g, 9), PF_SPIKE);
+	CHECK_EQ(price_flag(&app.g, -1), PF_NORMAL);
+	CHECK_EQ(price_flag(&app.g, NUM_GOODS), PF_NORMAL);
 
-	app.g.price[3] = 5000;			/* Ketamine, usually 660..2200 here */
-	app.g.price[5] = 900;			/* Acid, usually 1800..5000 */
+	app.g.price[1] = 400;
+	app.g.hist_ev[1][app.g.day] = EV_NONE;
+	app.g.price[3] = 5000;
+	app.g.hist_ev[3][app.g.day] = EV_SPIKE;
+	app.g.price[5] = 900;
+	app.g.hist_ev[5][app.g.day] = EV_CRASH;
 	ui_draw(&ui, &cv);
 	CHECK_EQ(px(160, 127), PAL_HOT);	/* row 3's up arrow at (158, 127), its tip */
 	CHECK_EQ(px(160, 147), PAL_MINT);	/* row 5's down arrow */
