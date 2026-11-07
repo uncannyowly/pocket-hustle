@@ -6,5 +6,6 @@ void tests_rng(void);
 void tests_content(void);
 void tests_game(void);
 void tests_market(void);
+void tests_trade(void);
 
 #endif

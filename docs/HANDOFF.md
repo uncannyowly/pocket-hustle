@@ -52,3 +52,4 @@ New source files are picked up by the Makefile's wildcards; new test modules nee
 Task 1 done: repo, test harness, PCG32 random numbers, copy check, ARM check.
 Task 2 done: first content draft (src/content), awaiting Seth's name review.
 Task 3 done: Params (src/core/params.c), Game state, message log, daily market.
+Task 4 done: buying and selling (src/core/trade.c).

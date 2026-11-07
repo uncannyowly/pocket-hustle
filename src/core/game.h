@@ -60,4 +60,10 @@ typedef struct {
 int     game_new(Game *g, const Params *p, uint64_t seed, int days, const char *name);
 int64_t game_net_worth(const Game *g);		/* cash + bank - all debts */
 
+/* Trading at today's market (PH_TRADING only). */
+int     game_buy(Game *g, int good, int32_t qty);
+int     game_sell(Game *g, int good, int32_t qty);
+int32_t game_max_buy(const Game *g, int good);	/* 0 if not sold here */
+int32_t game_carried(const Game *g);
+
 #endif
