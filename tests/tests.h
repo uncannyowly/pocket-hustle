@@ -24,5 +24,6 @@ void tests_input(void);
 void tests_app(void);
 void tests_ui_market(void);
 void tests_ui_travel(void);
+void tests_ui_money(void);
 
 #endif

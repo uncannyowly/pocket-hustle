@@ -1,7 +1,8 @@
-/* The amount picker, an overlay: the mockup's drawPicker, inPicker and PK table. This is the
- * quantity half (PK_BUY, PK_SELL, PK_HEAL): UP/DOWN step 1, LEFT/RIGHT step 10, Y is the
- * most you can, X is zero, A confirms through the core and B backs out. The money kinds'
- * digit dial comes with the bank (Task 8). */
+/* The amount picker, an overlay: the mockup's drawPicker, inPicker and PK table. Quantities
+ * (PK_BUY, PK_SELL, PK_HEAL): UP/DOWN step 1, LEFT/RIGHT step 10. Money (PK_DEPOSIT,
+ * PK_WITHDRAW, PK_BORROW, PK_REPAY) uses the digit dial: LEFT/RIGHT pick a digit, UP/DOWN
+ * add or remove its place value. Y is the most you can, X is zero, A confirms through the
+ * core and B backs out. */
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -13,6 +14,11 @@
 
 enum { BOX_X = 36, BOX_Y = 48, BOX_W = 248, BOX_H = 144,
        INFO_MAX = 30 };		/* 30 cells fit inside the box with a margin */
+
+static int is_money(PickKind k)
+{
+	return k == PK_DEPOSIT || k == PK_WITHDRAW || k == PK_BORROW || k == PK_REPAY;
+}
 
 static int good_ok(int good)
 {
@@ -34,6 +40,11 @@ static void picker_close(Ui *u)
 	go(u, u->back);
 }
 
+static int city_of(const Game *g)
+{
+	return g->loc.city < NUM_CITIES ? g->loc.city : 0;
+}
+
 int64_t picker_max(const Ui *u)
 {
 	const Game *g = &u->app->g;
@@ -50,9 +61,32 @@ int64_t picker_max(const Ui *u)
 		if (g->p.hospital_per_hp > 0 && g->cash / g->p.hospital_per_hp < m)
 			m = g->cash / g->p.hospital_per_hp;
 		return m > 0 ? m : 0;
-	default:
-		return 0;
+	case PK_DEPOSIT:
+		return g->cash > 0 ? g->cash : 0;
+	case PK_WITHDRAW:
+		return g->bank > 0 ? g->bank : 0;
+	case PK_BORROW:
+		m = CITIES[city_of(g)].lender_max - g->debt[city_of(g)];
+		return m > 0 ? m : 0;
+	case PK_REPAY:
+		m = g->debt[city_of(g)];
+		if (g->cash < m)
+			m = g->cash;
+		return m > 0 ? m : 0;
 	}
+	return 0;
+}
+
+/* The digits of the dial: the decimal length of the most you can pick, at least 1. */
+static int dial_digits(int64_t max)
+{
+	int n = 1;
+
+	while (max >= 10) {
+		max /= 10;
+		n++;
+	}
+	return n;
 }
 
 static void upper(char *dst, size_t n, const char *src)
@@ -118,6 +152,98 @@ static void heal_text(const Game *g, int64_t q, PickText *t)
 	snprintf(t->info, sizeof t->info, "Health %d > %lld.", (int)g->health, (long long)(g->health + q));
 }
 
+/* "BANK $200 > $1,170": the full amounts when they fit the box, else the short forms. */
+static void change_line(char *out, size_t n, const char *label, int64_t from, int64_t to)
+{
+	char a[28], b[28];
+
+	fmt_money(from, a, sizeof a);
+	fmt_money(to, b, sizeof b);
+	snprintf(out, n, "%s %s > %s", label, a, b);
+	if (strlen(out) > INFO_MAX) {
+		fmt_money_short(from, a, sizeof a);
+		fmt_money_short(to, b, sizeof b);
+		snprintf(out, n, "%s %s > %s", label, a, b);
+	}
+}
+
+static void atm_unit(const Game *g, PickText *t)
+{
+	char pct[16];
+
+	if (game_bank_branch_here(g)) {
+		snprintf(t->unit, sizeof t->unit, "BRANCH, NO FEE");
+		return;
+	}
+	rate_text(g->p.bank_fee_pct * 100, pct, sizeof pct);
+	snprintf(t->unit, sizeof t->unit, "ATM FEE %s", pct);
+}
+
+static void atm_info(const Game *g, int64_t q, PickText *t)
+{
+	char pct[16], fee[28], min[28];
+
+	if (game_bank_branch_here(g)) {
+		snprintf(t->info, sizeof t->info, "Branch here. No fee.");
+		return;
+	}
+	rate_text(g->p.bank_fee_pct * 100, pct, sizeof pct);
+	fmt_money(game_bank_fee(g, q), fee, sizeof fee);
+	fmt_money(g->p.bank_fee_min, min, sizeof min);
+	snprintf(t->info, sizeof t->info, "Fee %s. %s, at least %s.", fee, pct, min);
+	if (strlen(t->info) > INFO_MAX)
+		snprintf(t->info, sizeof t->info, "Fee %s. %s, min %s.", fee, pct, min);
+}
+
+/* What lands after the ATM fee; nothing when the amount does not cover it. */
+static int64_t net_of(const Game *g, int64_t q)
+{
+	int64_t fee = game_bank_fee(g, q);
+
+	return q > fee ? q - fee : 0;
+}
+
+static void money_text(const Game *g, PickKind kind, int64_t q, PickText *t)
+{
+	int c = city_of(g);
+	int64_t owe = g->debt[c], room = CITIES[c].lender_max - owe;
+	char a[28], b[28], pct[16];
+
+	if (room < 0)
+		room = 0;
+	switch (kind) {
+	case PK_DEPOSIT:
+		snprintf(t->title, sizeof t->title, "DEPOSIT");
+		atm_unit(g, t);
+		change_line(t->total, sizeof t->total, "BANK", g->bank, g->bank + net_of(g, q));
+		atm_info(g, q, t);
+		t->total_col = PAL_MINT;
+		break;
+	case PK_WITHDRAW:
+		snprintf(t->title, sizeof t->title, "WITHDRAW");
+		atm_unit(g, t);
+		change_line(t->total, sizeof t->total, "CASH", g->cash, g->cash + net_of(g, q));
+		atm_info(g, q, t);
+		break;
+	case PK_BORROW:
+		snprintf(t->title, sizeof t->title, "BORROW");
+		rate_text(CITIES[c].lender_rate_bp, pct, sizeof pct);
+		snprintf(t->unit, sizeof t->unit, "%s A DAY", pct);
+		change_line(t->total, sizeof t->total, "OWE", owe, owe + q);
+		fmt_money(CITIES[c].lender_max, a, sizeof a);
+		fmt_money(room, b, sizeof b);
+		snprintf(t->info, sizeof t->info, "Limit %s. %s more.", a, b);
+		t->total_col = PAL_CORAL;
+		break;
+	default:
+		snprintf(t->title, sizeof t->title, "REPAY");
+		change_line(t->total, sizeof t->total, "OWE", owe, owe - q);
+		snprintf(t->info, sizeof t->info, "Pay %d%%+ to reset the clock.", (int)g->p.min_payment_pct);
+		t->total_col = PAL_CORAL;
+		break;
+	}
+}
+
 void picker_text(const Ui *u, PickText *t)
 {
 	const Game *g = &u->app->g;
@@ -130,6 +256,8 @@ void picker_text(const Ui *u, PickText *t)
 		sell_text(g, u->pk.good, u->pk.q, t);
 	else if (u->pk.kind == PK_HEAL)
 		heal_text(g, u->pk.q, t);
+	else if (is_money(u->pk.kind))
+		money_text(g, u->pk.kind, u->pk.q, t);
 }
 
 /* The number with its four arrows, and their click regions. */
@@ -153,6 +281,48 @@ static void draw_quantity(Ui *u, Canvas *c)
 	hit(u, BOX_X + 16, ny - 4, 40, 34, HIT_PAD, PAD_LEFT);
 	hit(u, BOX_X + BOX_W - 56, ny - 4, 40, 34, HIT_PAD, PAD_RIGHT);
 	tx(c, "Up/Down 1   Left/Right 10", cx, BOX_Y + 108, PAL_DIM, 1, TX_CENTER);
+}
+
+/* "$3,412" at 2x with the selected digit boxed and arrowed; every digit has an upper half
+ * (adds its place value) and a lower half (takes it away) to click. */
+static void draw_dial(Ui *u, Canvas *c, int64_t max)
+{
+	int nd = dial_digits(max), sc, cw, ncell, cx0, ty = BOX_Y + 32, i;
+	char s[24], ch[2] = {0, 0};
+
+	if (u->pk.sel > nd - 1)
+		u->pk.sel = nd - 1;
+	if (u->pk.sel < 0)
+		u->pk.sel = 0;
+	snprintf(s, sizeof s, "%0*lld", nd, (long long)u->pk.q);
+	sc = nd > 9 ? 1 : 2;
+	cw = 8 * sc + (sc == 2 ? 2 : 1);
+	ncell = 1 + nd + (nd - 1) / 3;		/* the $, the digits and the commas */
+	cx0 = BOX_X + ((BOX_W - ncell * cw) >> 1);
+	ch[0] = '$';
+	tx(c, ch, cx0, ty, PAL_GOLD, sc, TX_LEFT);
+	cx0 += cw;
+	for (i = 0; i < nd; i++) {
+		int d = nd - 1 - i, on = d == u->pk.sel, gw = 8 * sc, hh = (8 * sc + 24) >> 1;
+
+		if (on) {
+			cv_rect(c, cx0 - 2, ty - 3, gw + 4, 8 * sc + 6, PAL_HOT);
+			cv_tri(c, cx0 + 1, ty - 6, cx0 + gw - 1, ty - 6, cx0 + (gw >> 1), ty - 11, PAL_GOLD);
+			cv_tri(c, cx0 + 1, ty + 8 * sc + 5, cx0 + gw - 1, ty + 8 * sc + 5, cx0 + (gw >> 1),
+			       ty + 8 * sc + 10, PAL_GOLD);
+		}
+		ch[0] = s[i];
+		tx(c, ch, cx0, ty, on ? PAL_WHITE : PAL_TEXT, sc, TX_LEFT);
+		hit(u, cx0 - 2, ty - 12, gw + 4, hh, HIT_DIAL_UP, d);
+		hit(u, cx0 - 2, ty - 12 + hh, gw + 4, hh, HIT_DIAL_DOWN, d);
+		cx0 += cw;
+		if (d > 0 && d % 3 == 0) {
+			ch[0] = ',';
+			tx(c, ch, cx0, ty, PAL_DIM, sc, TX_LEFT);
+			cx0 += cw;
+		}
+	}
+	tx(c, "Left/Right picks a digit", BOX_X + (BOX_W >> 1), BOX_Y + 108, PAL_DIM, 1, TX_CENTER);
 }
 
 /* Y Max, X Zero, A OK, B Back, centered along the bottom; each one clickable. */
@@ -190,7 +360,10 @@ void picker_draw(Ui *u, Canvas *c)
 	tx(c, t.title, BOX_X + 6, BOX_Y + 5, PAL_GOLD, 1, TX_LEFT);
 	if (t.unit[0])
 		tx(c, t.unit, BOX_X + BOX_W - 6, BOX_Y + 5, PAL_DIM, 1, TX_RIGHT);
-	draw_quantity(u, c);
+	if (is_money(u->pk.kind))
+		draw_dial(u, c, max);
+	else
+		draw_quantity(u, c);
 	tx(c, t.total, BOX_X + (BOX_W >> 1), BOX_Y + 70, t.total_col, 1, TX_CENTER);
 	tx(c, t.info, BOX_X + (BOX_W >> 1), BOX_Y + 82, PAL_DIM, 1, TX_CENTER);
 	cv_rect(c, BOX_X + 24, BOX_Y + 96, BOX_W - 48, 4, PAL_FAINT);
@@ -205,6 +378,49 @@ void picker_draw(Ui *u, Canvas *c)
 		cv_rect(c, BOX_X + 24, BOX_Y + 96, (int)((2 * (BOX_W - 48) * q + m) / (2 * m)), 4, PAL_GOLD);
 	}
 	draw_keys(u, c);
+}
+
+/* The money kinds' ok, through the core. The toast says what moved and what the ATM took. */
+static int money_confirm(Ui *u, char *msg, size_t n)
+{
+	Game *g = &u->app->g;
+	int64_t q = u->pk.q, fee = game_bank_fee(g, q);
+	int c = city_of(g), r;
+	char amt[28], f[28];
+
+	fmt_money(q, amt, sizeof amt);
+	fmt_money(fee, f, sizeof f);
+	switch (u->pk.kind) {
+	case PK_DEPOSIT:
+		r = game_deposit(g, q);
+		if (r == OK && fee > 0)
+			snprintf(msg, n, "Deposited %s, minus a %s ATM fee.", amt, f);
+		else if (r == OK)
+			snprintf(msg, n, "Deposited %s.", amt);
+		break;
+	case PK_WITHDRAW:
+		r = game_withdraw(g, q);
+		if (r == OK && fee > 0)
+			snprintf(msg, n, "Took out %s, minus a %s ATM fee.", amt, f);
+		else if (r == OK)
+			snprintf(msg, n, "Took out %s.", amt);
+		break;
+	case PK_BORROW:
+		r = game_borrow(g, q);
+		if (r == OK)
+			snprintf(msg, n, "%s hands you %s, smiling.", CITIES[c].lender, amt);
+		break;
+	default:
+		r = game_repay(g, q);
+		if (r == OK && g->debt[c] > 0) {
+			fmt_money(g->debt[c], f, sizeof f);
+			snprintf(msg, n, "Paid %s. %s to go.", amt, f);
+		} else if (r == OK) {
+			snprintf(msg, n, "Paid in full. %s looks almost sad.", CITIES[c].lender);
+		}
+		break;
+	}
+	return r;
 }
 
 /* The PK table's ok: through the core, then a toast that says what happened. */
@@ -233,7 +449,8 @@ static void confirm(Ui *u)
 		r = game_heal(g, q);
 		if (r == OK)
 			snprintf(msg, sizeof msg, "The doctor patches you up. (+%d health)", (int)q);
-	}
+	} else
+		r = money_confirm(u, msg, sizeof msg);
 	picker_close(u);
 	if (r != OK) {
 		toast(u, err_text(r));
@@ -271,7 +488,25 @@ void picker_press(Ui *u, int pad)
 		q = max;
 	else if (pad == PAD_X)
 		q = 0;
-	else if (pad == PAD_UP)
+	else if (is_money(u->pk.kind)) {
+		int nd = dial_digits(max), sel = u->pk.sel > nd - 1 ? nd - 1 : u->pk.sel;
+		int64_t step = 1;
+		int i;
+
+		for (i = 0; i < sel; i++)
+			step *= 10;
+		if (pad == PAD_UP)
+			q = max - q > step ? q + step : max;
+		else if (pad == PAD_DOWN)
+			q = q > step ? q - step : 0;
+		else if (pad == PAD_LEFT)
+			sel = sel + 1 < nd ? sel + 1 : nd - 1;
+		else if (pad == PAD_RIGHT)
+			sel = sel > 0 ? sel - 1 : 0;
+		else
+			return;
+		u->pk.sel = sel;
+	} else if (pad == PAD_UP)
 		q = q + 1 < max ? q + 1 : max;
 	else if (pad == PAD_DOWN)
 		q = q > 1 ? q - 1 : 0;
@@ -283,4 +518,13 @@ void picker_press(Ui *u, int pad)
 		return;
 	u->pk.q = q;
 	play(u, SFX_MOVE);
+}
+
+/* A click on a dial digit: pick it, then step it up or down like the buttons. */
+void picker_click(Ui *u, int action, int arg)
+{
+	if (action != HIT_DIAL_UP && action != HIT_DIAL_DOWN)
+		return;
+	u->pk.sel = arg;
+	ui_press(u, action == HIT_DIAL_UP ? PAD_UP : PAD_DOWN);
 }

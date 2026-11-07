@@ -447,9 +447,9 @@ static void test_actions_still_unwired(void)
 	int i;
 
 	ui_test_setup(&app, &ui, 30);
-	press_seq(&ui, "R1 R1 R R");
+	press_seq(&ui, "R1 R1 R R R R");
 	snap();
-	for (i = MKT_BANK; i <= MKT_SHOP; i++) {
+	for (i = MKT_SHOP; i <= MKT_SHOP; i++) {
 		CHECK_EQ(ui.act, i);
 		drain();
 		press_seq(&ui, "A");

@@ -31,6 +31,9 @@ enum {
 	HIT_MARKET_ACT,		/* arg: MKT_* */
 	HIT_MOVE_ROW,		/* arg: a hood */
 	HIT_FLY_ROW,		/* arg: a row of the flight list */
+	HIT_MONEY_BTN,		/* arg: 0 or 1, the left or right button of the bank or the lender */
+	HIT_DIAL_UP,		/* arg: a digit of the money dial; adds 10^digit */
+	HIT_DIAL_DOWN,		/* arg: a digit of the money dial; removes 10^digit */
 };
 
 /* Chrome. */
@@ -85,11 +88,27 @@ void fly_press(Ui *u, int pad);
 void fly_click(Ui *u, int action, int arg);
 int  fly_city(const Game *g, int row);	/* the city on row 0..5 of the flight list: every city but this one */
 
+/* The bank and the loan shark (scr_money.c). The text the screens draw, for tests to read. */
+typedef struct { char head[16], tag[64], blurb[72]; uint32_t tag_col; } BankText;
+typedef struct { char name[24], rate[48], limit[48], owed[32], paid[48], warn[128]; int overdue; } LenderText;
+void rate_text(int32_t bp, char *buf, size_t n);	/* basis points as "9.5%" or "7%" */
+void bank_text(const Game *g, BankText *t);
+void lender_text(const Game *g, LenderText *t);		/* paid is "" while nothing is owed here */
+void bank_open(Ui *u);					/* the BANK button */
+void bank_draw(Ui *u, Canvas *c);
+void bank_press(Ui *u, int pad);
+void bank_click(Ui *u, int action, int arg);
+void lender_open(Ui *u);				/* the LOAN button */
+void lender_draw(Ui *u, Canvas *c);
+void lender_press(Ui *u, int pad);
+void lender_click(Ui *u, int action, int arg);
+
 /* The amount picker (scr_picker.c): quantities step 1 and 10, money uses the digit dial. */
-typedef struct { char title[32], unit[40], total[64], info[64]; uint32_t total_col; } PickText;
+typedef struct { char title[32], unit[48], total[96], info[96]; uint32_t total_col; } PickText;
 void    picker_open(Ui *u, PickKind kind, int good, Screen back);	/* good: -1 if none */
 void    picker_draw(Ui *u, Canvas *c);
 void    picker_press(Ui *u, int pad);
+void    picker_click(Ui *u, int action, int arg);
 int64_t picker_max(const Ui *u);
 void    picker_text(const Ui *u, PickText *t);
 

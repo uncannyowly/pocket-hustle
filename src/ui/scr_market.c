@@ -218,7 +218,15 @@ static void do_action(Ui *u, int act)
 		fly_open(u);
 		return;
 	}
-	if (act != MKT_DOC) {		/* BANK, LOAN, SHOP: Tasks 8 and 9 */
+	if (act == MKT_BANK) {
+		bank_open(u);
+		return;
+	}
+	if (act == MKT_LOAN) {
+		lender_open(u);
+		return;
+	}
+	if (act != MKT_DOC) {		/* SHOP: Task 9 */
 		coming_soon(u);
 		return;
 	}
