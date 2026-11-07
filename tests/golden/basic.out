@@ -1,0 +1,315 @@
+Pocket Hustle. Seed 1. You have 15 days. Type help for commands.
+Day 1/15  Oklahoma City: Bricktown  Health 100
+Cash $1,800  Bank $0  Owed $5,000
+Carrying 0/100
+ # Good           Price   Have
+ 0 Carts            $55      0
+ 1 Weed            $136      0
+ 2 Shrooms         $489      0
+ 3 Molly           $399      0
+ 4 Acid               -      0
+ 5 Ketamine      $1,358      0
+ 6 DMT           $2,713      0
+ 7 Meth          $6,656      0
+ 8 Heroin       $11,794      0
+ 9 Cocaine      $22,488      0
+Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+> status
+Day 1/15  Oklahoma City: Bricktown  Health 100
+Cash $1,800  Bank $0  Owed $5,000
+Carrying 0/100
+ # Good           Price   Have
+ 0 Carts            $55      0
+ 1 Weed            $136      0
+ 2 Shrooms         $489      0
+ 3 Molly           $399      0
+ 4 Acid               -      0
+ 5 Ketamine      $1,358      0
+ 6 DMT           $2,713      0
+ 7 Meth          $6,656      0
+ 8 Heroin       $11,794      0
+ 9 Cocaine      $22,488      0
+Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+> market
+ # Good           Price   Have
+ 0 Carts            $55      0
+ 1 Weed            $136      0
+ 2 Shrooms         $489      0
+ 3 Molly           $399      0
+ 4 Acid               -      0
+ 5 Ketamine      $1,358      0
+ 6 DMT           $2,713      0
+ 7 Meth          $6,656      0
+ 8 Heroin       $11,794      0
+ 9 Cocaine      $22,488      0
+> flights
+1 Houston        $331 (lands at Montrose)
+2 San Jose       $157 (lands at Downtown)
+3 New York City  $191 (lands at Times Square)
+4 Miami          $181 (lands at South Beach)
+5 New Orleans    $316 (lands at French Quarter)
+6 Portland       $337 (lands at Pearl District)
+> store
+ 0 Pool Noodle            $80  aim +150
+ 1 Selfie Stick          $300  aim +250
+ 2 Leaf Blower           $900  aim +350
+ 4 Paintball Gun       $2,500  aim +500
+ 6 Taser               $6,000  aim +650
+ 7 T-Shirt Cannon     $15,000  aim +800
+ 8 Fanny Pack            $500  room +20
+ 9 Cargo Shorts        $1,500  room +30
+11 Rolling Suitcase    $5,000  room +50
+> buy 0 max
+Bought 32 Carts for $1,760.
+> buy 1 5
+Not enough cash.
+> sell 0 2
+Sold 2 Carts for $110.
+> sell 9 1
+You don't have that many.
+> deposit 500
+Not enough cash.
+> withdraw 100
+Not enough in the bank.
+> borrow 1000
+Borrowed $1,000 from Tornado Terry.
+> repay 500
+Paid Tornado Terry $500. You still owe $5,500.
+> go 1
+You take OKC Streetcar over to Midtown.
+Heroin went viral overnight. Prices just hit $25,052.
+Day 2/15  Oklahoma City: Midtown  Health 100
+Cash $650  Bank $0  Owed $5,995
+Carrying 30/100
+ # Good           Price   Have
+ 0 Carts            $15     30
+ 1 Weed            $105      0
+ 2 Shrooms         $259      0
+ 3 Molly              -      0
+ 4 Acid               -      0
+ 5 Ketamine      $1,541      0
+ 6 DMT                -      0
+ 7 Meth          $6,709      0
+ 8 Heroin       $25,052      0
+ 9 Cocaine      $17,342      0
+Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+> market
+ # Good           Price   Have
+ 0 Carts            $15     30
+ 1 Weed            $105      0
+ 2 Shrooms         $259      0
+ 3 Molly              -      0
+ 4 Acid               -      0
+ 5 Ketamine      $1,541      0
+ 6 DMT                -      0
+ 7 Meth          $6,709      0
+ 8 Heroin       $25,052      0
+ 9 Cocaine      $17,342      0
+> sell 0 all
+Sold 30 Carts for $450.
+> buy 2 3
+Bought 3 Shrooms for $777.
+> go 2
+You take OKC Streetcar over to Deep Deuce.
+Day 3/15  Oklahoma City: Deep Deuce  Health 100
+Cash $323  Bank $0  Owed $6,535
+Carrying 3/100
+ # Good           Price   Have
+ 0 Carts            $23      0
+ 1 Weed            $108      0
+ 2 Shrooms         $413      3
+ 3 Molly           $709      0
+ 4 Acid               -      0
+ 5 Ketamine      $1,551      0
+ 6 DMT           $1,843      0
+ 7 Meth          $2,768      0
+ 8 Heroin        $5,589      0
+ 9 Cocaine      $26,269      0
+Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+> heal 10
+That's over the limit.
+> gear 0
+New gear: Pool Noodle. Use it wisely.
+> store
+ 0 Pool Noodle            $80  aim +150  (yours)
+ 1 Selfie Stick          $300  aim +250
+ 2 Leaf Blower           $900  aim +350
+ 4 Paintball Gun       $2,500  aim +500
+ 6 Taser               $6,000  aim +650
+ 7 T-Shirt Cannon     $15,000  aim +800
+ 8 Fanny Pack            $500  room +20
+ 9 Cargo Shorts        $1,500  room +30
+11 Rolling Suitcase    $5,000  room +50
+> chart 0
+Carts, prices you've seen:
+  day  1  $55
+  day  2  $15
+  day  3  $23
+> fly 1
+Not enough cash.
+> flights
+1 Houston        $264 (lands at Montrose)
+2 San Jose       $339 (lands at Downtown)
+3 New York City  $164 (lands at Times Square)
+4 Miami          $355 (lands at South Beach)
+5 New Orleans    $241 (lands at French Quarter)
+6 Portland       $316 (lands at Pearl District)
+> go 3
+You ride OKC Streetcar to Plaza District.
+Day 4/15  Oklahoma City: Plaza District  Health 100
+Cash $243  Bank $0  Owed $7,124
+Carrying 3/100  Packing: Pool Noodle
+ # Good           Price   Have
+ 0 Carts              -      0
+ 1 Weed            $124      0
+ 2 Shrooms            -      3
+ 3 Molly         $1,333      0
+ 4 Acid               -      0
+ 5 Ketamine           -      0
+ 6 DMT           $3,058      0
+ 7 Meth          $6,053      0
+ 8 Heroin       $11,654      0
+ 9 Cocaine            -      0
+Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+> repay all
+Paid Tornado Terry $243. You still owe $6,881.
+> deposit all
+You have no cash to deposit.
+> withdraw all
+Your bank account is empty.
+> fly 3
+Not enough cash.
+> buy 1 max
+Not enough cash.
+> go 1
+You take OKC Streetcar over to Midtown.
+A shipment of Carts fell off a truck. It's going for $20!
+A celebrity got caught with Weed on camera. Everybody wants some: $296!
+Day 5/15  Oklahoma City: Midtown  Health 100
+Cash $0  Bank $0  Owed $7,501
+Carrying 3/100  Packing: Pool Noodle
+ # Good           Price   Have
+ 0 Carts            $20      0
+ 1 Weed            $296      0
+ 2 Shrooms            -      3
+ 3 Molly           $838      0
+ 4 Acid          $1,300      0
+ 5 Ketamine      $2,491      0
+ 6 DMT                -      0
+ 7 Meth               -      0
+ 8 Heroin             -      0
+ 9 Cocaine      $16,093      0
+Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+> run
+Can't do that now.
+> fight
+Can't do that now.
+> surrender
+Can't do that now.
+> go 2
+You take OKC Streetcar over to Deep Deuce.
+Day 6/15  Oklahoma City: Deep Deuce  Health 100
+Cash $0  Bank $0  Owed $8,177
+Carrying 3/100  Packing: Pool Noodle
+ # Good           Price   Have
+ 0 Carts            $37      0
+ 1 Weed            $126      0
+ 2 Shrooms         $438      3
+ 3 Molly           $942      0
+ 4 Acid          $1,579      0
+ 5 Ketamine           -      0
+ 6 DMT                -      0
+ 7 Meth          $5,000      0
+ 8 Heroin        $5,560      0
+ 9 Cocaine      $20,305      0
+Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+> go 3
+You ride OKC Streetcar to Plaza District.
+A shipment of Molly fell off a truck. It's going for $241!
+Day 7/15  Oklahoma City: Plaza District  Health 100
+Cash $0  Bank $0  Owed $8,913
+Carrying 3/100  Packing: Pool Noodle
+ # Good           Price   Have
+ 0 Carts            $30      0
+ 1 Weed             $93      0
+ 2 Shrooms         $474      3
+ 3 Molly           $241      0
+ 4 Acid          $1,809      0
+ 5 Ketamine      $3,215      0
+ 6 DMT           $3,091      0
+ 7 Meth          $6,040      0
+ 8 Heroin             -      0
+ 9 Cocaine      $21,830      0
+Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+> go 4
+You ride OKC Streetcar to Paseo Arts.
+Tornado Terry's boys found you. They take it out on your ribs. (-15 health)
+Day 8/15  Oklahoma City: Paseo Arts  Health 85
+Cash $0  Bank $0  Owed $9,716
+Carrying 3/100  Packing: Pool Noodle
+ # Good           Price   Have
+ 0 Carts            $31      0
+ 1 Weed             $66      0
+ 2 Shrooms         $476      3
+ 3 Molly         $1,014      0
+ 4 Acid               -      0
+ 5 Ketamine           -      0
+ 6 DMT                -      0
+ 7 Meth          $2,743      0
+ 8 Heroin             -      0
+ 9 Cocaine      $29,354      0
+Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+> go 5
+You take OKC Streetcar over to Stockyards City.
+Day 9/15  Oklahoma City: Stockyards City  Health 85
+Cash $0  Bank $0  Owed $10,591
+Carrying 3/100  Packing: Pool Noodle
+ # Good           Price   Have
+ 0 Carts              -      0
+ 1 Weed             $53      0
+ 2 Shrooms         $272      3
+ 3 Molly           $702      0
+ 4 Acid          $2,088      0
+ 5 Ketamine      $2,501      0
+ 6 DMT           $4,259      0
+ 7 Meth               -      0
+ 8 Heroin        $7,125      0
+ 9 Cocaine      $18,058      0
+Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+> go 0
+You take OKC Streetcar over to Bricktown.
+Day 10/15  Oklahoma City: Bricktown  Health 85
+Cash $0  Bank $0  Owed $11,545
+Carrying 3/100  Packing: Pool Noodle
+ # Good           Price   Have
+ 0 Carts              -      0
+ 1 Weed            $109      0
+ 2 Shrooms         $216      3
+ 3 Molly         $1,129      0
+ 4 Acid            $801      0
+ 5 Ketamine      $1,491      0
+ 6 DMT           $2,359      0
+ 7 Meth               -      0
+ 8 Heroin        $5,230      0
+ 9 Cocaine            -      0
+Neighborhoods: 0 Bricktown, 1 Midtown, 2 Deep Deuce, 3 Plaza District, 4 Paseo Arts, 5 Stockyards City
+> scores
+High scores, 15 days:
+  (none yet)
+> help
+Commands:
+  status | market | flights | store | scores | help | quit
+  buy <good#> <qty|max>     sell <good#> <qty|all>
+  go <hood#>                fly <city#>
+  borrow <amt>              repay <amt|all>
+  deposit <amt|all>         withdraw <amt|all>
+  gear <item#>              heal <hp|all>
+  run | fight | surrender   (when the cops show up)
+  chart <good#>             (prices you've seen)
+> bogus command
+Huh?
+> quit
+Game over: you retired early.
+Final net worth: -$11,545
+Moves 9, flights 0, cop chases 0 (beaten 0, escaped 0), jailed 0, mugged 0, goons 1
+High score! You're #1.

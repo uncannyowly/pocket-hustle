@@ -1,0 +1,42 @@
+status
+market
+flights
+store
+buy 0 max
+buy 1 5
+sell 0 2
+sell 9 1
+deposit 500
+withdraw 100
+borrow 1000
+repay 500
+go 1
+market
+sell 0 all
+buy 2 3
+go 2
+heal 10
+gear 0
+store
+chart 0
+fly 1
+flights
+go 3
+repay all
+deposit all
+withdraw all
+fly 3
+buy 1 max
+go 1
+run
+fight
+surrender
+go 2
+go 3
+go 4
+go 5
+go 0
+scores
+help
+bogus command
+quit
