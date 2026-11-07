@@ -7,5 +7,6 @@ void tests_content(void);
 void tests_game(void);
 void tests_market(void);
 void tests_trade(void);
+void tests_move(void);
 
 #endif

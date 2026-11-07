@@ -74,3 +74,49 @@ uint64_t mix64(uint64_t x)
 	x ^= x >> 31;
 	return x;
 }
+
+static int64_t clamp_money(int64_t v)
+{
+	return v > MONEY_MAX ? MONEY_MAX : v;
+}
+
+void game_advance_day(Game *g)
+{
+	int64_t nw;
+	int c;
+
+	g->day++;
+	for (c = 0; c < NUM_CITIES; c++) {
+		if (g->debt[c] <= 0)
+			continue;
+		g->debt[c] = clamp_money(g->debt[c] +
+			(g->debt[c] * CITIES[c].lender_rate_bp + 9999) / 10000);
+		if (g->debt_age[c] < 30000)
+			g->debt_age[c]++;
+	}
+	g->bank = clamp_money(g->bank + g->bank * g->p.bank_rate_bp / 10000);
+
+	nw = game_net_worth(g);
+	if (nw > g->stats.best_net_worth)
+		g->stats.best_net_worth = nw;
+}
+
+void game_check_death(Game *g)
+{
+	if (g->health > 0 || g->phase == PH_OVER)
+		return;
+	g->health = 0;
+	g->phase = PH_OVER;
+	g->end = END_DEAD;
+	game_msg(g, M_DEAD, 0, 0, 0, 0);
+}
+
+int game_end(Game *g)
+{
+	if (g->phase == PH_OVER)
+		return E_PHASE;
+	game_clear_msgs(g);
+	g->phase = PH_OVER;
+	g->end = END_QUIT;
+	return OK;
+}

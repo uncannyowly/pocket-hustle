@@ -66,4 +66,10 @@ int     game_sell(Game *g, int good, int32_t qty);
 int32_t game_max_buy(const Game *g, int good);	/* 0 if not sold here */
 int32_t game_carried(const Game *g);
 
+/* Moving: transit inside a city is free, a flight costs a ticket. Each move is a day.
+ * Moving on the last day ends the game instead. */
+int     game_move(Game *g, Loc dest);
+int64_t game_flight_cost(const Game *g, int city);	/* 0 inside the current city */
+int     game_end(Game *g);				/* quit early */
+
 #endif
