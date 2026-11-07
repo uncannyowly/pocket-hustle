@@ -74,9 +74,12 @@ static void trade(Game *g, BotKind k)
 	}
 
 	if (g->debt[c] > 0) {
-		if (k == BOT_CAUTIOUS)
-			game_repay(g, g->cash < g->debt[c] ? g->cash : g->debt[c]);
-		else if (g->cash > 3 * g->debt[c])
+		if (k == BOT_CAUTIOUS) {
+			/* pays first, but keeps a float to trade with */
+			int64_t spare = g->cash - 2000;
+			if (spare > 0)
+				game_repay(g, spare < g->debt[c] ? spare : g->debt[c]);
+		} else if (g->cash > 3 * g->debt[c])
 			game_repay(g, g->debt[c]);
 	}
 

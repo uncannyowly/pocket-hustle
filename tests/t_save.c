@@ -142,6 +142,39 @@ static void test_other_version(void)
 	CHECK_EQ(save_read(&g, p1), -2);
 }
 
+/* A save whose CRC is right but whose values could never come from the rules (edited by
+ * hand) must be rejected, or play would overflow. */
+static void test_save_rejects_out_of_range_values(void)
+{
+	char p1[128];
+	Game g, target;
+	int k, ok = 1;
+	path_in(p1, sizeof p1, "range.sav");
+	for (k = 0; k < 8; k++) {
+		played_game(&g);
+		switch (k) {
+		case 0: g.cash = -5; break;
+		case 1: g.debt[0] = MONEY_MAX + 1; break;
+		case 2: g.bank = -1; break;
+		case 3: g.health = 500; break;
+		case 4: g.stash[0] = -1; break;
+		case 5: g.p.mug_permille = 5000; break;
+		case 6: g.p.flight_lo = 900; g.p.flight_hi = 100; break;
+		case 7: g.capacity = 2000000000; break;
+		}
+		save_write(&g, p1);
+		played_game(&target);
+		if (save_read(&target, p1) != -2) {
+			fprintf(stderr, "mutation %d loaded\n", k);
+			ok = 0;
+		}
+	}
+	CHECK(ok);
+	played_game(&g);
+	save_write(&g, p1);
+	CHECK_EQ(save_read(&target, p1), 0);	/* an honest save still loads */
+}
+
 static void test_missing_save(void)
 {
 	char p1[128];
@@ -248,6 +281,7 @@ void tests_save(void)
 	test_bitflip_save();
 	test_other_version();
 	test_missing_save();
+	test_save_rejects_out_of_range_values();
 	test_hiscores_order();
 	test_hiscores_ties_keep_earlier();
 	test_hiscores_top_ten();

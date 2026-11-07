@@ -1,5 +1,6 @@
 /* Starting values: our own picks in the genre's general shape. Task 14 tunes them
  * with ph-sim. Change them here, never in the rules code. */
+#include "core/game.h"
 #include "core/params.h"
 
 Params params_default(void)
@@ -57,4 +58,32 @@ Params params_default(void)
 	p.flight_lo = 150;
 	p.flight_hi = 450;
 	return p;
+}
+
+#define IN(v, lo, hi) ((v) >= (lo) && (v) <= (hi))
+#define PAIR(a, b, lo, hi) (IN(a, lo, hi) && IN(b, lo, hi) && (a) <= (b))
+
+int params_sane(const Params *p)
+{
+	return IN(p->start_cash, 0, MONEY_MAX) && IN(p->start_debt, 0, MONEY_MAX) &&
+	       IN(p->start_city, 0, NUM_CITIES - 1) && IN(p->start_capacity, 0, 1000000) &&
+	       IN(p->min_goods, 0, NUM_GOODS) && IN(p->absent_permille, 0, 1000) &&
+	       IN(p->spike_permille, 0, 1000) && IN(p->crash_permille, 0, 1000) &&
+	       PAIR(p->spike_lo_pct, p->spike_hi_pct, 1, 10000) &&
+	       PAIR(p->crash_lo_pct, p->crash_hi_pct, 1, 10000) &&
+	       IN(p->bank_rate_bp, 0, 3000) && IN(p->min_payment_pct, 0, 100) &&
+	       IN(p->enforce_days, 0, 30000) && PAIR(p->enforce_dmg_lo, p->enforce_dmg_hi, 0, 1000) &&
+	       IN(p->cop_base_permille, 0, 1000) && IN(p->cop_per_10k_permille, 0, 1000) &&
+	       IN(p->cop_max_permille, 0, 1000) &&
+	       IN(p->posse_start, 0, 1000) && IN(p->posse_growth, 0, 100) && IN(p->max_shooters, 0, 1000) &&
+	       IN(p->run_permille, 0, 1000) && IN(p->cop_hit_permille, 0, 1000) &&
+	       PAIR(p->cop_dmg_lo, p->cop_dmg_hi, 0, 1000) &&
+	       PAIR(p->loot_lo, p->loot_hi, 0, 1000000000) &&
+	       IN(p->drop_permille, 0, 1000) && PAIR(p->drop_lo_pct, p->drop_hi_pct, 0, 100) &&
+	       IN(p->jail_fine_pct, 0, 100) &&
+	       IN(p->mug_permille, 0, 1000) && PAIR(p->mug_lo_pct, p->mug_hi_pct, 0, 100) &&
+	       IN(p->rumor_permille, 0, 1000) && IN(p->rumor_true_permille, 0, 1000) &&
+	       PAIR(p->rumor_lead_lo, p->rumor_lead_hi, 0, MAX_DAYS) &&
+	       IN(p->hospital_per_hp, 0, 1000000000) &&
+	       PAIR(p->flight_lo, p->flight_hi, 0, 1000000000);
 }

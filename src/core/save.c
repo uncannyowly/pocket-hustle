@@ -134,17 +134,37 @@ static void io_game(Io *io, Game *g)
 	io_i64(io, &s->best_net_worth); io_i64(io, &s->hospital_spent);
 }
 
-/* A loaded game must make sense, or the rules could index out of bounds. */
+/* A loaded game must make sense, or the rules could index out of bounds or overflow.
+ * The CRC catches accidents; this catches values no game could have produced. */
 static int game_sane(const Game *g)
 {
-	return days_index(g->last_day) >= 0 && g->day >= 1 && g->day <= g->last_day &&
-	       g->loc.city < NUM_CITIES && g->loc.hood < HOODS_PER_CITY &&
-	       g->weapon >= -1 && g->weapon < NUM_GEAR &&
-	       g->phase <= PH_OVER && g->end <= END_QUIT &&
-	       g->tip.loc.city < NUM_CITIES && g->tip.loc.hood < HOODS_PER_CITY &&
-	       g->tip.good >= 0 && g->tip.good < NUM_GOODS &&
-	       g->p.start_city >= 0 && g->p.start_city < NUM_CITIES &&
-	       g->name[sizeof g->name - 1] == 0;
+	int64_t carried = 0;
+	int i, d;
+
+	if (!(days_index(g->last_day) >= 0 && g->day >= 1 && g->day <= g->last_day &&
+	      g->loc.city < NUM_CITIES && g->loc.hood < HOODS_PER_CITY &&
+	      g->weapon >= -1 && g->weapon < NUM_GEAR &&
+	      g->phase <= PH_OVER && g->end <= END_QUIT &&
+	      g->tip.loc.city < NUM_CITIES && g->tip.loc.hood < HOODS_PER_CITY &&
+	      g->tip.good >= 0 && g->tip.good < NUM_GOODS && g->tip.day >= 0 && g->tip.day <= MAX_DAYS &&
+	      g->name[sizeof g->name - 1] == 0 && params_sane(&g->p)))
+		return 0;
+	if (g->cash < 0 || g->cash > MONEY_MAX || g->bank < 0 || g->bank > MONEY_MAX ||
+	    g->capacity < 0 || g->capacity > 1000000 || g->health < 0 || g->health > 100 ||
+	    g->chase.posse < 0 || g->chase.cops_left < 0)
+		return 0;
+	for (i = 0; i < NUM_CITIES; i++)
+		if (g->debt[i] < 0 || g->debt[i] > MONEY_MAX || g->debt_age[i] < 0)
+			return 0;
+	for (i = 0; i < NUM_GOODS; i++) {
+		if (g->stash[i] < 0 || g->stash_paid[i] < 0 || g->stash_paid[i] > MONEY_MAX || g->price[i] < 0)
+			return 0;
+		carried += g->stash[i];
+		for (d = 0; d <= MAX_DAYS; d++)
+			if (g->hist[i][d] < 0)
+				return 0;
+	}
+	return carried <= g->capacity;
 }
 
 static void io_hitable(Io *io, HiTable *t)

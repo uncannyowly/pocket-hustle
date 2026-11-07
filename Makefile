@@ -12,7 +12,7 @@ MIYOO_CFLAGS := $(CFLAGS) -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
 
 CORE_SRC = $(sort $(wildcard src/core/*.c src/content/*.c))
 HEADERS = $(wildcard src/core/*.h src/content/*.h tests/*.h tools/sim/*.h)
-TEST_SRC = $(sort $(wildcard tests/*.c)) $(wildcard tools/sim/report.c)
+TEST_SRC = $(sort $(wildcard tests/*.c)) $(wildcard tools/sim/report.c tools/sim/bots.c)
 TEXT_SRC = $(sort $(wildcard src/text/*.c))
 SIM_SRC = $(sort $(wildcard tools/sim/*.c))
 

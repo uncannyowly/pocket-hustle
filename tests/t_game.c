@@ -51,6 +51,7 @@ static void test_params_default_sane(void)
 	CHECK(p.start_city >= 0 && p.start_city < NUM_CITIES);
 	CHECK(p.bank_rate_bp >= 0 && p.bank_rate_bp <= 3000);
 	CHECK(p.min_goods >= 0 && p.min_goods <= NUM_GOODS);
+	CHECK(params_sane(&p));
 }
 
 static void test_net_worth(void)

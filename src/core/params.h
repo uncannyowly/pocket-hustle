@@ -26,5 +26,7 @@ typedef struct {
 } Params;
 
 Params params_default(void);
+/* 1 if every value is in a range the rules can work with (used on loaded saves). */
+int    params_sane(const Params *p);
 
 #endif

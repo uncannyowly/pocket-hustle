@@ -15,5 +15,6 @@ void tests_rumor(void);
 void tests_text(void);
 void tests_save(void);
 void tests_report(void);
+void tests_bots(void);
 
 #endif

@@ -38,18 +38,24 @@ build/host/ph-sim --games 2000 --seed 1 --days 30 --bot cautious
 
 | | Greedy bot | Cautious bot |
 |---|---|---|
-| Median score | 777841 | -22300 |
-| 10th / 90th percentile | -38815 / 3478188 | -22300 / -22300 |
-| Died | 6.0% | 5.3% |
-| Cop chases per game | 5.57 | 2.51 |
-| Spikes / crashes per game | 7.19 / 1.39 | 7.25 / 1.34 |
-| Muggings / goon visits per game | 1.13 / 0.78 | 0.00 / 2.99 |
+| Median score | 777841 | 361121 |
+| 10th / 90th percentile | -38815 / 3478188 | 29 / 1303659 |
+| Died | 6.0% | 0.2% |
+| Cop chases per game | 5.57 | 4.35 |
+| Spikes / crashes per game | 7.19 / 1.39 | 7.27 / 1.42 |
+| Muggings / goon visits per game | 1.13 / 0.78 | 1.25 / 0.32 |
 
-The cautious bot pays every dollar toward its debt and never trades, so its score is the
-same in most games; it is there to check that playing it safe rarely gets you killed.
+The cautious bot fills half its space, never fights, and repays its lender from any cash
+above a $2,000 trading float. It checks that playing it safe rarely gets you killed.
 
 ## Known limits
 
+- The feel targets are provisional: they come from only 20 observed days over two games,
+  so the cop and mugging rates in particular are rough (3 and 1 events seen). Seth's
+  playtest is the real check; adjust from his notes before trusting these numbers further.
+- The bank works in every city with no fee, so a player who deposits everything before
+  each move dodges muggings and jail fines. That is a design question for Seth.
+- 60 and 90 day games are harder than intended for the greedy bot (more deaths as the
+  posse keeps growing); only 30 days were tuned, and they all share these numbers.
 - The bots are simple. A human who repays the loan early and watches for spikes will beat
   the greedy bot's median by a wide margin; that is intended.
-- Tuning targets the 30-day game. 15, 60 and 90 days use the same numbers.
