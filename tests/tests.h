@@ -18,5 +18,6 @@ void tests_report(void);
 void tests_bots(void);
 void tests_gfx(void);
 void tests_font(void);
+void tests_art(void);
 
 #endif
