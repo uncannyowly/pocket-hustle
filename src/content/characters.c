@@ -1,5 +1,6 @@
 /* The recurring characters, and the list of every content string for the lint tests. */
 #include "content/content.h"
+#include "content/text.h"
 
 const char *const COP_NAME = "Sgt. Buzzkill";
 const char *const RUMOR_NAME = "Podcast Pete";
@@ -34,5 +35,11 @@ int content_strings(const char **out, int max)
 	}
 	n = put(out, max, n, COP_NAME);
 	n = put(out, max, n, RUMOR_NAME);
+	for (c = 0; c < NUM_MSG_KINDS; c++) {
+		const TextLine *lines;
+		int k = text_lines((MsgKind)c, &lines);
+		for (i = 0; i < k; i++)
+			n = put(out, max, n, lines[i].t);
+	}
 	return n;
 }
