@@ -17,5 +17,6 @@ void tests_save(void);
 void tests_report(void);
 void tests_bots(void);
 void tests_gfx(void);
+void tests_font(void);
 
 #endif
