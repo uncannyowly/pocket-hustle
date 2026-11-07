@@ -3,5 +3,6 @@
 #define PH_TESTS_H
 
 void tests_rng(void);
+void tests_content(void);
 
 #endif

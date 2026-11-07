@@ -9,6 +9,7 @@ int t_checks, t_failed;
 
 static const struct { const char *name; void (*fn)(void); } MODULES[] = {
 	{"rng", tests_rng},
+	{"content", tests_content},
 };
 
 int main(int argc, char **argv)

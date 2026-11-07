@@ -50,3 +50,4 @@ New source files are picked up by the Makefile's wildcards; new test modules nee
 ## State
 
 Task 1 done: repo, test harness, PCG32 random numbers, copy check, ARM check.
+Task 2 done: first content draft (src/content), awaiting Seth's name review.
