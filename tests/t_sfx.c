@@ -57,6 +57,38 @@ static void test_render_audible(void)
 	}
 }
 
+/* Pitch in Hz from rising zero crossings between t0 and t1 seconds. */
+static float pitch(SfxId id, float t0, float t1)
+{
+	int n = sfx_render(&SFX_PRESETS[id], MIX_RATE, scratch, MAXS);
+	int i = (int)(t0 * MIX_RATE), e = (int)(t1 * MIX_RATE), c = 0;
+
+	CHECK(e <= n);
+	for (; i < e && i + 1 < n; i++)
+		if (scratch[i] < 0 && scratch[i + 1] >= 0)
+			c++;
+	return (float)c / (t1 - t0);
+}
+
+static int near_hz(float got, float want, float tol)
+{
+	return got > want * (1.0f - tol) && got < want * (1.0f + tol);
+}
+
+static void test_cash_pitches(void)
+{
+	CHECK(near_hz(pitch(SFX_CASH, 0.010f, 0.040f), 988, 0.05f));
+	CHECK(near_hz(pitch(SFX_CASH, 0.055f, 0.085f), 1319, 0.05f));
+	CHECK(near_hz(pitch(SFX_CASH, 0.100f, 0.170f), 1760, 0.05f));
+}
+
+static void test_siren_sweep(void)
+{
+	CHECK(near_hz(pitch(SFX_SIREN, 0.010f, 0.030f), 720, 0.15f));
+	CHECK(near_hz(pitch(SFX_SIREN, 0.240f, 0.280f), 1100, 0.10f));
+	CHECK(near_hz(pitch(SFX_SIREN, 0.490f, 0.510f), 720, 0.15f));
+}
+
 static void test_mixer_silence(void)
 {
 	Mixer m;
@@ -176,6 +208,8 @@ void tests_sfx(void)
 	test_render_lengths();
 	test_render_deterministic();
 	test_render_audible();
+	test_cash_pitches();
+	test_siren_sweep();
 	test_mixer_silence();
 	test_mixer_plays_once();
 	test_mixer_saturates();

@@ -26,9 +26,9 @@ const SfxParams SFX_PRESETS[NUM_SFX] = {
 	/* HURT: 200 ms noise burst */
 	{ WAVE_NOISE, 7000, -8000, 0, 0.5f, 0, 0, 0, {0, 0}, {0, 0},
 	  0.0f, 0.040f, 0.4f, 0.160f, 0.6f, 0x1234567u },
-	/* SIREN: saw wail, one slow deep vibrato cycle in 0.5 s */
-	{ WAVE_SAW, 620, 0, 0, 0.5f, 0, 0.4f, 2.0f, {0, 0}, {0, 0},
-	  0.010f, 0.400f, 0.0f, 0.090f, 0.4f, 7 },
+	/* SIREN: saw wail, 720 Hz up to 1100 Hz at 0.26 s and back to 720 Hz at 0.52 s */
+	{ WAVE_SAW, 720, 2923, -11243, 0.5f, 0, 0, 0, {0, 0}, {0, 0},
+	  0.010f, 0.420f, 0.0f, 0.090f, 0.4f, 7 },
 	/* NEWS: pleasant two-note sine chime, A5 then E6 */
 	{ WAVE_SINE, 880, 0, 0, 0.5f, 0, 0, 0, {1.498f, 0}, {0.09f, 0},
 	  0.005f, 0.115f, 0.1f, 0.220f, 0.6f, 8 },
@@ -61,12 +61,14 @@ int sfx_render(const SfxParams *p, int rate, int16_t *out, int max)
 	for (i = 0; i < n; i++) {
 		float t = (float)i / (float)rate;
 		float f = p->freq + p->slide * t + 0.5f * p->slide_accel * t * t;
-		float env, s, duty;
+		float env, s, duty, jump = 1.0f;
 		int k;
 
+		/* arp multipliers are relative to the base pitch; the last jump passed wins */
 		for (k = 0; k < 2; k++)
 			if (p->arp_time[k] > 0 && t >= p->arp_time[k])
-				f *= p->arp_mult[k];
+				jump = p->arp_mult[k];
+		f *= jump;
 		f *= 1.0f + p->vib_depth * sinf(TWO_PI * p->vib_speed * t);
 		f = clampf(f, 20.0f, (float)rate * 0.45f);
 
