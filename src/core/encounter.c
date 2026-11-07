@@ -1,5 +1,5 @@
 /* What happens when you arrive somewhere: goons first, else cops, else a mugging.
- * At most one kind of trouble per arrival. Then maybe a rumor (Task 8). */
+ * At most one kind of trouble per arrival. Then, if no chase started, maybe a rumor. */
 #include "core/game_internal.h"
 
 /* An overdue lender's goons find you in their city. Returns 1 if they came. */
@@ -37,4 +37,6 @@ void encounters_on_arrival(Game *g)
 {
 	if (!goons_check(g) && !cops_check(g))
 		mug_check(g);
+	if (g->phase == PH_TRADING)
+		rumor_check(g);
 }

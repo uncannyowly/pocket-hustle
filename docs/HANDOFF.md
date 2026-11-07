@@ -56,3 +56,4 @@ Task 4 done: buying and selling (src/core/trade.c).
 Task 5 done: travel, days, interest, final day (src/core/move.c, game.c).
 Task 6 done: lenders, bank, goons (src/core/finance.c, encounter.c).
 Task 7 done: cops, chases, jail, muggings, hospital, store (chase.c, shop.c, encounter.c).
+Task 8 done: rumors and true tips (rumor.c; tip handling in market.c, expiry in game.c).

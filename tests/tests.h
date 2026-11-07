@@ -11,5 +11,6 @@ void tests_move(void);
 void tests_finance(void);
 void tests_chase(void);
 void tests_shop(void);
+void tests_rumor(void);
 
 #endif

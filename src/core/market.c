@@ -1,4 +1,6 @@
 /* The daily market at the player's location: prices, spikes, crashes, history. */
+#include <string.h>
+
 #include "core/game_internal.h"
 
 static int32_t base_price(Game *g, int good)
@@ -16,15 +18,35 @@ static int32_t scale(int32_t price, int32_t pct)
 	return v > INT32_MAX ? INT32_MAX : (int32_t)v;
 }
 
+/* A true tip for today, here: that good is on sale with the promised spike or crash. */
+static int tip_good_here(const Game *g)
+{
+	if (g->tip.day == 0 || g->tip.day != g->day ||
+	    g->tip.loc.city != g->loc.city || g->tip.loc.hood != g->loc.hood)
+		return -1;
+	return g->tip.good;
+}
+
 void market_roll(Game *g)
 {
 	const Params *p = &g->p;
-	int i, priced = 0;
+	int i, priced = 0, tipped = tip_good_here(g);
 
 	for (i = 0; i < NUM_GOODS; i++) {
 		int32_t price = 0;
 
-		if (!rng_permille(&g->rng, p->absent_permille)) {
+		if (i == tipped) {
+			price = base_price(g, i);
+			if (g->tip.spike) {
+				price = scale(price, rng_range(&g->rng, p->spike_lo_pct, p->spike_hi_pct));
+				game_msg(g, M_SPIKE, (int16_t)i, 0, 0, price);
+				g->stats.spikes_seen++;
+			} else {
+				price = scale(price, rng_range(&g->rng, p->crash_lo_pct, p->crash_hi_pct));
+				game_msg(g, M_CRASH, (int16_t)i, 0, 0, price);
+				g->stats.crashes_seen++;
+			}
+		} else if (!rng_permille(&g->rng, p->absent_permille)) {
 			price = base_price(g, i);
 			if (rng_permille(&g->rng, p->spike_permille)) {
 				price = scale(price, rng_range(&g->rng, p->spike_lo_pct, p->spike_hi_pct));
@@ -54,4 +76,6 @@ void market_roll(Game *g)
 
 	for (i = 0; i < NUM_GOODS; i++)
 		g->hist[i][g->day] = g->price[i];
+	if (tipped >= 0)
+		memset(&g->tip, 0, sizeof g->tip);
 }

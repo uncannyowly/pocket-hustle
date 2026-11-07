@@ -86,6 +86,8 @@ void game_advance_day(Game *g)
 	int c;
 
 	g->day++;
+	if (g->tip.day != 0 && g->tip.day < g->day)
+		memset(&g->tip, 0, sizeof g->tip);	/* missed it */
 	for (c = 0; c < NUM_CITIES; c++) {
 		if (g->debt[c] <= 0)
 			continue;
