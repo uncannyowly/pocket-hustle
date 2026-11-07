@@ -68,6 +68,16 @@ int price_flag(const Game *g, int good)
 	return g->price[good] > hi ? PF_SPIKE : g->price[good] < lo ? PF_CRASH : PF_NORMAL;
 }
 
+int ui_price_flag(const Ui *u, int good)
+{
+	const Game *g = &u->app->g;
+
+	if (good >= 0 && good < NUM_GOODS && g->price[good] > 0 && u->ann.day == g->day &&
+	    u->ann.kind[good] != PF_NORMAL)
+		return u->ann.kind[good];
+	return price_flag(g, good);
+}
+
 /* Keeps the highlights on something that exists, whatever changed underneath. */
 static void clamp_rows(Ui *u, int held)
 {
@@ -91,7 +101,7 @@ static void draw_goods(Ui *u, Canvas *c)
 
 	panel(c, 0, 82, 168, 116, "MARKET", u->panel == 0, NULL);
 	for (i = 0; i < NUM_GOODS; i++) {
-		int y = 96 + i * 10, sel = u->mrow == i, on = sel && u->panel == 0, flag = price_flag(g, i);
+		int y = 96 + i * 10, sel = u->mrow == i, on = sel && u->panel == 0, flag = ui_price_flag(u, i);
 		int32_t p = g->price[i];
 		uint32_t pc = !p ? PAL_FAINT : on ? PAL_WHITE : flag == PF_SPIKE ? PAL_HOT :
 			      flag == PF_CRASH ? PAL_MINT : PAL_TEXT;
@@ -200,7 +210,15 @@ static void sell_good(Ui *u, int good)
 
 static void do_action(Ui *u, int act)
 {
-	if (act != MKT_DOC) {		/* MOVE, FLY, BANK, LOAN, SHOP: Tasks 7 to 9 */
+	if (act == MKT_MOVE) {
+		move_open(u);
+		return;
+	}
+	if (act == MKT_FLY) {
+		fly_open(u);
+		return;
+	}
+	if (act != MKT_DOC) {		/* BANK, LOAN, SHOP: Tasks 8 and 9 */
 		coming_soon(u);
 		return;
 	}

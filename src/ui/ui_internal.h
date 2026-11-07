@@ -29,6 +29,8 @@ enum {
 	HIT_MARKET_ROW,		/* arg: a good */
 	HIT_BAG_ROW,		/* arg: a line of the bag */
 	HIT_MARKET_ACT,		/* arg: MKT_* */
+	HIT_MOVE_ROW,		/* arg: a hood */
+	HIT_FLY_ROW,		/* arg: a row of the flight list */
 };
 
 /* Chrome. */
@@ -67,6 +69,21 @@ int  bag_pct(const Game *g, int good, char *buf, size_t n);
 /* PF_SPIKE above anything an ordinary day here can ask (the good's range with this city's
  * bias), PF_CRASH below it, else PF_NORMAL. */
 int  price_flag(const Game *g, int good);
+/* What the market draws: today's announced spike or crash (u->ann), else price_flag. */
+int  ui_price_flag(const Ui *u, int good);
+
+/* News (scr_news.c), getting around and flying (scr_travel.c). */
+void news_draw(Ui *u, Canvas *c);
+void news_press(Ui *u, int pad);
+void move_open(Ui *u);			/* the MOVE button */
+void move_draw(Ui *u, Canvas *c);
+void move_press(Ui *u, int pad);
+void move_click(Ui *u, int action, int arg);
+void fly_open(Ui *u);			/* the FLY button */
+void fly_draw(Ui *u, Canvas *c);
+void fly_press(Ui *u, int pad);
+void fly_click(Ui *u, int action, int arg);
+int  fly_city(const Game *g, int row);	/* the city on row 0..5 of the flight list: every city but this one */
 
 /* The amount picker (scr_picker.c): quantities step 1 and 10, money uses the digit dial. */
 typedef struct { char title[32], unit[40], total[64], info[64]; uint32_t total_col; } PickText;

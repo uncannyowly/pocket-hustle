@@ -426,9 +426,9 @@ static void test_actions_coming_soon(void)
 	int i;
 
 	ui_test_setup(&app, &ui, 30);
-	press_seq(&ui, "R1 R1");
+	press_seq(&ui, "R1 R1 R R");		/* MOVE and FLY are wired (ui_travel) */
 	snap();
-	for (i = MKT_MOVE; i <= MKT_SHOP; i++) {	/* wired by Tasks 7 to 9 */
+	for (i = MKT_BANK; i <= MKT_SHOP; i++) {	/* wired by Tasks 8 and 9 */
 		CHECK_EQ(ui.act, i);
 		drain();
 		press_seq(&ui, "A");
@@ -449,7 +449,7 @@ static void test_toast_expires(void)
 	int i;
 
 	ui_test_setup(&app, &ui, 30);
-	press_seq(&ui, "R1 R1 A");		/* MOVE: "Coming soon." */
+	press_seq(&ui, "R1 R1 R R A");		/* BANK: "Coming soon." */
 	CHECK(ui.toast[0] != '\0');
 	ui_draw(&ui, &cv);
 	CHECK_EQ(px(104, 176), PAL_GOLD);	/* the box is 112 x 18, its corner at (104, 176) */
@@ -468,7 +468,9 @@ static void test_sfx_queue(void)
 
 	ui_test_setup(&app, &ui, 30);
 	CHECK_EQ(ui_take_sfx(&ui), -1);
-	press_seq(&ui, "R1 R1 A");		/* two moves, then MOVE says no */
+	press_seq(&ui, "R1 R1 R R A");		/* four moves, then BANK says no */
+	CHECK_EQ(ui_take_sfx(&ui), SFX_MOVE);
+	CHECK_EQ(ui_take_sfx(&ui), SFX_MOVE);
 	CHECK_EQ(ui_take_sfx(&ui), SFX_MOVE);
 	CHECK_EQ(ui_take_sfx(&ui), SFX_MOVE);
 	CHECK_EQ(ui_take_sfx(&ui), SFX_DENY);
@@ -642,6 +644,11 @@ static void test_click_bag_and_buttons(void)
 	ui_click(&ui, 27, 210);			/* MOVE: (2, 201) 51 x 18 */
 	CHECK_EQ(ui.panel, 2);
 	CHECK_EQ(ui.act, MKT_MOVE);
+	CHECK_EQ(ui.scr, SCR_MOVE);
+	press_seq(&ui, "B");
+	ui_draw(&ui, &cv);
+	ui_click(&ui, 133, 210);		/* BANK: (108, 201) 51 x 18 */
+	CHECK_EQ(ui.act, MKT_BANK);
 	CHECK_STR(ui.toast, "Coming soon.");
 
 	app.g.health = 50;

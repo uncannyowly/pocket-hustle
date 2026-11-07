@@ -29,6 +29,7 @@ static const struct { const char *name; void (*fn)(void); } MODULES[] = {
 	{"input", tests_input},
 	{"app", tests_app},
 	{"ui_market", tests_ui_market},
+	{"ui_travel", tests_ui_travel},
 };
 
 int main(int argc, char **argv)
