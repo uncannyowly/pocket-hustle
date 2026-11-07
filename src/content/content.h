@@ -12,7 +12,7 @@ typedef struct { const char *name, *blurb; int32_t lo, hi; } GoodDef;	/* base pr
 
 typedef struct {
 	const char *name, *nickname;		/* nickname "" if none */
-	const char *transit, *airport;
+	const char *transit, *airport, *code;	/* code: three-letter airport code */
 	const char *hoods[HOODS_PER_CITY];
 	int16_t bias_pct[NUM_GOODS];		/* 50..200, 100 = no tendency */
 	const char *lender;			/* this city's loan shark */

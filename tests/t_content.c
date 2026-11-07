@@ -29,6 +29,19 @@ static void test_cities_in_seth_order(void)
 	}
 }
 
+static void test_airport_codes(void)
+{
+	int a, b, i;
+	for (a = 0; a < NUM_CITIES; a++) {
+		const char *c = CITIES[a].code;
+		CHECK(c != NULL && strlen(c) == 3);
+		for (i = 0; c && i < 3; i++)
+			CHECK(c[i] >= 'A' && c[i] <= 'Z');
+		for (b = a + 1; b < NUM_CITIES; b++)
+			CHECK(strcmp(c, CITIES[b].code) != 0);
+	}
+}
+
 static void test_names_fit_and_unique(void)
 {
 	int i, j, c;
@@ -190,6 +203,7 @@ static void test_strings_not_beermat(void)
 void tests_content(void)
 {
 	test_cities_in_seth_order();
+	test_airport_codes();
 	test_names_fit_and_unique();
 	test_nyc_not_the_classic_list();
 	test_price_ranges_sane();

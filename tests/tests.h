@@ -20,5 +20,7 @@ void tests_gfx(void);
 void tests_font(void);
 void tests_art(void);
 void tests_sfx(void);
+void tests_input(void);
+void tests_app(void);
 
 #endif
