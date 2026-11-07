@@ -34,6 +34,7 @@ enum {
 	HIT_MONEY_BTN,		/* arg: 0 or 1, the left or right button of the bank or the lender */
 	HIT_DIAL_UP,		/* arg: a digit of the money dial; adds 10^digit */
 	HIT_DIAL_DOWN,		/* arg: a digit of the money dial; removes 10^digit */
+	HIT_STORE_ROW,		/* arg: a row of the shop (a GEAR index) */
 };
 
 /* Chrome. */
@@ -102,6 +103,23 @@ void lender_open(Ui *u);				/* the LOAN button */
 void lender_draw(Ui *u, Canvas *c);
 void lender_press(Ui *u, int pad);
 void lender_click(Ui *u, int action, int arg);
+
+/* The shop (scr_store.c). One row per GEAR entry: weapons first, then the room items. */
+typedef struct { char price[24], aim[16], status[64]; uint32_t price_col, status_col; } StoreText;
+void store_text(const Game *g, int row, StoreText *t);	/* price is the selling city's name for gear sold elsewhere */
+void store_open(Ui *u);					/* the SHOP button */
+void store_draw(Ui *u, Canvas *c);
+void store_press(Ui *u, int pad);
+void store_click(Ui *u, int action, int arg);
+
+/* The price chart (scr_chart.c). */
+typedef struct { char title[32], day[24], range[64], have[64]; } ChartText;
+void    chart_k(int64_t v, char *buf, size_t n);	/* "$999", "$1.2K", "$20M": the mockup's kfmt */
+int64_t chart_top(int64_t v);				/* the mockup's niceTop: 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10 times a power of ten */
+void    chart_text(const Game *g, int good, ChartText *t);
+void    chart_open(Ui *u, int good);			/* SELECT on the market; B returns to the market */
+void    chart_draw(Ui *u, Canvas *c);
+void    chart_press(Ui *u, int pad);
 
 /* The amount picker (scr_picker.c): quantities step 1 and 10, money uses the digit dial. */
 typedef struct { char title[32], unit[48], total[96], info[96]; uint32_t total_col; } PickText;

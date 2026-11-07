@@ -176,12 +176,6 @@ void market_draw(Ui *u, Canvas *c)
 		hints(c, u->panel == 0 ? BUY_HINTS : SELL_HINTS, 4, HINTS_Y);
 }
 
-static void coming_soon(Ui *u)
-{
-	toast(u, "Coming soon.");
-	play(u, SFX_DENY);
-}
-
 static void buy_good(Ui *u, int good)
 {
 	char msg[64];
@@ -226,8 +220,8 @@ static void do_action(Ui *u, int act)
 		lender_open(u);
 		return;
 	}
-	if (act != MKT_DOC) {		/* SHOP: Task 9 */
-		coming_soon(u);
+	if (act == MKT_SHOP) {
+		store_open(u);
 		return;
 	}
 	if (u->app->g.health >= 100) {
@@ -248,8 +242,8 @@ void market_press(Ui *u, int pad)
 		play(u, SFX_MOVE);
 		return;
 	}
-	if (pad == PAD_SELECT) {	/* the price chart: Task 9 */
-		coming_soon(u);
+	if (pad == PAD_SELECT) {	/* the price chart of the highlighted good */
+		chart_open(u, u->panel == 1 && nh ? held[u->brow] : u->mrow);
 		return;
 	}
 	if (u->panel == 0) {

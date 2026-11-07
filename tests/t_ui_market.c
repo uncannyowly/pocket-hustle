@@ -421,35 +421,12 @@ static void test_doc_heals(void)
 	CHECK_EQ(app.g.cash, 30);
 }
 
-static void test_actions_coming_soon(void)
-{
-	int i;
-
-	ui_test_setup(&app, &ui, 30);
-	press_seq(&ui, "R1 R1 R R R R");	/* MOVE, FLY, BANK and LOAN are wired (ui_travel, ui_money) */
-	snap();
-	for (i = MKT_SHOP; i <= MKT_SHOP; i++) {	/* wired by Task 9 */
-		CHECK_EQ(ui.act, i);
-		drain();
-		press_seq(&ui, "A");
-		CHECK_EQ(ui.scr, SCR_MARKET);
-		CHECK_STR(ui.toast, "Coming soon.");
-		CHECK(heard(SFX_DENY));
-		press_seq(&ui, "R");
-	}
-	ui.toast[0] = '\0';
-	press_seq(&ui, "SEL");			/* the price chart, Task 9 */
-	CHECK_EQ(ui.scr, SCR_MARKET);
-	CHECK_STR(ui.toast, "Coming soon.");
-	CHECK(same_game(&before, &app.g));
-}
-
 static void test_toast_expires(void)
 {
 	int i;
 
 	ui_test_setup(&app, &ui, 30);
-	press_seq(&ui, "R1 R1 R R R R A");	/* SHOP: "Coming soon." */
+	press_seq(&ui, "R1 R1 R R R R R A");	/* DOC at full health: a toast */
 	CHECK(ui.toast[0] != '\0');
 	ui_draw(&ui, &cv);
 	CHECK_EQ(px(104, 176), PAL_GOLD);	/* the box is 112 x 18, its corner at (104, 176) */
@@ -468,7 +445,8 @@ static void test_sfx_queue(void)
 
 	ui_test_setup(&app, &ui, 30);
 	CHECK_EQ(ui_take_sfx(&ui), -1);
-	press_seq(&ui, "R1 R1 R R R R A");	/* six moves, then SHOP says no */
+	press_seq(&ui, "R1 R1 R R R R R A");	/* seven moves, then DOC says no */
+	CHECK_EQ(ui_take_sfx(&ui), SFX_MOVE);
 	CHECK_EQ(ui_take_sfx(&ui), SFX_MOVE);
 	CHECK_EQ(ui_take_sfx(&ui), SFX_MOVE);
 	CHECK_EQ(ui_take_sfx(&ui), SFX_MOVE);
@@ -765,7 +743,6 @@ void tests_ui_market(void)
 	test_market_states_draw_clean();
 	test_stub_screens();
 	test_doc_heals();
-	test_actions_coming_soon();
 	test_toast_expires();
 	test_sfx_queue();
 	test_bag_percent();

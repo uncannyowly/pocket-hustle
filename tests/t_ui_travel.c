@@ -442,24 +442,6 @@ static void test_announced_spike_inside_range(void)
 	CHECK_EQ(ui_price_flag(&ui, 5), PF_NORMAL);
 }
 
-static void test_actions_still_unwired(void)
-{
-	int i;
-
-	ui_test_setup(&app, &ui, 30);
-	press_seq(&ui, "R1 R1 R R R R");
-	snap();
-	for (i = MKT_SHOP; i <= MKT_SHOP; i++) {
-		CHECK_EQ(ui.act, i);
-		drain();
-		press_seq(&ui, "A");
-		CHECK_EQ(ui.scr, SCR_MARKET);
-		CHECK_STR(ui.toast, "Coming soon.");
-		press_seq(&ui, "R");
-	}
-	CHECK(same_game(&before, &app.g));
-}
-
 void tests_ui_travel(void)
 {
 	test_move_starts_on_current_hood();
@@ -479,5 +461,4 @@ void tests_ui_travel(void)
 	test_move_on_last_day_ends();
 	test_goons_kill_on_arrival();
 	test_announced_spike_inside_range();
-	test_actions_still_unwired();
 }
