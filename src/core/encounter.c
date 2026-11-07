@@ -1,5 +1,5 @@
-/* What happens when you arrive somewhere: goons first, else cops, else a mugging
- * (Task 7); then maybe a rumor (Task 8). At most one kind of trouble per arrival. */
+/* What happens when you arrive somewhere: goons first, else cops, else a mugging.
+ * At most one kind of trouble per arrival. Then maybe a rumor (Task 8). */
 #include "core/game_internal.h"
 
 /* An overdue lender's goons find you in their city. Returns 1 if they came. */
@@ -19,8 +19,22 @@ static int goons_check(Game *g)
 	return 1;
 }
 
+/* Pocket cash only; the bank is safe. Returns 1 if it happened. */
+static int mug_check(Game *g)
+{
+	int64_t lost;
+
+	if (g->cash <= 0 || !rng_permille(&g->rng, g->p.mug_permille))
+		return 0;
+	lost = g->cash * rng_range(&g->rng, g->p.mug_lo_pct, g->p.mug_hi_pct) / 100;
+	g->cash -= lost;
+	g->stats.times_mugged++;
+	game_msg(g, M_MUGGED, 0, 0, 0, lost);
+	return 1;
+}
+
 void encounters_on_arrival(Game *g)
 {
-	if (goons_check(g))
-		return;
+	if (!goons_check(g) && !cops_check(g))
+		mug_check(g);
 }

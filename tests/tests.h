@@ -9,5 +9,7 @@ void tests_market(void);
 void tests_trade(void);
 void tests_move(void);
 void tests_finance(void);
+void tests_chase(void);
+void tests_shop(void);
 
 #endif

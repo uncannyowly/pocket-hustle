@@ -78,4 +78,13 @@ int     game_repay(Game *g, int64_t amt);
 int     game_deposit(Game *g, int64_t amt);
 int     game_withdraw(Game *g, int64_t amt);
 
+/* Trouble: a cop chase (PH_CHASE) is resolved one action at a time. */
+int     game_chase(Game *g, ChaseAction a);
+int64_t game_stash_value(const Game *g);	/* stash at mid-range prices; draws the cops */
+
+/* The hospital and the store (any city; some gear is sold in one city only). */
+int     game_heal(Game *g, int32_t hp);
+int     game_buy_gear(Game *g, int gear);
+int     game_gear_available(const Game *g, int gear);
+
 #endif

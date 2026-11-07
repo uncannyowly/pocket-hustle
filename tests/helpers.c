@@ -12,6 +12,7 @@ Params test_params(void)
 	p.crash_permille = 0;
 	p.cop_base_permille = 0;
 	p.cop_per_10k_permille = 0;
+	p.cop_max_permille = 1000;	/* so a test that sets cop_base 1000 gets cops for sure */
 	p.mug_permille = 0;
 	p.rumor_permille = 0;
 	p.drop_permille = 0;

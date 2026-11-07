@@ -55,3 +55,4 @@ Task 3 done: Params (src/core/params.c), Game state, message log, daily market.
 Task 4 done: buying and selling (src/core/trade.c).
 Task 5 done: travel, days, interest, final day (src/core/move.c, game.c).
 Task 6 done: lenders, bank, goons (src/core/finance.c, encounter.c).
+Task 7 done: cops, chases, jail, muggings, hospital, store (chase.c, shop.c, encounter.c).
