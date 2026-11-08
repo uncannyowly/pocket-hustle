@@ -73,9 +73,36 @@ Plan 2 (screens and sound on the PC) is done as of 2026-11-07. Play it with
   (`docs/mockups/screens-round1.html`) is the layout reference; the shots match it except the
   items listed in the Task 13 report (title QUIT row, chart footer wording, game over stats).
 
-Known follow-ups: the chase line reads "1 more cops are right behind" when one cop is left
-(content text in `src/content/text.c`, needs a singular form). Seth has not played the PC
-build yet; his notes become follow-up tasks.
+Seth has not played the PC build yet; his notes become follow-up tasks.
+
+Known issues after the Plan 2 reviews (all minor, none blocks play):
+
+- Typing a name on the PC: after a typed character the focus sits on START HUSTLING, so the
+  first Backspace moves focus back to the keyboard and only the second one deletes.
+- Text input switches on one frame after the new-game screen opens, so a key pressed in that
+  frame still acts as a button (the replace prompt still guards a saved game).
+- This PC's SDL2 is sdl2-compat over SDL3, which crashes on a synthetic SDL_TEXTINPUT, so the
+  smoke check skips its typed-text assertions here; real typing is untested until Seth plays.
+- The chase log shows the first 4 of up to 8 lines, so the newest damage line can drop when
+  a big posse shoots.
+- SFX_NEWS is rendered but never played.
+- Pickers that cannot move (REPAY with no cash, BORROW at the limit, DOC under the price of a
+  point, DEPOSIT or WITHDRAW with nothing to move) open with no explanation.
+- Autosave failures show only at SAVE AND QUIT or exit, and a failed score write is not
+  retried at exit when no game is in progress.
+- The game over ATM fees cell overlaps its label for fees from $1B to $10B.
+- The chart's today label can land on the y-axis labels near day 1.
+- Letter keys are bound by key position, so on QWERTZ "Y = max" is the key labeled Z.
+- Tests: temp dirs pile up under build/; test_jail_morning_news should assert
+  unconditionally; the uppercase-copy loop is repeated in nine places and city_of in three;
+  scripts/smoke.sh builds its checker without warning flags.
+- Mockup wording or behavior Seth may want changed: "LAST PAID 0 DAYS AGO" on a loan never
+  paid (it also resets after a goon visit); crossing the keyboard's bottom row takes several
+  presses; START acts as A on the title, QUIT included; the bank and lender highlight resets
+  on each visit.
+- For Plan 3: SDL_RenderWindowToLogical needs SDL 2.0.18 or newer on a generic ARM build;
+  ship OFL.txt with binary packages; a power-off between autosaves loses the day's trades
+  and rolls a chase back to its start.
 
 Plan 1 (the rules, ph-text, ph-sim) is done as of 2026-11-06:
 
