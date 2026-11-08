@@ -205,6 +205,34 @@ static void ng_type(Ui *u)
 	u->ng.shift = 0;
 }
 
+int ui_wants_text(const Ui *u)
+{
+	return u->scr == SCR_NEWGAME && u->confirm != CONFIRM_REPLACE;
+}
+
+void ui_text(Ui *u, const char *s)
+{
+	size_t n;
+	int typed = 0;
+
+	if (!ui_wants_text(u))
+		return;
+	n = strlen(u->ng.name);
+	for (; *s; s++) {
+		unsigned char ch = (unsigned char)*s;
+
+		if (ch < 0x20 || ch > 0x7e)
+			continue;
+		typed = 1;
+		if (n < NG_NAME_MAX) {
+			u->ng.name[n++] = (char)ch;
+			u->ng.name[n] = '\0';
+		}
+	}
+	if (typed)
+		u->ng.zone = 2;
+}
+
 void ng_draw(Ui *u, Canvas *c)
 {
 	static const Hint H[] = {{"A", "Type"}, {"B", "Delete"}, {"L1R1", "Field"}, {"START", "Go"}};

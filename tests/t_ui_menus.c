@@ -324,6 +324,64 @@ static void test_name_limit_and_case(void)
 	CHECK(ui.ng.shift);
 }
 
+static void test_typed_text(void)
+{
+	ui_test_setup(&app, &ui, 30);
+	ng_open(&ui, 1, "");
+	CHECK(ui_wants_text(&ui));
+	ui_text(&ui, "Sam");
+	CHECK_STR(ui.ng.name, "Sam");
+	CHECK_EQ(ui.ng.zone, 2);			/* focus on START HUSTLING */
+	ui_text(&ui, " Q\x01\x7f\xc3\xa9!z");
+	CHECK_STR(ui.ng.name, "Sam Q!z");		/* case kept, non-printable ignored */
+	ui_text(&ui, "0123456789abcdefgh");
+	CHECK_EQ((int)strlen(ui.ng.name), 15);
+	CHECK_STR(ui.ng.name, "Sam Q!z01234567");
+	ui_text(&ui, "x");
+	CHECK_STR(ui.ng.name, "Sam Q!z01234567");
+
+	ng_open(&ui, 1, "");			/* focus back on the keyboard; control bytes alone do not move it */
+	ui_text(&ui, "\x01\x1f");
+	CHECK_EQ(ui.ng.zone, 1);
+	CHECK_STR(ui.ng.name, "");
+	ui_text(&ui, "");
+	CHECK_EQ(ui.ng.zone, 1);
+
+	/* Enter after typing reaches START HUSTLING; a saved game still needs its own A */
+	ui_text(&ui, "Tom Smith");
+	press_seq(&ui, "A");
+	CHECK_EQ(ui.confirm, CONFIRM_REPLACE);
+	CHECK_STR(app.g.name, "Test");
+	press_seq(&ui, "A");
+	CHECK_STR(app.g.name, "Tom Smith");
+
+	/* not on other screens */
+	ui_test_setup(&app, &ui, 30);
+	CHECK(!ui_wants_text(&ui));
+	ui_text(&ui, "abc");
+	CHECK_STR(ui.ng.name, "");
+	ui_init(&ui, &app);
+	CHECK(!ui_wants_text(&ui));
+}
+
+static void test_typed_text_blocked_by_prompt(void)
+{
+	ui_test_setup(&app, &ui, 30);		/* has a game, so START asks first */
+	ng_open(&ui, 1, "Sam");
+	press_seq(&ui, "START");
+	CHECK_EQ(ui.confirm, CONFIRM_REPLACE);
+	CHECK(!ui_wants_text(&ui));
+	ui_text(&ui, "xyz");
+	CHECK_STR(ui.ng.name, "Sam");
+	press_seq(&ui, "B");
+	CHECK(ui_wants_text(&ui));
+	ui_text(&ui, "m");
+	CHECK_STR(ui.ng.name, "Samm");
+	CHECK_EQ(ui.ng.zone, 2);
+	press_seq(&ui, "A");			/* START HUSTLING asks, it does not replace */
+	CHECK_EQ(ui.confirm, CONFIRM_REPLACE);
+}
+
 static void test_keyboard_navigation(void)
 {
 	ui_test_setup(&app, &ui, 30);
@@ -930,6 +988,8 @@ void tests_ui_menus(void)
 	test_scores_draw_and_highlight();
 	test_scores_after_game();
 	test_quit();
+	test_typed_text();
+	test_typed_text_blocked_by_prompt();
 	test_every_screen_draws();
 	test_menu_over_market_dims();
 }

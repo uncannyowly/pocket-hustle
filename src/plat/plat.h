@@ -9,11 +9,12 @@
 #include "ui/input.h"		/* PAD_* ids and PAD_BIT */
 
 typedef struct { uint32_t *pixels; int w, h, pitch; } Framebuffer;	/* 640 x 480 XRGB8888; pitch in pixels */
-enum { PLAT_MAX_CLICKS = 8 };
+enum { PLAT_MAX_CLICKS = 8, PLAT_TEXT_MAX = 64 };
 typedef struct {
 	uint32_t held;
 	int nclicks;				/* left clicks since the last poll, in arrival order */
 	struct { int x, y; } click[PLAT_MAX_CLICKS];	/* framebuffer pixels */
+	char text[PLAT_TEXT_MAX];		/* printable ASCII typed since the last poll, only while text input is on */
 	int quit;
 } PlatEvents;
 typedef void (*AudioCallback)(int16_t *stereo, int frames, void *user);
@@ -26,6 +27,11 @@ void plat_present(void);
  * poll still shows as held once). click[0..nclicks) are the left clicks, in order. At most PLAT_MAX_CLICKS are
  * returned per poll; polling stops there and the rest stay queued for the next poll. */
 void plat_poll(PlatEvents *ev);
+/* Text input (PC only; the Miyoo has no keyboard and never turns it on). While on, the keys
+ * that type a character (letters, digits, punctuation, Space) are not buttons and arrive in
+ * PlatEvents.text instead; Enter, Esc, Backspace, the arrows, Tab and the brackets stay
+ * buttons. Calling it with the current state does nothing. */
+void plat_text_input(int on);
 uint32_t plat_ms(void);
 void plat_sleep_ms(int ms);
 

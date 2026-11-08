@@ -15,6 +15,7 @@ static SDL_Texture *tex;
 static SDL_AudioDeviceID audio_dev;
 static int is_fullscreen;
 static uint8_t keys[SDL_NUM_SCANCODES];	/* 1 while down */
+static int text_on;				/* text input: typing keys are text, not buttons */
 static int tab_pad = PAD_R1;			/* what the Tab key was when it went down */
 
 static void set_fullscreen(int on)
@@ -102,14 +103,15 @@ static int key_pad(SDL_Scancode s)
 	case SDL_SCANCODE_DOWN: return PAD_DOWN;
 	case SDL_SCANCODE_LEFT: return PAD_LEFT;
 	case SDL_SCANCODE_RIGHT: return PAD_RIGHT;
-	case SDL_SCANCODE_RETURN: case SDL_SCANCODE_KP_ENTER: case SDL_SCANCODE_SPACE: return PAD_A;
+	case SDL_SCANCODE_RETURN: case SDL_SCANCODE_KP_ENTER: return PAD_A;
+	case SDL_SCANCODE_SPACE: return text_on ? -1 : PAD_A;
 	case SDL_SCANCODE_ESCAPE: case SDL_SCANCODE_BACKSPACE: return PAD_B;
 	case SDL_SCANCODE_RIGHTBRACKET: return PAD_R1;
 	case SDL_SCANCODE_LEFTBRACKET: return PAD_L1;
-	case SDL_SCANCODE_Y: return PAD_Y;
-	case SDL_SCANCODE_X: return PAD_X;
-	case SDL_SCANCODE_C: return PAD_SELECT;
-	case SDL_SCANCODE_M: return PAD_START;
+	case SDL_SCANCODE_Y: return text_on ? -1 : PAD_Y;
+	case SDL_SCANCODE_X: return text_on ? -1 : PAD_X;
+	case SDL_SCANCODE_C: return text_on ? -1 : PAD_SELECT;
+	case SDL_SCANCODE_M: return text_on ? -1 : PAD_START;
 	default: return -1;
 	}
 }
@@ -127,6 +129,21 @@ static uint32_t held_now(void)
 	return held;
 }
 
+void plat_text_input(int on)
+{
+	on = on != 0;
+	if (on == text_on)
+		return;
+	text_on = on;
+	/* a key held across the switch must not suddenly count (or stop counting) as a button */
+	keys[SDL_SCANCODE_SPACE] = keys[SDL_SCANCODE_Y] = keys[SDL_SCANCODE_X] = 0;
+	keys[SDL_SCANCODE_C] = keys[SDL_SCANCODE_M] = 0;
+	if (on)
+		SDL_StartTextInput();
+	else
+		SDL_StopTextInput();
+}
+
 void plat_poll(PlatEvents *ev)
 {
 	SDL_Event e;
@@ -134,6 +151,7 @@ void plat_poll(PlatEvents *ev)
 
 	ev->nclicks = 0;
 	ev->quit = 0;
+	ev->text[0] = '\0';
 	while (ev->nclicks < PLAT_MAX_CLICKS && SDL_PollEvent(&e)) {
 		switch (e.type) {
 		case SDL_QUIT:
@@ -163,6 +181,18 @@ void plat_poll(PlatEvents *ev)
 			if (e.key.keysym.scancode < SDL_NUM_SCANCODES)
 				keys[e.key.keysym.scancode] = 0;
 			break;
+		case SDL_TEXTINPUT: {
+			size_t n = strlen(ev->text);
+			const char *t;
+
+			if (!text_on)
+				break;
+			for (t = e.text.text; *t && n + 1 < sizeof ev->text; t++)
+				if ((unsigned char)*t >= 0x20 && (unsigned char)*t <= 0x7e && *t != '[' && *t != ']')
+					ev->text[n++] = *t;
+			ev->text[n] = '\0';
+			break;
+		}
 		case SDL_WINDOWEVENT:
 			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
 				memset(keys, 0, sizeof keys);

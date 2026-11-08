@@ -29,6 +29,10 @@ else `~/.local/share/pocket-hustle`), `--seed N`, `--fullscreen`, `--mute`.
 | M | START (pause menu) |
 | F11 or Alt+Enter | fullscreen |
 
+On the new game screen the keyboard types the name instead (letters, digits, punctuation and
+Space, up to 15 characters); Y, X, C, M and Space are letters there, Backspace deletes, and Enter
+starts the game after you type.
+
 The mouse works too: click anything that looks like a button or a row.
 
 ## Other tools

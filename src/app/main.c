@@ -124,6 +124,7 @@ int main(int argc, char **argv)
 		uint32_t fire;
 		int pressed = 0, b;
 
+		plat_text_input(ui_wants_text(&ui) && !scripted);
 		plat_poll(&ev);
 		if (ev.quit)
 			break;
@@ -131,11 +132,16 @@ int main(int argc, char **argv)
 			now = (uint32_t)frame * TICK_MS;
 			ev.held = 0;
 			ev.nclicks = 0;
+			ev.text[0] = '\0';
 			if (frame % SCRIPT_EVERY == 0 && frame / SCRIPT_EVERY < nkeys)
 				ev.held = PAD_BIT(pads[frame / SCRIPT_EVERY]);
 		} else
 			now = plat_ms();
 
+		if (ev.text[0]) {	/* typed names, before the buttons: Enter then lands on START HUSTLING */
+			ui_text(&ui, ev.text);
+			pressed = 1;
+		}
 		fire = input_step(&rep, ev.held, now);
 		for (b = 0; b < PAD_COUNT; b++)
 			if (fire & PAD_BIT(b)) {

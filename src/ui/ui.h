@@ -39,7 +39,12 @@ typedef struct Ui {
 } Ui;
 
 void ui_init(Ui *u, App *a);			/* starts on SCR_TITLE */
-void ui_press(Ui *u, int pad);			/* a PAD_* button that fired */
+void ui_press(Ui *u, int pad);
+/* Typed text, for platforms with a keyboard (the Miyoo never calls these). ui_wants_text is
+ * true when typing is taken as text (the new game screen, no prompt up); ui_text then appends
+ * the printable ASCII of s to the name and moves focus to START HUSTLING. */
+int  ui_wants_text(const Ui *u);
+void ui_text(Ui *u, const char *s);			/* a PAD_* button that fired */
 /* Canvas coordinates. A click acts on the regions of the last ui_draw, topmost first; any
  * press or click voids them until the next draw, so a click never lands on a stale screen. */
 void ui_click(Ui *u, int x, int y);
