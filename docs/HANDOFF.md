@@ -44,6 +44,9 @@ make text              # build/host/ph-text, the terminal version
 make sim               # build/host/ph-sim, the balance simulator
 make game              # build/host/pocket-hustle, the SDL2 game (needs SDL2)
 make smoke             # headless scripted runs of the game binary, checks the saves
+make miyoo             # (in the toolchain container) build/miyoo/pocket-hustle; scripts/build-miyoo.sh runs it in Docker
+scripts/package.sh     # dist/Roms/PORTS/... and dist/pocket-hustle-<version>.zip (OnionOS package)
+scripts/deploy-sd.sh CARD_ROOT   # installs dist/ on a card, keeps data/
 make shots             # build/shots/NN-name.png, every screen rendered by the real UI code
 scripts/arm-check.sh   # compile and link the tests for the Mini inside Docker
 ```
@@ -127,6 +130,13 @@ numbers that land within 5% of theirs (TOO_CLOSE) as well as ones too far off.
 ARM: `scripts/arm-check.sh` compiles and links for the Mini. Running ARM binaries under
 QEMU (`docker run --platform linux/arm/v7 ...`) needs binfmt registered on the host
 (`docker run --privileged --rm tonistiigi/binfmt --install arm`); ask Seth first.
+
+## Mini build (Plan 3a task 1, 2026-11-08, untested on the device)
+
+`src/plat/plat_miyoo.c` (fb0 double buffer via `src/gfx/panel.c`, evdev, MENU hold via
+`src/ui/hold.c`, MI_AO by dlopen, no SDL 1.2 fallback: no MI_AO means silent). Test hooks:
+`PH_FAKEFB=WxH:file`, `PH_INPUT=dev`. Package sources are in `pkg/`; version 0.1.0.
+Only the device can show: the picture orientation, buttons, MENU hold, audio and volume.
 
 ## Next
 

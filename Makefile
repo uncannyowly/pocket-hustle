@@ -6,6 +6,7 @@
 #   make game            PC version: build/host/pocket-hustle (needs SDL2)
 #   make smoke           scripted headless run of the game binary
 #   make shots           screenshots of every screen: build/shots/*.png
+#   make miyoo           the Miyoo binary build/miyoo/pocket-hustle (inside the toolchain container; scripts/build-miyoo.sh)
 #   make arm-check       compile and link the tests for the Miyoo (Docker toolchain image)
 
 CFLAGS := -std=c99 -Wall -Wextra -Werror -O2 -g -Isrc -D_POSIX_C_SOURCE=200809L
@@ -20,11 +21,12 @@ TEST_SRC = $(sort $(wildcard tests/*.c)) $(wildcard tools/sim/report.c tools/sim
 TEXT_SRC = $(sort $(wildcard src/text/*.c))
 SIM_SRC = $(sort $(wildcard tools/sim/*.c))
 GAME_SRC = $(sort $(wildcard src/app/*.c src/plat/plat_sdl.c))
+MIYOO_SRC = $(sort $(wildcard src/app/*.c src/plat/plat_miyoo.c))
 SHOTS_SRC = $(sort $(wildcard tools/shots/*.c))
 SDL_CFLAGS = $(shell pkg-config --cflags sdl2)
 SDL_LIBS = $(shell pkg-config --libs sdl2)
 
-.PHONY: all test text sim game smoke shots arm-check arm-check-inner clean
+.PHONY: miyoo all test text sim game smoke shots arm-check arm-check-inner clean
 
 all: build/host/run-tests
 
@@ -68,6 +70,12 @@ ifeq ($(strip $(T)),)
 else
 	build/host/run-tests $(T)
 endif
+
+miyoo: build/miyoo/pocket-hustle
+
+build/miyoo/pocket-hustle: $(CORE_SRC) $(UI_SRC) $(MIYOO_SRC) $(HEADERS)
+	@mkdir -p $(dir $@)
+	$(MIYOO_CC) $(MIYOO_CFLAGS) -o $@ $(CORE_SRC) $(UI_SRC) $(MIYOO_SRC) -lm -ldl -lpthread
 
 arm-check:
 	scripts/arm-check.sh

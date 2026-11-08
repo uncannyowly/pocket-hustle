@@ -5,7 +5,7 @@ You start broke and in debt, with a fixed number of days to work seven cities: O
 Houston, San Jose, New York City, Miami, New Orleans and Portland. Dodge the cops, keep the
 loan sharks happy and finish with the biggest pile of cash.
 
-The game plays on the PC today (SDL2, with sound effects). The Miyoo build is next.
+The game plays on the PC (SDL2, with sound effects) and on the Miyoo Mini under OnionOS.
 
 ## Play on the PC
 
@@ -34,6 +34,19 @@ Space, up to 15 characters); Y, X, C, M and Space are letters there, Backspace d
 starts the game after you type.
 
 The mouse works too: click anything that looks like a button or a row.
+
+## Install on the Miyoo Mini (OnionOS)
+
+```sh
+scripts/package.sh                         # builds in Docker, writes dist/ and dist/pocket-hustle-<version>.zip
+scripts/deploy-sd.sh /run/media/$USER/CARD # or extract the zip at the card root
+```
+
+Then Games > Ports > Strategy > Pocket Hustle (run "~Import ports" if it is not listed). Buttons:
+D-pad, A confirm, B back, L1/R1 panels, Y max, X zero, SELECT chart, START menu; hold MENU for
+2 seconds to save and leave. Saves are in `Roms/PORTS/Games/PocketHustle/data`. The install
+touches only the game folder, the `.port` shortcut and the box art, and keeps `data/`.
+`make miyoo` (inside the toolchain container) or `scripts/build-miyoo.sh` builds only the binary.
 
 ## Other tools
 
