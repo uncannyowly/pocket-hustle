@@ -166,7 +166,9 @@ LINES(t_crew_offer,
 LINES(t_crew_paid,
 	L("The cut batch moved fast. The crew pays you {amount}. You try not to think about it."));
 LINES(t_overdose,
-	L("The cut batch hit the streets and people overdosed. {city} wants you gone, for good. You leave with nothing."));
+	L("The cut batch hit the streets and people overdosed. {city} wants you gone, for good. Your stash is gone."));
+LINES(t_debt_sold,
+	L("Your old lender sold your debt to {lender}. You owe {amount} here now."));
 
 typedef struct { const TextLine *lines; int n; const char *allowed; } KindText;
 
@@ -203,6 +205,7 @@ static const KindText KINDS[NUM_MSG_KINDS] = {
 	[M_CREW_OFFER]  = K(t_crew_offer, "hood city name"),
 	[M_CREW_PAID]   = K(t_crew_paid, "amount name"),
 	[M_OVERDOSE]    = K(t_overdose, "city name"),
+	[M_DEBT_SOLD]   = K(t_debt_sold, "lender amount city name"),
 };
 
 int text_lines(MsgKind k, const TextLine **lines)
@@ -295,7 +298,7 @@ static const char *hood_name(int c, int h)
 
 static int a_is_city(MsgKind k)
 {
-	return k == M_FLEW || k == M_GOONS || k == M_RUMOR_JOKE || k == M_OVERDOSE;
+	return k == M_FLEW || k == M_GOONS || k == M_RUMOR_JOKE || k == M_OVERDOSE || k == M_DEBT_SOLD;
 }
 
 /* Writes the value of placeholder ph into v. Returns 0 for an unknown placeholder. */

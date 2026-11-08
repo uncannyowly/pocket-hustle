@@ -30,7 +30,7 @@ static int card_kind(const Game *g, int msg_kind)
 	case M_RUMOR_TIP: case M_RUMOR_JOKE: return CARD_RUMOR;
 	case M_LAST_DAY: case M_GAME_OVER: return CARD_DAY;
 	case M_RC_FIND: case M_RC_HIT: case M_RC_BUST: case M_RC_BUST_FOUND: return CARD_MARKET;
-	case M_CREW_PAID: case M_OVERDOSE: return CARD_TROUBLE;
+	case M_CREW_PAID: case M_OVERDOSE: case M_DEBT_SOLD: return CARD_TROUBLE;
 	case M_RC_OFFER: return g->offer.kind == OFFER_RC ? CARD_WILD : -1;
 	case M_CREW_OFFER: return g->offer.kind == OFFER_CREW ? CARD_TROUBLE : -1;
 	default: return -1;

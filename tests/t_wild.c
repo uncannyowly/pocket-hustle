@@ -10,6 +10,7 @@
 #include "helpers.h"
 #include "bots.h"
 #include "core/save.h"
+#include "core/game_internal.h"
 #include "content/text.h"
 
 static Loc at(int city, int hood)
@@ -667,6 +668,111 @@ static void test_overdose_spreads_over_cities(void)
 	CHECK_EQ(seen[0], 0);	/* never the city that banned you */
 }
 
+/* A game one ride into a crew offer that will overdose, with `owed` owed in the city of the offer.
+ * *landed is the city the crew will drive the player to (found on a copy: the rolls are fixed). */
+static void od_setup(Game *g, int64_t owed, int *old, int *landed)
+{
+	Params p = crew_params();
+	Game probe;
+
+	p.cohort_od_permille = 1000;
+	new_test_game(g, &p, 30);
+	stock_up(g);
+	ride(g);
+	*old = g->loc.city;
+	g->debt[*old] = owed;
+	g->debt_age[*old] = 6;
+	probe = *g;
+	CHECK_EQ(game_crew_accept(&probe), OK);
+	*landed = probe.loc.city;
+}
+
+static void test_overdose_moves_the_debt(void)
+{
+	Game g, ref;
+	int old, to, i;
+	int64_t sum;
+
+	od_setup(&g, 3000, &old, &to);
+	g.debt[to] = 0;
+	g.debt_age[to] = 0;
+	ref = g;
+	game_advance_day(&ref);		/* what the day costs on its own */
+	CHECK_EQ(game_crew_accept(&g), OK);
+	CHECK_EQ(g.loc.city, to);
+	CHECK_EQ(g.debt[old], 0);
+	CHECK_EQ(g.debt_age[old], 0);
+	CHECK_EQ(g.debt[to], ref.debt[old]);	/* the old debt with the day's interest, now owed here */
+	CHECK_EQ(g.debt_age[to], 0);		/* nothing owed here before: a fresh grace period */
+	sum = 0;
+	for (i = 0; i < NUM_CITIES; i++)
+		sum += g.debt[i];
+	CHECK_EQ(sum, ref.debt[old]);
+	CHECK_EQ(game_net_worth(&g), game_net_worth(&ref));	/* the move itself costs nothing */
+	CHECK_EQ(count_msgs(&g, M_DEBT_SOLD), 1);
+	CHECK_EQ(g.msgs[msg_index(&g, M_DEBT_SOLD)].a, to);
+	CHECK_EQ(g.msgs[msg_index(&g, M_DEBT_SOLD)].amount, g.debt[to]);
+	CHECK_EQ(msg_index(&g, M_DEBT_SOLD), msg_index(&g, M_OVERDOSE) + 1);
+}
+
+static void test_overdose_debt_joins_the_new_lenders(void)
+{
+	Game g, ref;
+	int old, to;
+
+	od_setup(&g, 3000, &old, &to);
+	g.debt[to] = 1000;
+	g.debt_age[to] = 4;
+	ref = g;
+	game_advance_day(&ref);
+	CHECK_EQ(game_crew_accept(&g), OK);
+	CHECK_EQ(g.debt[to], ref.debt[old] + ref.debt[to]);
+	CHECK_EQ(g.debt_age[to], ref.debt_age[to]);	/* the receiving lender's clock keeps running */
+	CHECK_EQ(g.debt[old], 0);
+	CHECK_EQ(g.msgs[msg_index(&g, M_DEBT_SOLD)].amount, g.debt[to]);
+	CHECK_EQ(game_net_worth(&g), game_net_worth(&ref));
+}
+
+static void test_overdose_no_debt_no_message(void)
+{
+	Game g;
+	int old, to;
+
+	od_setup(&g, 0, &old, &to);
+	CHECK_EQ(game_crew_accept(&g), OK);
+	CHECK_EQ(count_msgs(&g, M_DEBT_SOLD), 0);
+	CHECK_EQ(g.debt[to], 0);
+}
+
+static void test_overdose_ending_the_game_moves_no_debt(void)
+{
+	Game g;
+	int old, to;
+
+	od_setup(&g, 3000, &old, &to);
+	g.day = g.last_day;
+	CHECK_EQ(game_crew_accept(&g), OK);
+	CHECK_EQ(g.phase, PH_OVER);
+	CHECK_EQ(count_msgs(&g, M_DEBT_SOLD), 0);
+	CHECK_EQ(g.debt[old], 3000);
+}
+
+static void test_overdose_debt_message_before_last_day(void)
+{
+	Game g;
+	int old, to;
+
+	od_setup(&g, 3000, &old, &to);
+	g.day = g.last_day - 1;		/* the crew's day is the last day */
+	CHECK_EQ(game_crew_accept(&g), OK);
+	CHECK_EQ(g.phase, PH_TRADING);
+	CHECK_EQ(g.day, g.last_day);
+	CHECK_EQ(count_msgs(&g, M_DEBT_SOLD), 1);
+	CHECK_EQ(count_msgs(&g, M_LAST_DAY), 1);
+	CHECK(msg_index(&g, M_OVERDOSE) < msg_index(&g, M_DEBT_SOLD));
+	CHECK(msg_index(&g, M_DEBT_SOLD) < msg_index(&g, M_LAST_DAY));
+}
+
 static void test_overdose_on_the_last_day_ends_the_game(void)
 {
 	Params p = crew_params();
@@ -1097,6 +1203,11 @@ void tests_wild(void)
 	test_crew_payout_at_least_the_minimum();
 	test_crew_accept_needs_the_stash_still();
 	test_overdose();
+	test_overdose_moves_the_debt();
+	test_overdose_debt_joins_the_new_lenders();
+	test_overdose_no_debt_no_message();
+	test_overdose_ending_the_game_moves_no_debt();
+	test_overdose_debt_message_before_last_day();
 	test_overdose_run_is_quiet();
 	test_overdose_picks_only_unbanned_cities();
 	test_overdose_spreads_over_cities();

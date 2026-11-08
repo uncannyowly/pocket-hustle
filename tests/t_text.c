@@ -199,7 +199,7 @@ static int a_range(MsgKind k)
 {
 	switch (k) {
 	case M_SPIKE: case M_CRASH: case M_DROPPED: case M_RUMOR_TIP: return NUM_GOODS;
-	case M_FLEW: case M_GOONS: case M_RUMOR_JOKE: case M_OVERDOSE: return NUM_CITIES;
+	case M_FLEW: case M_GOONS: case M_RUMOR_JOKE: case M_OVERDOSE: case M_DEBT_SOLD: return NUM_CITIES;
 	case M_RC_OFFER: case M_RC_FIND: case M_RC_HIT: case M_RC_BUST: case M_RC_BUST_FOUND: return NUM_CHEMS;
 	case M_RODE: return HOODS_PER_CITY;
 	case M_BOUGHT_GEAR: return NUM_GEAR;
@@ -287,7 +287,9 @@ static void test_wild_lines_exact(void)
 	CHECK_EQ(text_lines(M_CREW_PAID, &lines), 1);
 	CHECK(has_line(M_CREW_PAID, "The cut batch moved fast. The crew pays you {amount}. You try not to think about it."));
 	CHECK_EQ(text_lines(M_OVERDOSE, &lines), 1);
-	CHECK(has_line(M_OVERDOSE, "The cut batch hit the streets and people overdosed. {city} wants you gone, for good. You leave with nothing."));
+	CHECK_EQ(text_lines(M_DEBT_SOLD, &lines), 1);
+	CHECK(has_line(M_DEBT_SOLD, "Your old lender sold your debt to {lender}. You owe {amount} here now."));
+	CHECK(has_line(M_OVERDOSE, "The cut batch hit the streets and people overdosed. {city} wants you gone, for good. Your stash is gone."));
 }
 
 static void test_rc_placeholder_only_in_chem_kinds(void)
@@ -324,12 +326,17 @@ static void test_wild_lines_format(void)
 	m.a = 4;
 	text_msg(&g, &m, b, sizeof b);
 	CHECK(strstr(b, "Miami wants you gone") != NULL);
+	m.kind = M_DEBT_SOLD;
+	m.a = 4;
+	m.amount = 4321;
+	text_msg(&g, &m, b, sizeof b);
+	CHECK_STR(b, "Your old lender sold your debt to Flamingo Flo. You owe $4,321 here now.");
 }
 
 /* Serious, and kept away from Podcast Pete. */
 static void test_crew_path_is_sober(void)
 {
-	static const MsgKind crew[] = { M_CREW_OFFER, M_CREW_PAID, M_OVERDOSE };
+	static const MsgKind crew[] = { M_CREW_OFFER, M_CREW_PAID, M_OVERDOSE, M_DEBT_SOLD };
 	const TextLine *lines;
 	size_t i;
 	int n, j, k;
@@ -352,7 +359,7 @@ static void test_crew_path_is_sober(void)
 		CHECK(strstr(lines[j].t, "fentanyl") == NULL);
 	/* only the crew kinds mention it */
 	for (k = 0; k < NUM_MSG_KINDS; k++) {
-		int is_crew = k == M_CREW_OFFER || k == M_CREW_PAID || k == M_OVERDOSE;
+		int is_crew = k == M_CREW_OFFER || k == M_CREW_PAID || k == M_OVERDOSE || k == M_DEBT_SOLD;
 		n = text_lines((MsgKind)k, &lines);
 		for (j = 0; j < n; j++)
 			if (!is_crew)

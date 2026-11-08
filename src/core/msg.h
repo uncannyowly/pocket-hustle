@@ -36,6 +36,7 @@ typedef enum {
 	M_CREW_OFFER,
 	M_CREW_PAID,	/* amount payout */
 	M_OVERDOSE,	/* a the city that banned you */
+	M_DEBT_SOLD,	/* a the city you landed in, amount what you owe its lender now */
 	NUM_MSG_KINDS
 } MsgKind;
 
