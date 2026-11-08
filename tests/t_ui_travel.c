@@ -434,6 +434,31 @@ static void test_announced_spike_inside_range(void)
 	CHECK_EQ(price_flag(&app.g, 5), PF_NORMAL);
 }
 
+static void test_line_colors_distinct(void)
+{
+	uint32_t col[NUM_CITIES];
+	int city;
+
+	for (city = 0; city < NUM_CITIES; city++) {
+		ui_test_setup(&app, &ui, 30);
+		app.g.loc.city = (uint8_t)city;
+		app.g.loc.hood = 0;
+		press_seq(&ui, "R1 R1 A");
+		CHECK_EQ(ui.scr, SCR_MOVE);
+		ui_draw(&ui, &cv);
+		col[city] = px(23, 110);	/* the line between the first two stops */
+		CHECK(col[city] != PAL_PANEL && col[city] != 0);
+		if (city > 0)
+			CHECK(col[city] != col[city - 1]);
+	}
+	for (city = 0; city < NUM_CITIES; city++) {
+		int k;
+
+		for (k = city + 1; k < NUM_CITIES; k++)
+			CHECK(col[city] != col[k]);
+	}
+}
+
 void tests_ui_travel(void)
 {
 	test_move_starts_on_current_hood();
@@ -453,4 +478,5 @@ void tests_ui_travel(void)
 	test_move_on_last_day_ends();
 	test_goons_kill_on_arrival();
 	test_announced_spike_inside_range();
+	test_line_colors_distinct();
 }

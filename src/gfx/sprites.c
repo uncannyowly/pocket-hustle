@@ -11,11 +11,17 @@
 
 typedef struct { uint32_t bg, skin, dk, shirt; } Look;
 
-static const Look LOOK[7] = {
+static const Look LOOK[18] = {
 	{0x3a2556u, 0xe2a878u, 0xb9805au, 0x3a7bd5u}, {0x7a3a26u, 0xc98e62u, 0x9c6a46u, 0xc0392bu},
 	{0x2b5f86u, 0xf0c49au, 0xc99a74u, 0x6b7280u}, {0x18234au, 0xd9a57cu, 0xad7f5cu, 0x2c3e50u},
 	{0x9c3a7au, 0xa86b45u, 0x7f4f31u, 0x18b5a4u}, {0x3c1d5cu, 0x8a5636u, 0x6a3f26u, 0x3a2a5au},
 	{0x4f5d6au, 0xf1c7a0u, 0xc99f7cu, 0xb23a3au},
+	{0x8a3b1fu, 0xf6d3b4u, 0xd0a584u, 0xe8e0d0u}, {0x5f7f8fu, 0xbf8458u, 0x976438u, 0x6a4a8au},
+	{0xc9507au, 0x7a4a2eu, 0x5a3420u, 0x2a2a3au}, {0x3b5a4au, 0xeec3a0u, 0xc99a74u, 0xb03a2eu},
+	{0x2a3f6au, 0xd49a6eu, 0xad7a52u, 0xc23a1eu}, {0x6aa0c8u, 0x9a6040u, 0x74442au, 0x7a5a2eu},
+	{0x2fa3a8u, 0xe39a78u, 0xb9704fu, 0xf4f0e0u}, {0xe08a2au, 0xb67a52u, 0x8f5a38u, 0xe0307au},
+	{0x1f8fb8u, 0xcf9468u, 0xa67046u, 0xff7a5au}, {0xf0a860u, 0xf0b890u, 0xc88e68u, 0x2fb0c0u},
+	{0x7a2a3au, 0x8a5030u, 0x683a20u, 0xf0e8d8u},
 };
 
 void art_portrait(Canvas *c, int city, int x, int y)
@@ -24,7 +30,7 @@ void art_portrait(Canvas *c, int city, int x, int y)
 	int k;
 #define Q(a, b, w, h, col) cv_rect(c, x + (a) * 2, y + (b) * 2, (w) * 2, (h) * 2, col)
 
-	if (city < 0 || city > 6)
+	if (city < 0 || city > 17)
 		return;
 	l = &LOOK[city];
 	Q(0, 0, 28, 28, l->bg);
@@ -76,12 +82,92 @@ void art_portrait(Canvas *c, int city, int x, int y)
 			Q(8 + k * 2, 22, 1, 1, bc[k % 3]);
 		break;
 	}
-	default:
+	case 6:
 		Q(8, 3, 12, 4, 0xe07a2fu); Q(8, 6, 12, 1, 0xc0601fu); Q(13, 1, 2, 2, 0xf4d0a8u); Q(8, 15, 12, 6, 0x8a5a2bu);
 		Q(9, 21, 10, 1, 0x8a5a2bu); Q(12, 16, 4, 1, 0x5a3418u);
 		for (k = 0; k < 7; k++)
 			Q(4 + k * 3, 22, 1, 6, 0x2a1a1au);
 		Q(2, 25, 24, 1, 0x2a1a1au);
+		break;
+	case 7:	/* Brisket Brenda: big blond hair, apron, a smoked brisket */
+		Q(5, 0, 18, 3, 0xe8c15au); Q(4, 3, 20, 5, 0xe8c15au); Q(3, 6, 3, 10, 0xe8c15au); Q(22, 6, 3, 10, 0xe8c15au);
+		Q(8, 2, 3, 1, 0xf6e08au); Q(15, 4, 4, 1, 0xf6e08au); Q(8, 8, 12, 1, 0xd0a840u);
+		Q(8, 22, 12, 6, 0xb03030u); Q(9, 23, 10, 1, 0xe8e0d0u); Q(12, 25, 4, 1, 0xe8e0d0u);
+		Q(20, 23, 7, 4, 0x5a2e1au); Q(21, 24, 5, 1, 0xc0506au); Q(21, 26, 5, 1, 0x3a1c10u);
+		break;
+	case 8:	/* Sourdough Sam: green beanie, beard, a scored loaf */
+		Q(8, 3, 12, 4, 0x2f6f4fu); Q(8, 6, 12, 1, 0x1f4f38u); Q(13, 1, 2, 2, 0xd8d8c0u);
+		Q(9, 15, 10, 5, 0x6a4a2au); Q(12, 17, 4, 1, 0x5a2a2au); Q(8, 12, 1, 4, 0x6a4a2au); Q(19, 12, 1, 4, 0x6a4a2au);
+		Q(16, 22, 10, 5, 0xc98a3au); Q(17, 22, 8, 1, 0xdca64eu); Q(18, 23, 5, 1, 0xf0d9a0u); Q(20, 25, 5, 1, 0xa86e2au);
+		Q(19, 24, 4, 1, 0xf0d9a0u);
+		break;
+	case 9:	/* Influencer Ivy: ring light glow, shades, a phone */
+		Q(4, 2, 20, 1, 0xfff2c8u); Q(3, 3, 1, 18, 0xfff2c8u); Q(24, 3, 1, 18, 0xfff2c8u); Q(5, 1, 18, 1, 0xffd0e4u);
+		Q(2, 4, 1, 14, 0xffa8cfu); Q(25, 4, 1, 14, 0xffa8cfu);
+		Q(7, 3, 14, 4, 0x1e1218u); Q(5, 6, 3, 14, 0x1e1218u); Q(20, 6, 3, 14, 0x1e1218u);
+		Q(9, 11, 4, 3, 0x101018u); Q(15, 11, 4, 3, 0x101018u); Q(13, 11, 2, 1, 0x101018u);
+		Q(10, 11, 1, 1, 0xffb3d4u); Q(16, 11, 1, 1, 0xffb3d4u); Q(11, 17, 6, 1, 0xffffffu);
+		Q(21, 15, 4, 7, 0x20202au); Q(22, 16, 2, 5, 0x7fd0ffu);
+		break;
+	case 10:	/* Espresso Ezra: messy hair, round specs, flannel, a coffee cup */
+		Q(7, 4, 14, 3, 0x4a3020u); Q(6, 6, 2, 5, 0x4a3020u); Q(20, 6, 2, 5, 0x4a3020u); Q(9, 3, 3, 1, 0x4a3020u);
+		Q(9, 10, 4, 1, 0x2a2a2au); Q(9, 13, 4, 1, 0x2a2a2au); Q(9, 10, 1, 4, 0x2a2a2au); Q(12, 10, 1, 4, 0x2a2a2au);
+		Q(15, 10, 4, 1, 0x2a2a2au); Q(15, 13, 4, 1, 0x2a2a2au); Q(15, 10, 1, 4, 0x2a2a2au); Q(18, 10, 1, 4, 0x2a2a2au);
+		Q(13, 11, 2, 1, 0x2a2a2au); Q(9, 18, 10, 2, 0xc9a07cu);
+		for (k = 0; k < 6; k++)
+			Q(4 + k * 4, 22, 1, 6, 0x1a1a1au);
+		Q(2, 25, 24, 1, 0x1a1a1au);
+		Q(21, 19, 5, 1, 0x3a2a1au); Q(21, 20, 5, 6, 0xf4efe6u); Q(21, 22, 5, 2, 0x8a5a2bu);
+		Q(22, 16, 1, 2, 0xddddddu); Q(24, 17, 1, 2, 0xddddddu);
+		break;
+	case 11:	/* Three-Way Wes: side part, mustache, chili-red apron, a bowl */
+		Q(8, 4, 12, 3, 0x3a2418u); Q(8, 3, 8, 1, 0x3a2418u); Q(7, 6, 1, 4, 0x3a2418u); Q(20, 6, 1, 4, 0x3a2418u);
+		Q(10, 16, 8, 1, 0x3a2418u); Q(9, 17, 2, 1, 0x3a2418u); Q(17, 17, 2, 1, 0x3a2418u);
+		Q(8, 20, 1, 3, 0xf2f2f2u); Q(19, 20, 1, 3, 0xf2f2f2u);
+		Q(9, 24, 10, 3, 0xe8e0d0u); Q(10, 27, 8, 1, 0xc8c0b0u); Q(10, 23, 8, 1, 0x7a2a10u);
+		Q(11, 22, 6, 1, 0xf2c14au); Q(10, 21, 1, 1, 0xf2c14au);
+		break;
+	case 12:	/* Propeller Pat: aviator cap, goggles, scarf, a propeller on top */
+		Q(7, 3, 14, 5, 0x6b4423u); Q(6, 7, 2, 8, 0x6b4423u); Q(20, 7, 2, 8, 0x6b4423u); Q(8, 7, 12, 1, 0x4a2e16u);
+		Q(9, 1, 10, 1, 0xc0c0c8u); Q(13, 0, 2, 3, 0xe0e0e0u);
+		Q(9, 10, 4, 4, 0x2a2a2au); Q(15, 10, 4, 4, 0x2a2a2au); Q(13, 11, 2, 1, 0x2a2a2au);
+		Q(10, 11, 2, 2, 0x9fd8ffu); Q(16, 11, 2, 2, 0x9fd8ffu); Q(10, 11, 1, 1, 0xffffffu); Q(16, 11, 1, 1, 0xffffffu);
+		Q(8, 20, 12, 2, 0xf2f2f2u); Q(20, 21, 4, 5, 0xf2f2f2u);
+		break;
+	case 13:	/* Snapper Sally: tan bucket hat with a lure, sunburn, a red snapper */
+		Q(7, 2, 14, 5, 0xd8c07au); Q(4, 6, 20, 2, 0xd8c07au); Q(8, 8, 12, 1, 0xb89a54u); Q(7, 5, 14, 1, 0x3a6a4au);
+		Q(8, 3, 2, 1, 0xe04a3au);
+		Q(8, 14, 3, 2, 0xd0503au); Q(17, 14, 3, 2, 0xd0503au); Q(13, 14, 2, 2, 0xd0503au);
+		Q(16, 23, 8, 3, 0xe04a4au); Q(24, 22, 2, 5, 0xe04a4au); Q(17, 24, 1, 1, 0xffffffu); Q(17, 25, 6, 1, 0xf5b0a0u);
+		break;
+	case 14:	/* Zonkey Zoe: black and white striped zonkey hat with ears, braids */
+		for (k = 0; k < 6; k++)
+			Q(8 + k * 2, 3, 2, 4, k & 1 ? 0x1a1a1au : 0xf2f2f2u);
+		Q(8, 6, 12, 1, 0x1a1a1au); Q(8, 0, 2, 4, 0xf2f2f2u); Q(18, 0, 2, 4, 0x1a1a1au); Q(9, 1, 1, 2, 0xf0a0b0u);
+		Q(18, 1, 1, 2, 0xf0a0b0u); Q(6, 7, 2, 12, 0x1a1018u); Q(20, 7, 2, 12, 0x1a1018u); Q(6, 19, 2, 2, 0xe0307au);
+		Q(20, 19, 2, 2, 0xe0307au); Q(13, 5, 2, 1, 0xf2f2f2u);
+		break;
+	case 15:	/* Reef Rita: sun-bleached hair, dive mask on the forehead, a snorkel */
+		Q(7, 3, 14, 3, 0xe8c870u); Q(6, 5, 2, 10, 0xe8c870u); Q(20, 5, 2, 10, 0xe8c870u);
+		Q(8, 6, 12, 4, 0x1a2a3au); Q(9, 7, 10, 2, 0x7fe0ffu); Q(13, 7, 2, 2, 0x1a2a3au); Q(10, 7, 2, 1, 0xdff8ffu);
+		Q(7, 7, 1, 2, 0x1a1a1au); Q(20, 7, 1, 2, 0x1a1a1au);
+		Q(22, 2, 2, 9, 0xffd04au); Q(22, 1, 3, 1, 0xffd04au); Q(22, 11, 1, 1, 0xff7a5au);
+		break;
+	case 16:	/* Timeshare Tim: slicked hair, big white grin, polo, a clipboard */
+		Q(8, 4, 12, 3, 0x3a2a1au); Q(9, 3, 10, 1, 0x3a2a1au); Q(8, 6, 2, 2, 0x3a2a1au); Q(10, 4, 3, 1, 0x6a5238u);
+		Q(11, 17, 6, 1, 0xffffffu); Q(10, 16, 1, 1, 0xffffffu); Q(17, 16, 1, 1, 0xffffffu);
+		Q(9, 21, 3, 2, 0xffffffu); Q(16, 21, 3, 2, 0xffffffu); Q(6, 24, 3, 2, 0xffffffu);
+		Q(19, 16, 8, 10, 0x8a5a2bu); Q(20, 17, 6, 8, 0xf5f5f0u); Q(22, 16, 2, 1, 0xc0c0c8u);
+		Q(21, 19, 4, 1, 0x8a8a98u); Q(21, 21, 4, 1, 0x8a8a98u); Q(21, 23, 3, 1, 0x8a8a98u);
+		break;
+	default:	/* Banda Bea: black brimmed hat with a gold band, earrings, a sash */
+		Q(9, 1, 10, 5, 0x2a2a32u); Q(3, 6, 22, 2, 0x2a2a32u); Q(9, 5, 10, 1, 0xe8b030u); Q(3, 7, 22, 1, 0xe8b030u);
+		Q(6, 8, 2, 10, 0x140c10u); Q(20, 8, 2, 10, 0x140c10u); Q(6, 16, 1, 2, 0xe8b030u); Q(21, 16, 1, 2, 0xe8b030u);
+		Q(9, 11, 4, 1, 0x140c10u); Q(15, 11, 4, 1, 0x140c10u); Q(12, 17, 4, 1, 0xa03a4au);
+		for (k = 0; k < 5; k++) {
+			Q(5 + k * 4, 22 + k, 5, 2, 0xd02a8au);
+			Q(5 + k * 4, 23 + k, 1, 1, 0xe8b030u);
+		}
 		break;
 	}
 #undef Q

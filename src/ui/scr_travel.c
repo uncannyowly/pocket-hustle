@@ -13,6 +13,8 @@
 /* Each city's transit line color (art, so it lives with the screen). */
 static const uint32_t LINE_COL[NUM_CITIES] = {
 	0xd94f8au, 0xe0463cu, 0x3c8fe0u, 0xf2a33au, 0x3cc47au, 0x2fa36au, 0xe0b43cu,
+	0x8a5ce0u, 0x2fc4c8u, 0xb4e03cu, 0x3c6ae0u, 0xe03c5au, 0x9ad0f0u,
+	0xf0e08au, 0xe05ac8u, 0x3ce0b0u, 0xf09a5au, 0xc0a0f0u,
 };
 static const Hint GO_HINTS[3] = {{"A", "Ride"}, {"B", "Back"}, {"START", "Menu"}};
 static const Hint FLY_HINTS[3] = {{"A", "Fly"}, {"B", "Back"}, {"START", "Menu"}};

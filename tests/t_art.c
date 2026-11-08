@@ -109,12 +109,22 @@ static void test_backdrops_animate(void)
 	}
 }
 
+static int set_count(const Canvas *c)
+{
+	int i, n = 0;
+
+	for (i = 0; i < CV_W * CV_H; i++)
+		if (c->px[i] != SENT)
+			n++;
+	return n;
+}
+
 static void test_portraits(void)
 {
-	uint32_t h[7];
+	uint32_t h[18];
 	int city, a, b, i, outside, same = 0;
 
-	for (city = 0; city < 7; city++) {
+	for (city = 0; city < 18; city++) {
 		cv_clear(&cv, SENT);
 		art_portrait(&cv, city, 100, 80);
 		outside = 0;
@@ -125,10 +135,11 @@ static void test_portraits(void)
 				outside++;
 		}
 		CHECK_EQ(outside, 0);
+		CHECK(set_count(&cv) == 56 * 56);	/* the whole box is painted */
 		h[city] = hash_rows(80, 56);
 	}
-	for (a = 0; a < 7; a++)
-		for (b = a + 1; b < 7; b++)
+	for (a = 0; a < 18; a++)
+		for (b = a + 1; b < 18; b++)
 			if (h[a] == h[b])
 				same++;
 	CHECK_EQ(same, 0);
@@ -158,16 +169,6 @@ static void test_cop_boss_differs(void)
 	art_cop(&cv, 50, 200, 2, 0);
 	hp = hash_rows(0, 240);
 	CHECK(hb != hp);
-}
-
-static int set_count(const Canvas *c)
-{
-	int i, n = 0;
-
-	for (i = 0; i < CV_W * CV_H; i++)
-		if (c->px[i] != SENT)
-			n++;
-	return n;
 }
 
 static void test_icons_nonempty(void)
