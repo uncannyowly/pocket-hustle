@@ -109,6 +109,8 @@ static void title_continue(Ui *u)
 		play(u, SFX_OK);
 	}
 	go(u, s);
+	if (s == SCR_MARKET)
+		ui_show_open_offer(u, SCR_MARKET);	/* a pending offer comes back as its card */
 }
 
 static void scores_open(Ui *u, Screen from)

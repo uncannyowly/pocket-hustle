@@ -37,25 +37,48 @@ static int card_kind(const Game *g, int msg_kind)
 	}
 }
 
+/* Fills a card from a message already known to make one (kind k). */
+static void fill_card(const Game *g, const Msg *m, int k, Card *cd)
+{
+	cd->kind = (CardKind)k;
+	cd->good = (m->kind == M_SPIKE || m->kind == M_CRASH) && m->a >= 0 && m->a < NUM_GOODS ? (int8_t)m->a : -1;
+	cd->choice = m->kind == M_RC_OFFER ? CHOICE_RC : m->kind == M_CREW_OFFER ? CHOICE_CREW : CHOICE_NONE;
+	text_msg(g, m, cd->text, sizeof cd->text);
+}
+
 /* The cards the game's messages make, at most `max`; the count. */
 static int make_cards(const Game *g, Card *out, int max)
 {
 	int i, n = 0;
 
 	for (i = 0; i < g->nmsgs && i < MAX_MSGS && n < max; i++) {
-		const Msg *m = &g->msgs[i];
-		int k = card_kind(g, m->kind);
-		Card *cd;
+		int k = card_kind(g, g->msgs[i].kind);
 
-		if (k < 0)
-			continue;
-		cd = &out[n++];
-		cd->kind = (CardKind)k;
-		cd->good = (m->kind == M_SPIKE || m->kind == M_CRASH) && m->a >= 0 && m->a < NUM_GOODS ? (int8_t)m->a : -1;
-		cd->choice = m->kind == M_RC_OFFER ? CHOICE_RC : m->kind == M_CREW_OFFER ? CHOICE_CREW : CHOICE_NONE;
-		text_msg(g, m, cd->text, sizeof cd->text);
+		if (k >= 0)
+			fill_card(g, &g->msgs[i], k, &out[n++]);
 	}
 	return n;
+}
+
+void ui_show_open_offer(Ui *u, Screen after)
+{
+	const Game *g = &u->app->g;
+	Msg m;
+	int k;
+
+	if (g->phase != PH_TRADING || g->offer.kind == OFFER_NONE)
+		return;
+	memset(&m, 0, sizeof m);
+	m.kind = g->offer.kind == OFFER_RC ? M_RC_OFFER : M_CREW_OFFER;
+	m.a = g->offer.chem;
+	k = card_kind(g, m.kind);
+	if (k < 0)
+		return;
+	fill_card(g, &m, k, &u->news.cards[0]);
+	u->news.n = 1;
+	u->news.i = 0;
+	u->news.after = after;
+	overlay(u, SCR_NEWS, SCR_MARKET);
 }
 
 void ui_collect_news(Ui *u, Screen after)

@@ -969,8 +969,54 @@ static void test_replace_confirm(void)
 	CHECK(app.has_game);
 }
 
+/* A save made with an offer open comes back as its card on Continue. */
+static void resume_with_offer(int kind)
+{
+	static App again;
+	static Ui ui2;
+
+	setup_dir(30);
+	app.g.offer.kind = (uint8_t)kind;
+	app.g.offer.chem = kind == OFFER_RC ? 3 : 0;
+	app.g.offer.day = app.g.day;
+	app.g.p.cohort_od_permille = 0;
+	app.g.p.cohort_min_stash = 1;
+	app.g.crew_offers = kind == OFFER_CREW ? 1 : 0;
+	app.g.stash[0] = 10;
+	press_seq(&ui, "START D D D A");		/* save and quit */
+	CHECK(file_exists("save.dat"));
+	memset(&again, 0, sizeof again);
+	app_init(&again, dir);
+	app_load(&again);
+	CHECK(again.has_game);
+	CHECK_EQ(again.g.offer.kind, kind);
+	ui_init(&ui2, &again);
+	press_seq(&ui2, "A");				/* CONTINUE */
+	CHECK_EQ(ui2.scr, SCR_NEWS);
+	CHECK_EQ(ui2.news.n, 1);
+	CHECK_EQ(ui2.news.cards[0].choice, kind == OFFER_RC ? CHOICE_RC : CHOICE_CREW);
+	CHECK(strstr(ui2.news.cards[0].text, kind == OFFER_RC ? CHEMS[3].name : "crew") != NULL);
+	if (kind == OFFER_RC) {
+		press_seq(&ui2, "A");
+		CHECK_EQ(ui2.scr, SCR_PICKER);
+		CHECK_EQ(ui2.pk.kind, PK_STAKE);
+		press_seq(&ui2, "B");
+		CHECK_EQ(ui2.scr, SCR_NEWS);
+	}
+	press_seq(&ui2, "B");
+	CHECK_EQ(again.g.offer.kind, OFFER_NONE);
+	CHECK_EQ(ui2.scr, SCR_MARKET);
+}
+
+static void test_continue_brings_back_the_offer(void)
+{
+	resume_with_offer(OFFER_RC);
+	resume_with_offer(OFFER_CREW);
+}
+
 void tests_ui_menus(void)
 {
+	test_continue_brings_back_the_offer();
 	test_end_game_confirm();
 	test_replace_confirm();
 	test_title_continue_without_game();

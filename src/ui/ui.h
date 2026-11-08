@@ -58,6 +58,9 @@ void ui_after_action(Ui *u, int16_t day_before, Phase phase_before);
 /* Turns g->msgs into news cards and shows them over the market, then goes to `after`; with
  * no cards, goes straight there. */
 void ui_collect_news(Ui *u, Screen after);
+/* Shows the open wild card or crew offer, if any, as its card over the market (a save resumed
+ * with one pending); `after` is where the card leads when answered. */
+void ui_show_open_offer(Ui *u, Screen after);
 /* Where Continue on the title goes: SCR_CHASE for a save in a chase, else SCR_MARKET. */
 Screen ui_resume_screen(const Ui *u);
 int  ui_quit(const Ui *u);			/* the title's QUIT was chosen */
