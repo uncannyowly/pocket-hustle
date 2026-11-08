@@ -14,4 +14,7 @@ typedef struct { uint32_t held, due[PAD_COUNT]; } Repeat;
  * 300 ms after the press and every 80 ms after that while held. */
 uint32_t input_step(Repeat *r, uint32_t held, uint32_t now_ms);
 
+/* A button token (U D L R A B X Y L1 R1 SEL START) to its PAD_* id, or -1 if unknown. */
+int input_token(const char *tok);
+
 #endif

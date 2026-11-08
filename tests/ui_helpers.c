@@ -18,16 +18,11 @@ void ui_test_setup(App *a, Ui *u, int days)
 	go(u, SCR_MARKET);
 }
 
-static const struct { const char *tok; int pad; } TOKENS[] = {
-	{"U", PAD_UP}, {"D", PAD_DOWN}, {"L", PAD_LEFT}, {"R", PAD_RIGHT},
-	{"A", PAD_A}, {"B", PAD_B}, {"X", PAD_X}, {"Y", PAD_Y},
-	{"L1", PAD_L1}, {"R1", PAD_R1}, {"SEL", PAD_SELECT}, {"START", PAD_START},
-};
-
 void press_seq(Ui *u, const char *seq)
 {
 	char tok[8];
-	size_t n, i;
+	size_t n;
+	int pad;
 
 	for (;;) {
 		while (*seq == ' ')
@@ -36,15 +31,13 @@ void press_seq(Ui *u, const char *seq)
 			return;
 		for (n = 0; seq[n] && seq[n] != ' '; n++)
 			;
-		for (i = 0; i < sizeof TOKENS / sizeof TOKENS[0]; i++)
-			if (strncmp(seq, TOKENS[i].tok, n) == 0 && TOKENS[i].tok[n] == '\0')
-				break;
-		if (i == sizeof TOKENS / sizeof TOKENS[0]) {
-			snprintf(tok, sizeof tok, "%.*s", (int)(n < sizeof tok - 1 ? n : sizeof tok - 1), seq);
+		snprintf(tok, sizeof tok, "%.*s", (int)(n < sizeof tok - 1 ? n : sizeof tok - 1), seq);
+		pad = n < sizeof tok ? input_token(tok) : -1;
+		if (pad < 0) {
 			fprintf(stderr, "press_seq: unknown token \"%s\"\n", tok);
 			exit(2);
 		}
-		ui_press(u, TOKENS[i].pad);
+		ui_press(u, pad);
 		seq += n;
 	}
 }

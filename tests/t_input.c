@@ -47,8 +47,29 @@ static void test_release_resets(void)
 	CHECK_EQ(input_step(&r, PAD_BIT(PAD_DOWN), 410), PAD_BIT(PAD_DOWN));
 }
 
+static void test_token(void)
+{
+	CHECK_EQ(input_token("U"), PAD_UP);
+	CHECK_EQ(input_token("D"), PAD_DOWN);
+	CHECK_EQ(input_token("L"), PAD_LEFT);
+	CHECK_EQ(input_token("R"), PAD_RIGHT);
+	CHECK_EQ(input_token("A"), PAD_A);
+	CHECK_EQ(input_token("B"), PAD_B);
+	CHECK_EQ(input_token("X"), PAD_X);
+	CHECK_EQ(input_token("Y"), PAD_Y);
+	CHECK_EQ(input_token("L1"), PAD_L1);
+	CHECK_EQ(input_token("R1"), PAD_R1);
+	CHECK_EQ(input_token("SEL"), PAD_SELECT);
+	CHECK_EQ(input_token("START"), PAD_START);
+	CHECK_EQ(input_token("a"), -1);
+	CHECK_EQ(input_token("L2"), -1);
+	CHECK_EQ(input_token(""), -1);
+	CHECK_EQ(input_token("UP"), -1);
+}
+
 void tests_input(void)
 {
+	test_token();
 	test_edge_fires_once();
 	test_dpad_repeats();
 	test_buttons_never_repeat();
