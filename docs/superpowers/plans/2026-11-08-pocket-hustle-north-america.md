@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Everything in Plan 2's and Plan 3a's Global Constraints still holds: no em or en dashes anywhere, printable ASCII player text (write Spanish names without accents: Culiacan, Malecon, Rio), the Beermat denylist, integer-only core and content, the UI never writes Game fields, `make test` pristine, `scripts/arm-check.sh` passing, commit identity from the repo config and a `Co-Authored-By:` line naming the model that wrote the commit.
+- Everything in Plan 2's and Plan 3a's Global Constraints still holds: no em or en dashes anywhere, printable ASCII player text (write Spanish names without accents: Malecon, Rio), the Beermat denylist, integer-only core and content, the UI never writes Game fields, `make test` pristine, `scripts/arm-check.sh` passing, commit identity from the repo config and a `Co-Authored-By:` line naming the model that wrote the commit.
 - Anti-goals from the spec apply with extra care across the border: no neighborhood presented as the poor or dangerous one, no real people named or mocked, no references to cartels, real crimes or real criminals; local flavor (food, music, beaches, landmarks, transit) instead.
 - City order (indices are content; jokes and tests depend on them): the original seven unchanged and first, then the new US cities, then Mexico: 0 Oklahoma City, 1 Houston, 2 San Jose, 3 New York City, 4 Miami, 5 New Orleans, 6 Portland, 7 Dallas, 8 San Francisco, 9 Los Angeles, 10 Seattle, 11 Cincinnati, 12 Dayton, 13 Destin, 14 Tijuana, 15 Cozumel, 16 Los Cabos, 17 Sinaloa. Oklahoma City stays the start city.
 - Name lengths: city names at most 13 characters, nicknames at most 13, short names at most 9, hood names at most 15, lender names at most 19 (the existing content lint limits, extended to the new fields).
@@ -44,7 +44,7 @@ Existing cities keep their biases, lenders, rates, limits and branch masks; thei
 | 14 | Tijuana | TJ | TJ | TIJ | Tijuana International | a calafia | La Revu, Zona Rio, La Cacho, Playas, Hipodromo, Otay | none | Zonkey Zoe 1100 15000 | MX |
 | 15 | Cozumel | Coz | Cozumel | CZM | Cozumel International | a moped | San Miguel, The Malecon, Chankanaab, Punta Sur, El Cedral, San Gervasio | none | Reef Rita 875 22000 | MX |
 | 16 | Los Cabos | Cabo | Cabo | SJD | Los Cabos International | a panga | The Marina, Medano Beach, Land's End, Art District, The Corridor, Pedregal | none | Timeshare Tim 1000 25000 | MX |
-| 17 | Sinaloa | La Perla | Sinaloa | MZT | Mazatlan International | a pulmonia | El Malecon, Olas Altas, Zona Dorada, El Centro, Stone Island, Culiacan | none | Banda Bea 1200 15000 | MX |
+| 17 | Sinaloa | La Perla | Sinaloa | MZT | Mazatlan International | a pulmonia | El Malecon, Olas Altas, Zona Dorada, El Centro, Stone Island, Playa Norte | none | Banda Bea 1200 15000 | MX |
 
 Price tendencies (bias percent, in GOODS order Carts, Weed, Shrooms, Ketamine, Molly, Acid, DMT, Meth, Heroin, Cocaine) for the new cities; the original seven keep theirs:
 
@@ -115,7 +115,13 @@ Messages (exact text; `{rc}` is the chemical, `{amount}` money):
 These lines are serious; no jokes anywhere near this mechanic, and Podcast Pete never mentions it:
 - Offer: "A shady crew in {hood} wants to cut your stash with fentanyl. They promise a huge payout." / "Some people you would rather not know offer to stretch your stash with fentanyl. Big money, they say."
 - Paid: "The cut batch moved fast. The crew pays you {amount}. You try not to think about it."
-- Overdoses: "The cut batch hit the streets and people overdosed. {city} wants you gone, for good. You leave with nothing."
+- Overdoses: "The cut batch hit the streets and people overdosed. {city} wants you gone, for good. Your stash is gone."
+- Debt sold (follows an overdose, once the crew has moved the player): "Your old lender sold your debt to {lender}. You owe {amount} here now." The rule: any debt owed in the banned city moves to the new city's lender and is added to what is owed there (the old city's debt and its age go to zero; if nothing was owed in the new city, the age starts at zero).
+- Prompt: A on DO IT does not accept at once. It opens the game's YES/NO prompt with "Hand your whole stash to the crew?", NO highlighted. YES then A (or a click on YES) accepts; NO, B or a click on NO returns to the same card, still unanswered. WALK AWAY stays B on the card.
+
+Mexico ATMs: with no bank branches in Mexico, the bank screen's blurb in any Mexican hood reads "No branches across the border. Every ATM here charges the fee." (US cities keep "No branch here. The bank symbol on the map marks free banking.").
+
+Rulings of 2026-11-08 (final review): the overdose line now ends "Your stash is gone."; the debt-sold line and its rule are as above; the crew's DO IT asks first; the Mexican ATM line is as above; Sinaloa's sixth hood is Playa Norte (was Culiacan).
 
 New errors: flying to a blacklisted city returns `E_BANNED`; acting on an offer that is not open returns `E_PHASE`. Bots in ph-sim never take offers (balance is unchanged), and one test bot takes every offer to prove nothing breaks over thousands of games.
 
