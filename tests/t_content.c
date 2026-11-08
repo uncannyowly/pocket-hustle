@@ -74,7 +74,7 @@ static const Row ROWS[18] = {
 	 {"The Marina", "Medano Beach", "Land's End", "Art District", "The Corridor", "Pedregal"},
 	 "Timeshare Tim", 1000, 25000, 0, 1},
 	{"Sinaloa", "La Perla", "Sinaloa", "MZT", "Mazatlan International", "a pulmonia",
-	 {"El Malecon", "Olas Altas", "Zona Dorada", "El Centro", "Stone Island", "Culiacan"},
+	 {"El Malecon", "Olas Altas", "Zona Dorada", "El Centro", "Stone Island", "Playa Norte"},
 	 "Banda Bea", 1200, 15000, 0, 1},
 };
 

@@ -74,7 +74,7 @@ const CityDef CITIES[NUM_CITIES] = {
 	 {115, 115, 120, 110, 135, 125, 110,  80, 110,  80},
 	 "Timeshare Tim", 1000, 25000, 0x00, COUNTRY_MX},
 	{"Sinaloa", "La Perla", "Sinaloa", "a pulmonia", "Mazatlan International", "MZT",
-	 {"El Malecon", "Olas Altas", "Zona Dorada", "El Centro", "Stone Island", "Culiacan"},
+	 {"El Malecon", "Olas Altas", "Zona Dorada", "El Centro", "Stone Island", "Playa Norte"},
 	 {125,  60,  95,  95, 125, 100, 100,  60,  75,  55},
 	 "Banda Bea", 1200, 15000, 0x00, COUNTRY_MX},
 };
