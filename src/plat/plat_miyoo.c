@@ -38,6 +38,7 @@
 #include <mi_sys.h>
 
 #include "gfx/panel.h"
+#include "sfx/halve.h"
 #include "ui/hold.h"
 
 enum { W = 640, H = 480, MAX_INPUTS = 4 };
@@ -263,7 +264,7 @@ void plat_poll(PlatEvents *ev)
 					continue;
 				if (buf[k].value == 0)
 					held_now &= ~PAD_BIT(b);
-				else {	/* 1 press, 2 autorepeat */
+				else if (buf[k].value == 1) {	/* 2 is autorepeat: ignored */
 					held_now |= PAD_BIT(b);
 					tapped |= PAD_BIT(b);
 				}
@@ -315,6 +316,7 @@ static void *ao_lib, *sys_lib;
 static pthread_t ao_thread;
 static volatile int ao_running;
 static int ao_open;
+static int ao_halve;	/* the game runs at twice the device rate: average pairs of frames */
 static MI_S32 (*p_MI_SYS_Init)(void);
 static MI_S32 (*p_MI_AO_SetPubAttr)(MI_AUDIO_DEV, MI_AUDIO_Attr_t *);
 static MI_S32 (*p_MI_AO_Enable)(MI_AUDIO_DEV);
@@ -359,13 +361,17 @@ static int system_volume_db(void)
 
 static void *ao_loop(void *arg)
 {
-	static int16_t buf[AO_FRAMES * 2];
+	static int16_t buf[AO_FRAMES * 2], wide[AO_FRAMES * 4];
 	MI_AUDIO_Frame_t frame;
 
 	(void)arg;
 	while (ao_running) {
 		pthread_mutex_lock(&audio_mutex);
-		audio_cb(buf, AO_FRAMES, audio_user);
+		if (ao_halve) {
+			audio_cb(wide, AO_FRAMES * 2, audio_user);
+			audio_halve(buf, wide, AO_FRAMES);
+		} else
+			audio_cb(buf, AO_FRAMES, audio_user);
 		pthread_mutex_unlock(&audio_mutex);
 		memset(&frame, 0, sizeof frame);
 		frame.eBitwidth = E_MI_AUDIO_BIT_WIDTH_16;
@@ -395,7 +401,7 @@ int plat_audio_open(int rate, AudioCallback cb, void *user)
 {
 	MI_AUDIO_Attr_t attr;
 	MI_S32 vol, e1, e2, e3;
-	int mute;
+	int mute, dev_rate = rate;
 
 	if (fake)
 		return -1;	/* emulated tests have no audio hardware */
@@ -428,7 +434,11 @@ int plat_audio_open(int rate, AudioCallback cb, void *user)
 
 	p_MI_SYS_Init();
 	memset(&attr, 0, sizeof attr);
-	attr.eSamplerate = (MI_AUDIO_SampleRate_e)rate;
+	/* 22050 Hz is the rate proven on this device (Scorched Earth); 44100 is halved to it */
+	ao_halve = rate == 44100;
+	if (ao_halve)
+		dev_rate = 22050;
+	attr.eSamplerate = (MI_AUDIO_SampleRate_e)dev_rate;
 	attr.eBitwidth = E_MI_AUDIO_BIT_WIDTH_16;
 	attr.eWorkmode = E_MI_AUDIO_MODE_I2S_MASTER;
 	attr.eSoundmode = E_MI_AUDIO_SOUND_MODE_STEREO;
@@ -457,7 +467,11 @@ int plat_audio_open(int rate, AudioCallback cb, void *user)
 		plat_audio_close();
 		return -1;
 	}
-	fprintf(stderr, "audio: MI_AO at %d Hz, volume %d dB%s\n", rate, (int)vol, mute ? ", muted" : "");
+	if (ao_halve)
+		fprintf(stderr, "audio: MI_AO at %d Hz (game %d, 2:1), volume %d dB%s\n", dev_rate, rate,
+			(int)vol, mute ? ", muted" : "");
+	else
+		fprintf(stderr, "audio: MI_AO at %d Hz, volume %d dB%s\n", rate, (int)vol, mute ? ", muted" : "");
 	return 0;
 }
 

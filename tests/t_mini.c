@@ -2,6 +2,7 @@
 #include "check.h"
 #include "tests.h"
 #include "gfx/panel.h"
+#include "sfx/halve.h"
 #include "ui/hold.h"
 
 static void test_hold_quits_after_two_seconds(void)
@@ -96,8 +97,41 @@ static void test_rot180_pitch_and_crop(void)
 	CHECK_EQ(dst[2], 0u);	/* pitch padding untouched */
 }
 
+static void test_halve_averages_pairs_per_channel(void)
+{
+	int16_t src[8] = {10, 100, 20, 300, -10, -100, -30, -200}, dst[4];
+	audio_halve(dst, src, 2);
+	CHECK_EQ(dst[0], 15);
+	CHECK_EQ(dst[1], 200);
+	CHECK_EQ(dst[2], -20);
+	CHECK_EQ(dst[3], -150);
+}
+
+static void test_halve_rounds_half_up(void)
+{
+	int16_t src[8] = {1, 0, 2, 1, -1, -2, -2, -1}, dst[4];
+	audio_halve(dst, src, 2);
+	CHECK_EQ(dst[0], 2);	/* 1.5 */
+	CHECK_EQ(dst[1], 1);	/* 0.5 */
+	CHECK_EQ(dst[2], -1);	/* -1.5 */
+	CHECK_EQ(dst[3], -1);	/* -1.5 */
+}
+
+static void test_halve_never_overflows(void)
+{
+	int16_t src[8] = {32767, -32768, 32767, -32768, 32767, 32767, -32768, -32768}, dst[4];
+	audio_halve(dst, src, 2);
+	CHECK_EQ(dst[0], 32767);
+	CHECK_EQ(dst[1], -32768);
+	CHECK_EQ(dst[2], 0);
+	CHECK_EQ(dst[3], 0);
+}
+
 void tests_mini(void)
 {
+	test_halve_averages_pairs_per_channel();
+	test_halve_rounds_half_up();
+	test_halve_never_overflows();
 	test_hold_quits_after_two_seconds();
 	test_hold_release_resets();
 	test_hold_survives_clock_start_at_zero();
