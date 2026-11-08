@@ -734,6 +734,94 @@ static void test_ban_stops_flights_only_to_that_city(void)
 	CHECK_EQ(game_city_banned(&g, 5), 0);
 }
 
+
+/* --- the end of the run: no offer or find that cannot resolve --- */
+
+static void test_no_offer_or_find_that_cannot_resolve(void)
+{
+	Params p = test_params();
+	Game g;
+	int seen_late = 0;
+	p.rc_offer_permille = 1000;
+	p.rc_find_permille = 1000;
+	new_test_game(&g, &p, 15);
+	while (g.day < g.last_day) {
+		int can = g.day + 1 + p.rc_days_lo <= g.last_day;	/* the arrival is on day + 1 */
+		CHECK_EQ(ride(&g), OK);
+		if (g.day + p.rc_days_lo > g.last_day) {
+			CHECK_EQ(g.offer.kind, OFFER_NONE);
+			CHECK_EQ(count_msgs(&g, M_RC_OFFER) + count_msgs(&g, M_RC_FIND), 0);
+			CHECK_EQ(game_rc_back(&g, 10), E_PHASE);
+			seen_late++;
+		} else {
+			CHECK(can);
+		}
+		if (g.offer.kind == OFFER_RC)
+			game_offer_pass(&g);
+	}
+	CHECK_EQ(seen_late, p.rc_days_lo);
+}
+
+static void test_new_stakes_resolve_by_the_last_day(void)
+{
+	Params p = test_params();
+	uint64_t seed;
+	p.rc_offer_permille = 1000;
+	p.rc_find_permille = 1000;
+	p.rc_days_lo = 2;
+	p.rc_days_hi = 4;
+	for (seed = 1; seed <= 50; seed++) {
+		Game g;
+		int i;
+		game_new(&g, &p, seed, 15, "T");
+		g.day = g.last_day - 3;		/* the last arrivals with room: lands on last-2 .. last */
+		for (i = 0; i < 3; i++) {
+			CHECK_EQ(ride(&g), OK);
+			if (g.offer.kind == OFFER_RC)
+				game_rc_back(&g, 10);
+			for (int k = 0; k < g.nstakes; k++)
+				CHECK(g.stakes[k].resolve_day <= g.last_day);
+		}
+	}
+}
+
+static void test_no_stake_survives_the_end(void)
+{
+	Params p = test_params();
+	uint64_t seed;
+	p.rc_offer_permille = 700;
+	p.rc_find_permille = 700;
+	for (seed = 1; seed <= 100; seed++) {
+		Game g;
+		game_new(&g, &p, seed, 15, "T");
+		while (g.phase != PH_OVER) {
+			if (g.offer.kind == OFFER_RC)
+				game_rc_back(&g, 10);
+			ride(&g);
+		}
+		CHECK_EQ(g.end, END_DAYS_UP);
+		CHECK_EQ(g.nstakes, 0);
+	}
+}
+
+static void test_overdose_into_last_day_still_settles_stakes(void)
+{
+	Params p = crew_params();
+	Game g;
+	p.cohort_od_permille = 1000;
+	new_test_game(&g, &p, 15);
+	stock_up(&g);
+	ride(&g);
+	g.day = g.last_day - 1;
+	put_stake(&g, 0, 100, g.last_day, 0);
+	CHECK_EQ(game_crew_accept(&g), OK);
+	CHECK_EQ(g.day, g.last_day);
+	CHECK_EQ(g.nstakes, 1);
+	CHECK_EQ(ride(&g), OK);		/* the final move closes the book */
+	CHECK_EQ(g.phase, PH_OVER);
+	CHECK_EQ(g.nstakes, 0);
+}
+
 /* --- saves --- */
 
 static char dir[64];
@@ -1016,6 +1104,10 @@ void tests_wild(void)
 	test_overdose_into_the_last_day();
 	test_outcomes_follow_the_odds();
 	test_ban_stops_flights_only_to_that_city();
+	test_no_offer_or_find_that_cannot_resolve();
+	test_new_stakes_resolve_by_the_last_day();
+	test_no_stake_survives_the_end();
+	test_overdose_into_last_day_still_settles_stakes();
 	test_save_round_trip_keeps_wild_state();
 	test_save_refuses_nonsense_wild_state();
 	test_a_banned_city_stays_banned_across_a_load();

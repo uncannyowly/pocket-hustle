@@ -52,6 +52,7 @@ int game_move(Game *g, Loc dest)
 	if (g->day >= g->last_day) {
 		g->phase = PH_OVER;
 		g->end = END_DAYS_UP;
+		wild_resolve(g);	/* an overdose can land on the last day without settling stakes */
 		game_msg(g, M_GAME_OVER, 0, 0, 0, 0);
 		return OK;
 	}

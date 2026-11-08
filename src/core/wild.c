@@ -30,6 +30,8 @@ static void add_stake(Game *g, int chem, int64_t stake, int found)
 	s->stake = stake;
 	s->found = (int8_t)found;
 	s->resolve_day = (int16_t)(g->day + rng_range(&g->wild, g->p.rc_days_lo, g->p.rc_days_hi));
+	if (s->resolve_day > g->last_day)	/* the last arrival settles every stake */
+		s->resolve_day = g->last_day;
 }
 
 /* Every stake due on or before today pays or busts, once, and leaves its slot. */
@@ -67,6 +69,7 @@ void wild_resolve(Game *g)
 void wild_offers(Game *g)
 {
 	const Params *p = &g->p;
+	int can_resolve = g->day + p->rc_days_lo <= g->last_day;
 
 	if (g->phase != PH_TRADING)
 		return;
@@ -77,14 +80,14 @@ void wild_offers(Game *g)
 		g->offer.chem = 0;
 		g->offer.day = g->day;
 		game_msg(g, M_CREW_OFFER, 0, 0, 0, 0);
-	} else if (g->nstakes < p->rc_max_stakes && rng_permille(&g->wild, p->rc_offer_permille)) {
+	} else if (can_resolve && g->nstakes < p->rc_max_stakes && rng_permille(&g->wild, p->rc_offer_permille)) {
 		g->offer.kind = OFFER_RC;
 		g->offer.chem = (int8_t)rng_below(&g->wild, NUM_CHEMS);
 		g->offer.day = g->day;
 		game_msg(g, M_RC_OFFER, g->offer.chem, 0, 0, 0);
 	}
 	/* an open chemical offer keeps its slot, so backing it can never fail for room */
-	if (g->nstakes + (g->offer.kind == OFFER_RC ? 1 : 0) < p->rc_max_stakes &&
+	if (can_resolve && g->nstakes + (g->offer.kind == OFFER_RC ? 1 : 0) < p->rc_max_stakes &&
 	    rng_permille(&g->wild, p->rc_find_permille)) {
 		int chem = (int)rng_below(&g->wild, NUM_CHEMS);
 		int64_t value = rng_range(&g->wild, (int32_t)p->rc_find_lo, (int32_t)p->rc_find_hi);
@@ -168,6 +171,7 @@ int game_crew_accept(Game *g)
 			if (!game_city_banned(g, c))
 				n++;
 		if (g->day >= g->last_day || n == 0) {	/* the last day, or nowhere left to go */
+			wild_resolve(g);
 			g->phase = PH_OVER;
 			g->end = END_DAYS_UP;
 			game_msg(g, M_GAME_OVER, 0, 0, 0, 0);

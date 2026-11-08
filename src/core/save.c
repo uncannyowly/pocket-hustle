@@ -174,7 +174,7 @@ static int wild_sane(const Game *g)
 		const Stake *s = &g->stakes[i];
 		if (i < g->nstakes) {
 			if (s->chem < 0 || s->chem >= NUM_CHEMS || s->stake <= 0 || s->stake > MONEY_MAX ||
-			    (s->found != 0 && s->found != 1) || s->resolve_day < 1 || s->resolve_day > MAX_DAYS + 30)
+			    (s->found != 0 && s->found != 1) || s->resolve_day < 1 || s->resolve_day > g->last_day)
 				return 0;
 		} else if (s->stake != 0 || s->chem != 0 || s->found != 0 || s->resolve_day != 0) {
 			return 0;
