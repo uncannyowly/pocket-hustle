@@ -48,7 +48,10 @@ void bank_text(const Game *g, BankText *t)
 	fmt_money(g->p.bank_fee_min, min, sizeof min);
 	snprintf(t->head, sizeof t->head, "ATM");
 	snprintf(t->tag, sizeof t->tag, "FEE %s, MIN %s", rate, min);
-	snprintf(t->blurb, sizeof t->blurb, "No branch here. The bank symbol on the map marks free banking.");
+	if (!CITIES[city_of(g)].bank_hoods)
+		snprintf(t->blurb, sizeof t->blurb, "No branches across the border. Every ATM here charges the fee.");
+	else
+		snprintf(t->blurb, sizeof t->blurb, "No branch here. The bank symbol on the map marks free banking.");
 	t->tag_col = PAL_CORAL;
 }
 

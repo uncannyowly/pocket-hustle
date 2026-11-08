@@ -100,6 +100,24 @@ static void test_bank_texts(void)
 	CHECK_STR(t.blurb, "No branch here. The bank symbol on the map marks free banking.");
 	CHECK_EQ(t.tag_col, PAL_CORAL);
 
+	{				/* across the border: no branches anywhere, every ATM charges */
+		int c, h;
+
+		for (c = 0; c < NUM_CITIES; c++) {
+			if (CITIES[c].country != COUNTRY_MX)
+				continue;
+			for (h = 0; h < HOODS_PER_CITY; h++) {
+				app.g.loc.city = (uint8_t)c;
+				app.g.loc.hood = (uint8_t)h;
+				bank_text(&app.g, &t);
+				CHECK_STR(t.head, "ATM");
+				CHECK_STR(t.blurb, "No branches across the border. Every ATM here charges the fee.");
+			}
+		}
+		app.g.loc.city = 0;
+		app.g.loc.hood = ATM_HOOD;
+	}
+
 	p = app.g.p;			/* the numbers come from the params */
 	app.g.p.bank_fee_pct = 5;
 	app.g.p.bank_fee_min = 20;
