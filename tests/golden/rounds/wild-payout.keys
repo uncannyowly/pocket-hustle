@@ -24,8 +24,10 @@ R1 A Y A
 R1 R1 A D A
 A A
 @shot crew-card
-# DO IT: the crew pays
+# DO IT asks first (NO is highlighted), then YES: the crew pays
 A
+@shot crew-confirm
+L A
 @shot crew-paid
 A A
 # two more rides: the stakes come due on day five

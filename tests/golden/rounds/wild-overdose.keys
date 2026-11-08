@@ -14,8 +14,10 @@ D D D D A Y A
 R1 R1 A D A
 A
 @shot crew-card
-# DO IT: it goes wrong, Oklahoma City is closed to you and you wake up in Seattle
+# DO IT asks first (NO is highlighted), then YES: it goes wrong, Oklahoma City is closed to you and you wake up in Seattle
 A
+@shot crew-confirm
+L A
 @shot overdose
 A
 @shot debt-sold

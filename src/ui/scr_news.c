@@ -180,7 +180,7 @@ void news_draw(Ui *u, Canvas *c)
 			badge(c, k == 1 ? "A" : "B", bx + 5, by + 5);
 		}
 		if (u->news.ask && cd->choice == CHOICE_CREW)
-			prompt_ask(u, c, 40, 92, 240, news_ask_text(u), u->news.yes);
+			prompt_ask(u, c, 8, 114, 304, news_ask_text(u), u->news.yes);
 		return;
 	}
 	last = u->news.i == u->news.n - 1;
