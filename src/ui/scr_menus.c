@@ -29,7 +29,7 @@ static const char *city_name(int city)
 }
 
 /* A yes/no prompt: a blocker so clicks behind it do nothing, a box, a question, YES and NO. */
-static void prompt(Ui *u, Canvas *c, int x, int y, int w, const char *q)
+void prompt_ask(Ui *u, Canvas *c, int x, int y, int w, const char *q, int yes_on)
 {
 	int bw = (w - 24) / 2;
 
@@ -37,8 +37,13 @@ static void prompt(Ui *u, Canvas *c, int x, int y, int w, const char *q)
 	cv_rect(c, x, y, w, 52, PAL_PANEL2);
 	cv_box(c, x, y, w, 52, PAL_GOLD);
 	tx(c, q, x + (w >> 1), y + 8, PAL_GOLD, 1, TX_CENTER);
-	button(u, c, x + 8, y + 26, bw, 18, "A YES", 1, HIT_CONFIRM, 1);
-	button(u, c, x + 16 + bw, y + 26, bw, 18, "B NO", 0, HIT_CONFIRM, 0);
+	button(u, c, x + 8, y + 26, bw, 18, "A YES", yes_on, HIT_CONFIRM, 1);
+	button(u, c, x + 16 + bw, y + 26, bw, 18, "B NO", !yes_on, HIT_CONFIRM, 0);
+}
+
+static void prompt(Ui *u, Canvas *c, int x, int y, int w, const char *q)
+{
+	prompt_ask(u, c, x, y, w, q, 1);
 }
 
 /* ---- the title ---- */

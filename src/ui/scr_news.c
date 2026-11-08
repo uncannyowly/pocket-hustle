@@ -78,6 +78,7 @@ void ui_show_open_offer(Ui *u, Screen after)
 	u->news.n = 1;
 	u->news.i = 0;
 	u->news.after = after;
+	u->news.ask = 0;
 	overlay(u, SCR_NEWS, SCR_MARKET);
 }
 
@@ -92,6 +93,7 @@ void ui_collect_news(Ui *u, Screen after)
 	u->news.n = n;
 	u->news.i = 0;
 	u->news.after = after;
+	u->news.ask = 0;
 	overlay(u, SCR_NEWS, SCR_MARKET);
 }
 
@@ -177,12 +179,20 @@ void news_draw(Ui *u, Canvas *c)
 			       k == 1 ? PAD_A : PAD_B);
 			badge(c, k == 1 ? "A" : "B", bx + 5, by + 5);
 		}
+		if (u->news.ask && cd->choice == CHOICE_CREW)
+			prompt_ask(u, c, 40, 92, 240, news_ask_text(u), u->news.yes);
 		return;
 	}
 	last = u->news.i == u->news.n - 1;
 	badge(c, "A", X + W - 12 - 11 - 3 - (last ? 16 : 32), Y + H - 16);
 	tx(c, last ? "OK" : "Next", X + W - 12, Y + H - 16, PAL_TEXT, 1, TX_RIGHT);
 	hit(u, 0, 0, CV_W, CV_H, HIT_PAD, PAD_A);
+}
+
+const char *news_ask_text(const Ui *u)
+{
+	(void)u;
+	return "Hand your whole stash to the crew?";
 }
 
 int news_choice_label(const Ui *u, int which, char *buf, size_t n)
@@ -218,6 +228,7 @@ void news_answer(Ui *u, int accept, int64_t stake)
 		return;
 	nrest = u->news.n - u->news.i - 1;
 	memcpy(rest, &u->news.cards[u->news.i + 1], (size_t)nrest * sizeof rest[0]);
+	u->news.ask = 0;
 	if (!accept)
 		r = game_offer_pass(g);
 	else if (choice == CHOICE_RC)
@@ -260,20 +271,48 @@ void news_answer(Ui *u, int accept, int64_t stake)
 	}
 	u->news.n = n;
 	u->news.i = 0;
+	u->news.ask = 0;
 	overlay(u, SCR_NEWS, SCR_MARKET);
 }
 
 
+/* A click on the crew prompt: YES hands the stash over, NO goes back to the card. */
+void news_click(Ui *u, int action, int arg)
+{
+	if (action != HIT_CONFIRM || arg < 0)
+		return;
+	u->news.yes = arg;
+	ui_press(u, arg ? PAD_A : PAD_B);
+}
+
 void news_press(Ui *u, int pad)
 {
+	int have = u->news.n > 0 && u->news.i >= 0 && u->news.i < u->news.n;
+
+	if (have && u->news.ask && u->news.cards[u->news.i].choice == CHOICE_CREW) {
+		if (pad == PAD_A && u->news.yes) {
+			news_answer(u, 1, 0);
+		} else if (pad == PAD_A || pad == PAD_B) {
+			u->news.ask = 0;
+			play(u, SFX_BACK);
+		} else if (pad == PAD_LEFT || pad == PAD_RIGHT) {
+			u->news.yes = pad == PAD_LEFT;
+			play(u, SFX_MOVE);
+		}
+		return;
+	}
 	if (pad != PAD_A && pad != PAD_B)
 		return;
-	if (u->news.n > 0 && u->news.i >= 0 && u->news.i < u->news.n && u->news.cards[u->news.i].choice) {
+	if (have && u->news.cards[u->news.i].choice) {
 		const Card *cd = &u->news.cards[u->news.i];
 
 		if (pad == PAD_A && cd->choice == CHOICE_RC)
 			picker_open(u, PK_STAKE, u->app->g.offer.chem, SCR_MARKET);
-		else
+		else if (pad == PAD_A && cd->choice == CHOICE_CREW) {
+			u->news.ask = 1;
+			u->news.yes = 0;
+			play(u, SFX_MOVE);
+		} else
 			news_answer(u, pad == PAD_A, 0);
 		return;
 	}

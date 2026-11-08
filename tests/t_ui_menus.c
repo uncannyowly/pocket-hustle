@@ -1003,6 +1003,14 @@ static void resume_with_offer(int kind)
 		press_seq(&ui2, "B");
 		CHECK_EQ(ui2.scr, SCR_NEWS);
 	}
+	if (kind == OFFER_CREW) {		/* the resumed card asks before it takes the stash */
+		press_seq(&ui2, "A");
+		CHECK(ui2.news.ask);
+		CHECK_EQ(again.g.offer.kind, OFFER_CREW);
+		press_seq(&ui2, "B");
+		CHECK(!ui2.news.ask);
+		CHECK_EQ(ui2.scr, SCR_NEWS);
+	}
 	press_seq(&ui2, "B");
 	CHECK_EQ(again.g.offer.kind, OFFER_NONE);
 	CHECK_EQ(ui2.scr, SCR_MARKET);

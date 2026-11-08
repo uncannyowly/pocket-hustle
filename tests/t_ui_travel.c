@@ -976,7 +976,7 @@ static void test_crew_paid(void)
 	crew_ready(0);
 	cash = app.g.cash;
 	drain();
-	press_seq(&ui, "A");
+	press_seq(&ui, "A L A");
 	m = heard_mask();
 	CHECK(m & (1u << SFX_OK));
 	CHECK(!(m & (1u << SFX_CASH)));
@@ -1006,7 +1006,7 @@ static void test_crew_overdose(void)
 	old = app.g.loc.city;
 	day = app.g.day;
 	drain();
-	press_seq(&ui, "A");
+	press_seq(&ui, "A L A");
 	m = heard_mask();
 	CHECK(!(m & (1u << SFX_CASH)));
 	CHECK(game_city_banned(&app.g, old));
@@ -1024,7 +1024,7 @@ static void test_crew_overdose_on_the_last_day_ends_the_game(void)
 {
 	crew_ready(1000);
 	app.g.day = app.g.last_day;
-	press_seq(&ui, "A");
+	press_seq(&ui, "A L A");
 	CHECK_EQ(app.g.phase, PH_OVER);
 	CHECK_EQ(ui.scr, SCR_NEWS);
 	CHECK_EQ(ui.news.after, SCR_OVER);
@@ -1061,7 +1061,20 @@ static void test_crew_clicks(void)
 	crew_ready(0);
 	ui_draw(&ui, &cv);
 	click_hit(&ui, hit_find(&ui, HIT_PAD, PAD_A));
+	CHECK_EQ(app.g.stash[0], 20);		/* a click on DO IT only asks */
+	CHECK(ui.news.ask);
+	ui_draw(&ui, &cv);
+	click_hit(&ui, hit_find(&ui, HIT_CONFIRM, 1));
 	CHECK_EQ(app.g.stash[0], 0);
+	crew_ready(0);				/* a click on NO goes back to the same card */
+	ui_draw(&ui, &cv);
+	click_hit(&ui, hit_find(&ui, HIT_PAD, PAD_A));
+	ui_draw(&ui, &cv);
+	click_hit(&ui, hit_find(&ui, HIT_CONFIRM, 0));
+	CHECK(!ui.news.ask);
+	CHECK_EQ(ui.scr, SCR_NEWS);
+	CHECK_EQ(app.g.offer.kind, OFFER_CREW);
+	CHECK_EQ(app.g.stash[0], 20);
 }
 
 static void test_crew_stash_gone(void)
@@ -1070,7 +1083,7 @@ static void test_crew_stash_gone(void)
 	app.g.stash[0] = 0;
 	snap();
 	drain();
-	press_seq(&ui, "A");
+	press_seq(&ui, "A L A");
 	CHECK_EQ(ui.scr, SCR_NEWS);
 	CHECK_EQ(app.g.offer.kind, OFFER_CREW);
 	CHECK(ui.toast[0] != '\0');
@@ -1078,6 +1091,69 @@ static void test_crew_stash_gone(void)
 	CHECK(same_game(&before, &app.g));
 	press_seq(&ui, "B");
 	CHECK_EQ(ui.scr, SCR_MARKET);
+}
+
+static void test_crew_confirm(void)
+{
+	int64_t cash;
+	unsigned m;
+
+	crew_ready(0);
+	cash = app.g.cash;
+	drain();
+	press_seq(&ui, "A");			/* DO IT asks first */
+	CHECK(ui.news.ask);
+	CHECK_EQ(ui.news.yes, 0);		/* NO is where it opens */
+	CHECK_EQ(ui.scr, SCR_NEWS);
+	CHECK_EQ(app.g.stash[0], 20);
+	CHECK_EQ(app.g.offer.kind, OFFER_CREW);
+	ui_draw(&ui, &cv);
+	CHECK_EQ(cv.overflow, 0);
+	CHECK_STR(news_ask_text(&ui), "Hand your whole stash to the crew?");
+	m = heard_mask();
+	CHECK(!(m & (1u << SFX_CASH)));
+	press_seq(&ui, "A");			/* A on the default NO: back to the card */
+	CHECK(!ui.news.ask);
+	CHECK_EQ(ui.scr, SCR_NEWS);
+	CHECK_EQ(ui.news.cards[0].choice, CHOICE_CREW);
+	CHECK_EQ(app.g.offer.kind, OFFER_CREW);
+	CHECK_EQ(app.g.stash[0], 20);
+	CHECK_EQ(app.g.cash, cash);
+	press_seq(&ui, "A R");			/* moving off YES and back: R is NO */
+	CHECK_EQ(ui.news.yes, 0);
+	press_seq(&ui, "L");
+	CHECK_EQ(ui.news.yes, 1);
+	press_seq(&ui, "B");			/* B is NO whatever is highlighted */
+	CHECK(!ui.news.ask);
+	CHECK_EQ(ui.scr, SCR_NEWS);
+	CHECK_EQ(app.g.offer.kind, OFFER_CREW);
+	CHECK_EQ(app.g.stash[0], 20);
+	press_seq(&ui, "A");			/* it reopens on NO again */
+	CHECK_EQ(ui.news.yes, 0);
+	press_seq(&ui, "L A");			/* YES then A hands it over */
+	CHECK_EQ(app.g.stash[0], 0);
+	CHECK_EQ(app.g.offer.kind, OFFER_NONE);
+	CHECK(!ui.news.ask);
+	m = heard_mask();
+	CHECK(!(m & (1u << SFX_CASH)));
+}
+
+static void test_crew_walk_away_still_b(void)
+{
+	crew_ready(1000);
+	press_seq(&ui, "B");
+	CHECK(!ui.news.ask);
+	CHECK_EQ(app.g.offer.kind, OFFER_NONE);
+	CHECK_EQ(app.g.stash[0], 20);
+	CHECK_EQ(ui.scr, SCR_MARKET);
+}
+
+static void test_chemist_card_has_no_prompt(void)
+{
+	offer_cards(OFFER_RC, 3);
+	press_seq(&ui, "A");
+	CHECK(!ui.news.ask);
+	CHECK_EQ(ui.scr, SCR_PICKER);
 }
 
 /* ---- the market's running wild cards ---- */
@@ -1185,6 +1261,9 @@ void tests_ui_travel(void)
 	test_crew_walk_away();
 	test_crew_clicks();
 	test_crew_stash_gone();
+	test_crew_confirm();
+	test_crew_walk_away_still_b();
+	test_chemist_card_has_no_prompt();
 	test_wild_line();
 	test_wild_line_replaces_the_weapon_line();
 	test_fly_charges_and_lands();

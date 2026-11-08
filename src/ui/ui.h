@@ -27,7 +27,7 @@ typedef struct Ui {
 	int row;				/* the highlighted row on list screens */
 	int fly_tab;				/* the flight screen's tab: a COUNTRY_* */
 	struct { PickKind kind; int good; int64_t q; int sel; } pk;
-	struct { Card cards[MAX_MSGS + 2]; int n, i; Screen after; } news;
+	struct { Card cards[MAX_MSGS + 2]; int n, i; Screen after; int ask, yes; } news;	/* ask: the crew prompt is up; yes: YES is highlighted */
 	char chase_log[400]; int chase_done;	/* the last action's lines; a CR_* */
 	struct { int zone, len, kr, kc, shift; char name[16]; } ng;
 	int chart_good, scores_tab, title_row, menu_row;

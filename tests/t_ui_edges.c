@@ -322,6 +322,18 @@ static void sweep_news_and_chase(void)
 				ui.news.i = i;
 				edge(k == OFFER_RC ? "news with a chemical offer" : "news with a crew offer");
 			}
+			if (k == OFFER_CREW) {
+				for (i = 0; i < ui.news.n; i++)
+					if (ui.news.cards[i].choice == CHOICE_CREW) {
+						ui.news.i = i;
+						ui.news.ask = 1;
+						ui.news.yes = 0;
+						edge("crew prompt, NO");
+						ui.news.yes = 1;
+						edge("crew prompt, YES");
+					}
+				ui.news.ask = 0;
+			}
 			if (k == OFFER_RC) {
 				picker_open(&ui, PK_STAKE, 8, SCR_MARKET);
 				edge("stake dial at zero");
