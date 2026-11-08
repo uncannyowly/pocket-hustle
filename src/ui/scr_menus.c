@@ -591,7 +591,13 @@ int over_stats(const Game *g, StatCell out[10])
 		snprintf(out[i].value, sizeof out[i].value, "%d", (int)N[i].v);
 	}
 	snprintf(out[9].label, sizeof out[9].label, "ATM fees");
-	chart_k(s->bank_fees_paid, out[9].value, sizeof out[9].value);
+	/* the mockup's $12.3K form; past $10B a form that stays in its 7 cells */
+	if (s->bank_fees_paid < 10000000000LL)
+		chart_k(s->bank_fees_paid, out[9].value, sizeof out[9].value);
+	else if (s->bank_fees_paid < 1000000000000LL)
+		fmt_money_short(s->bank_fees_paid, out[9].value, sizeof out[9].value);
+	else
+		snprintf(out[9].value, sizeof out[9].value, "$%lldT", (long long)(s->bank_fees_paid / 1000000000000LL));
 	return 10;
 }
 

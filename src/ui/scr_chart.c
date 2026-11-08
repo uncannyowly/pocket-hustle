@@ -173,10 +173,14 @@ void chart_draw(Ui *u, Canvas *c)
 	}
 	if (np && last_d == g->day) {				/* today, ringed and labeled */
 		int lx = sx(last_d, days), ly = sy(last_p, top);
+		int right = (lx < X1 ? lx : X1) - 6, ty = ly - 12 > Y0 ? ly - 12 : Y0;
 
 		cv_ring(c, lx, ly, 4, PAL_GOLD);
 		fmt_money(last_p, s, sizeof s);
-		tx(c, s, (lx < X1 ? lx : X1) - 6, ly - 12 > Y0 ? ly - 12 : Y0, PAL_GOLD, 1, TX_RIGHT);
+		if (right < (int)strlen(s) * GLYPH_W)		/* near the left edge (day 1): put it right of the point */
+			tx(c, s, lx + 6, ty, PAL_GOLD, 1, TX_LEFT);
+		else
+			tx(c, s, right, ty, PAL_GOLD, 1, TX_RIGHT);
 	}
 	if (!np)
 		tx(c, "No prices seen yet.", 183, 90, PAL_DIM, 1, TX_CENTER);

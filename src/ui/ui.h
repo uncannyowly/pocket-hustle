@@ -33,6 +33,7 @@ typedef struct Ui {
 	char toast[96]; uint32_t toast_until;
 	uint32_t frame;
 	Hit hits[64]; int nhits;
+	int hits_dropped;			/* regions refused because the list was full, since the last rebuild */
 	int sfx[8], nsfx;
 	int quit;
 } Ui;

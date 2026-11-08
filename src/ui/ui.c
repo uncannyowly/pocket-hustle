@@ -127,9 +127,11 @@ void ui_draw(Ui *u, Canvas *c)
 
 	cv_clear(c, PAL_NIGHT);
 	u->nhits = 0;
+	u->hits_dropped = 0;
 	if (d->overlay && u->under != u->scr && !screen_def(u->under)->overlay) {
 		draw_screen(u, c, u->under);
 		u->nhits = 0;		/* only the topmost screen takes clicks */
+		u->hits_dropped = 0;
 		cv_dim(c);
 	}
 	draw_screen(u, c, u->scr);
@@ -209,8 +211,12 @@ void hit(Ui *u, int x, int y, int w, int h, int action, int arg)
 {
 	Hit *t;
 
-	if (u->nhits >= (int)(sizeof u->hits / sizeof u->hits[0]) || w <= 0 || h <= 0)
+	if (w <= 0 || h <= 0)
 		return;
+	if (u->nhits >= (int)(sizeof u->hits / sizeof u->hits[0])) {
+		u->hits_dropped++;
+		return;
+	}
 	t = &u->hits[u->nhits++];
 	t->x = x;
 	t->y = y;

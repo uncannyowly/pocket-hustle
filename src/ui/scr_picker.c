@@ -98,6 +98,15 @@ static void upper(char *dst, size_t n, const char *src)
 	dst[i] = '\0';
 }
 
+/* A count without the dollar sign: whole below $10M's worth, else "2.0B" or "1000.0T". */
+static void count_short(int64_t v, char *buf, size_t n)
+{
+	char m[28];
+
+	fmt_money_short(v, m, sizeof m);
+	snprintf(buf, n, "%s", m + 1);
+}
+
 static void buy_text(const Game *g, int good, int64_t q, PickText *t)
 {
 	int64_t price = g->price[good], room = (int64_t)g->capacity - game_carried(g);
@@ -115,6 +124,13 @@ static void buy_text(const Game *g, int good, int64_t q, PickText *t)
 	snprintf(t->info, sizeof t->info, "Room for %lld. Cash for %lld.", (long long)room, (long long)afford);
 	if (strlen(t->info) > INFO_MAX)
 		snprintf(t->info, sizeof t->info, "Room %lld. Cash for %lld.", (long long)room, (long long)afford);
+	if (strlen(t->info) > INFO_MAX) {	/* absurd cash against a $1 good */
+		char r[28], f[28];
+
+		count_short(room, r, sizeof r);
+		count_short(afford, f, sizeof f);
+		snprintf(t->info, sizeof t->info, "Room %s. Cash for %s.", r, f);
+	}
 }
 
 static void sell_text(const Game *g, int good, int64_t q, PickText *t)
@@ -138,6 +154,16 @@ static void sell_text(const Game *g, int good, int64_t q, PickText *t)
 	snprintf(t->info, sizeof t->info, "You have %d. Paid %s each.", (int)have, a);
 	if (strlen(t->info) > INFO_MAX)
 		snprintf(t->info, sizeof t->info, "Have %d. Paid %s each.", (int)have, a);
+	if (strlen(t->info) > INFO_MAX) {	/* a bag bought at absurd prices */
+		char h[28];
+
+		fmt_money_short(each, a, sizeof a);
+		snprintf(t->info, sizeof t->info, "Have %d. Paid %s each.", (int)have, a);
+		if (strlen(t->info) > INFO_MAX) {
+			count_short(have, h, sizeof h);
+			snprintf(t->info, sizeof t->info, "Have %s. Paid %s each.", h, a);
+		}
+	}
 }
 
 static void heal_text(const Game *g, int64_t q, PickText *t)
@@ -193,6 +219,10 @@ static void atm_info(const Game *g, int64_t q, PickText *t)
 	snprintf(t->info, sizeof t->info, "Fee %s. %s, at least %s.", fee, pct, min);
 	if (strlen(t->info) > INFO_MAX)
 		snprintf(t->info, sizeof t->info, "Fee %s. %s, min %s.", fee, pct, min);
+	if (strlen(t->info) > INFO_MAX) {	/* the fee on an absurd amount */
+		fmt_money_short(game_bank_fee(g, q), fee, sizeof fee);
+		snprintf(t->info, sizeof t->info, "Fee %s. %s, min %s.", fee, pct, min);
+	}
 }
 
 /* What lands after the ATM fee; nothing when the amount does not cover it. */
