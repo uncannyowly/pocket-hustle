@@ -36,6 +36,12 @@ enum {
 	HIT_DIAL_DOWN,		/* arg: a digit of the money dial; removes 10^digit */
 	HIT_STORE_ROW,		/* arg: a row of the shop (a GEAR index) */
 	HIT_CHASE_BTN,		/* arg: 0 RUN, 1 FIGHT, 2 SURRENDER */
+	HIT_TITLE_ROW,		/* arg: 0 CONTINUE, 1 NEW GAME, 2 HIGH SCORES, 3 QUIT */
+	HIT_LEN,		/* arg: a game length chip, 0..3 */
+	HIT_KEY,		/* arg: row * 10 + column of the on-screen keyboard */
+	HIT_NG_GO,		/* START HUSTLING */
+	HIT_MENU_ROW,		/* arg: a row of the pause menu */
+	HIT_SCORES_TAB,		/* arg: a game length, 0..3 */
 };
 
 /* Chrome. */
@@ -136,6 +142,35 @@ void    chart_text(const Game *g, int good, ChartText *t);
 void    chart_open(Ui *u, int good);			/* SELECT on the market; B returns to the market */
 void    chart_draw(Ui *u, Canvas *c);
 void    chart_press(Ui *u, int pad);
+
+/* The title, the new game screen, the pause menu, game over and the high scores
+ * (scr_menus.c). */
+typedef struct { char label[16], value[24]; } StatCell;
+enum { TITLE_ROWS = 4, MENU_ROWS = 5, NG_NAME_MAX = 15 };
+void title_detail(const App *a, char *buf, size_t n);	/* "DAY 3, HOUSTON" or "NO SAVED GAME" */
+int  title_city(const Ui *u);				/* the skyline behind the logo: changes every 80 ticks */
+void title_draw(Ui *u, Canvas *c);
+void title_press(Ui *u, int pad);
+void title_click(Ui *u, int action, int arg);
+void ng_open(Ui *u, int len, const char *name);		/* the new game screen; len 0..3, the keyboard focused */
+int  ng_lower(const Ui *u);				/* the next letter typed is lower case */
+void ng_draw(Ui *u, Canvas *c);
+void ng_press(Ui *u, int pad);
+void ng_click(Ui *u, int action, int arg);
+void menu_open(Ui *u, Screen from);			/* START: the pause menu over `from` */
+void menu_label(const App *a, int row, char *buf, size_t n);
+void menu_draw(Ui *u, Canvas *c);
+void menu_press(Ui *u, int pad);
+void menu_click(Ui *u, int action, int arg);
+void over_title(const Game *g, char *buf, size_t n);	/* "TIME'S UP", "GAME OVER" or "RETIRED EARLY" */
+void over_rank(const App *a, char *buf, size_t n);	/* "HIGH SCORE #4 FOR 30 DAYS" or the no-score line */
+int  over_stats(const Game *g, StatCell out[10]);	/* the grid cells in reading order; the count */
+void over_draw(Ui *u, Canvas *c);
+void over_press(Ui *u, int pad);
+int  scores_hilite(const App *a, int tab);		/* the row just recorded on that tab, else -1 */
+void scores_draw(Ui *u, Canvas *c);
+void scores_press(Ui *u, int pad);
+void scores_click(Ui *u, int action, int arg);
 
 /* The amount picker (scr_picker.c): quantities step 1 and 10, money uses the digit dial. */
 typedef struct { char title[32], unit[48], total[96], info[96]; uint32_t total_col; } PickText;

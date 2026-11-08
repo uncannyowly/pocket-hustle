@@ -20,10 +20,11 @@ typedef struct {
 	const char *name;
 } ScreenDef;
 
-/* NULL draw and press: not built yet (see ui_internal.h). */
+/* NULL draw and press: not built yet (see ui_internal.h). Every screen is built now, so
+ * the stub path below is only a guard for a future screen added before its hooks. */
 static const ScreenDef SCREENS[NUM_SCREENS] = {
-	[SCR_TITLE]   = {NULL, NULL, NULL, 0, "TITLE"},
-	[SCR_NEWGAME] = {NULL, NULL, NULL, 0, "NEW GAME"},
+	[SCR_TITLE]   = {title_draw, title_press, title_click, 0, "TITLE"},
+	[SCR_NEWGAME] = {ng_draw, ng_press, ng_click, 0, "NEW GAME"},
 	[SCR_MARKET]  = {market_draw, market_press, market_click, 0, "MARKET"},
 	[SCR_PICKER]  = {picker_draw, picker_press, picker_click, 1, "PICKER"},
 	[SCR_NEWS]    = {news_draw, news_press, NULL, 1, "NEWS"},
@@ -34,9 +35,9 @@ static const ScreenDef SCREENS[NUM_SCREENS] = {
 	[SCR_STORE]   = {store_draw, store_press, store_click, 0, "SHOP"},
 	[SCR_CHASE]   = {chase_draw, chase_press, chase_click, 0, "COP CHASE"},
 	[SCR_CHART]   = {chart_draw, chart_press, NULL, 0, "PRICE CHART"},
-	[SCR_MENU]    = {NULL, NULL, NULL, 1, "PAUSED"},
-	[SCR_OVER]    = {NULL, NULL, NULL, 0, "GAME OVER"},
-	[SCR_SCORES]  = {NULL, NULL, NULL, 0, "HIGH SCORES"},
+	[SCR_MENU]    = {menu_draw, menu_press, menu_click, 1, "PAUSED"},
+	[SCR_OVER]    = {over_draw, over_press, NULL, 0, "GAME OVER"},
+	[SCR_SCORES]  = {scores_draw, scores_press, scores_click, 0, "HIGH SCORES"},
 };
 
 static const ScreenDef *screen_def(Screen s)
@@ -55,6 +56,11 @@ void ui_init(Ui *u, App *a)
 	u->app = a;
 	u->scr = u->under = u->back = SCR_TITLE;
 	u->mrow = 1;			/* the mockup's market starts on the second good */
+}
+
+int ui_quit(const Ui *u)
+{
+	return u->quit;
 }
 
 Screen ui_resume_screen(const Ui *u)
@@ -130,6 +136,13 @@ void ui_draw(Ui *u, Canvas *c)
 	draw_toast(u, c);
 }
 
+/* The screens START opens the pause menu from (the mockup's START_OK). */
+static int menu_from(Screen s)
+{
+	return s == SCR_MARKET || s == SCR_MOVE || s == SCR_FLY || s == SCR_BANK || s == SCR_LENDER ||
+	       s == SCR_STORE || s == SCR_CHART;
+}
+
 void ui_press(Ui *u, int pad)
 {
 	const ScreenDef *d = screen_def(u->scr);
@@ -137,6 +150,10 @@ void ui_press(Ui *u, int pad)
 	if (pad < 0 || pad >= PAD_COUNT)
 		return;
 	u->nhits = 0;			/* the regions belong to the screen as it was drawn */
+	if (pad == PAD_START && menu_from(u->scr)) {
+		menu_open(u, u->scr);
+		return;
+	}
 	if (d->press)
 		d->press(u, pad);
 	else

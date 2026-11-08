@@ -33,6 +33,7 @@ static const struct { const char *name; void (*fn)(void); } MODULES[] = {
 	{"ui_money", tests_ui_money},
 	{"ui_store", tests_ui_store},
 	{"ui_chase", tests_ui_chase},
+	{"ui_menus", tests_ui_menus},
 };
 
 int main(int argc, char **argv)

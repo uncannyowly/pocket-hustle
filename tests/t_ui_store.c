@@ -335,7 +335,7 @@ static void test_chart_cycles(void)
 	CHECK_EQ(ui.chart_good, 1);
 	press_seq(&ui, "L1");
 	CHECK_EQ(ui.chart_good, 0);
-	press_seq(&ui, "U D A X Y START");	/* nothing here */
+	press_seq(&ui, "U D A X Y");	/* nothing here */
 	CHECK_EQ(ui.scr, SCR_CHART);
 	CHECK_EQ(ui.chart_good, 0);
 }

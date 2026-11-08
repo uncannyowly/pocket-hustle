@@ -28,6 +28,7 @@ typedef struct Ui {
 	char chase_log[400]; int chase_done;	/* the last action's lines; a CR_* */
 	struct { int zone, len, kr, kc, shift; char name[16]; } ng;
 	int chart_good, scores_tab, title_row, menu_row;
+	Screen menu_back, scores_back;		/* the screen the pause menu covers; where the scores came from */
 	char toast[96]; uint32_t toast_until;
 	uint32_t frame;
 	Hit hits[64]; int nhits;
@@ -49,6 +50,7 @@ void ui_after_action(Ui *u, int16_t day_before, Phase phase_before);
 void ui_collect_news(Ui *u, Screen after);
 /* Where Continue on the title goes: SCR_CHASE for a save in a chase, else SCR_MARKET. */
 Screen ui_resume_screen(const Ui *u);
+int  ui_quit(const Ui *u);			/* the title's QUIT was chosen */
 void ui_tick(Ui *u);				/* 20 Hz */
 void ui_draw(Ui *u, Canvas *c);			/* rebuilds hits for the topmost screen only */
 int  ui_take_sfx(Ui *u);			/* next SfxId, or -1 */

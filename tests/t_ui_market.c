@@ -357,6 +357,7 @@ static void test_market_states_draw_clean(void)
 	CHECK_EQ(cv.overflow, 0);
 }
 
+/* Every screen is built: none falls back to the "Coming soon" stub. */
 static void test_stub_screens(void)
 {
 	int s;
@@ -364,25 +365,8 @@ static void test_stub_screens(void)
 	app_init(&app, NULL);
 	ui_init(&ui, &app);
 	CHECK_EQ(ui.scr, SCR_TITLE);
-	CHECK(ui_stub(SCR_TITLE));		/* until Task 11 builds it */
-	CHECK(!ui_stub(SCR_MARKET));
-	CHECK(!ui_stub(SCR_PICKER));
-	for (s = 0; s < NUM_SCREENS; s++) {
-		if (!ui_stub((Screen)s))
-			continue;
-		ui_test_setup(&app, &ui, 30);
-		go(&ui, (Screen)s);
-		ui_draw(&ui, &cv);
-		CHECK_EQ(cv.overflow, 0);
-		snap();
-		press_seq(&ui, "U D L R A X Y L1 R1 SEL START");
-		CHECK_EQ(ui.scr, s);
-		CHECK(same_game(&before, &app.g));
-		drain();
-		press_seq(&ui, "B");
-		CHECK_EQ(ui.scr, SCR_MARKET);
-		CHECK(heard(SFX_BACK));
-	}
+	for (s = 0; s < NUM_SCREENS; s++)
+		CHECK(!ui_stub((Screen)s));
 }
 
 static void test_doc_heals(void)
