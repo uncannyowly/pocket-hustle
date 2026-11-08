@@ -80,6 +80,15 @@ for bad in "--pace 0 --frames 3" "--pace 100" "--nowait --frames 3"; do
 done
 echo "smoke: --pace: ok"
 
+# --summary: the final state on one line (day, city, cash, bank, all debt, over), stdout untouched.
+rm -rf build/smoke7 build/smoke7.txt
+"$BIN" --data build/smoke7 --seed 1 --mute --frames 80 --keys "$NEW $MOVE" --summary build/smoke7.txt >build/smoke7.out
+[ "$(cat build/smoke7.txt)" = "day=2 city=0 cash=2600 bank=0 debt=4599 over=0" ] ||
+	{ echo "smoke: --summary wrong: $(cat build/smoke7.txt)" >&2; exit 1; }
+[ ! -s build/smoke7.out ] || { echo "smoke: --summary wrote to stdout" >&2; exit 1; }
+rm -f build/smoke7.out build/smoke7.txt
+echo "smoke: --summary: ok"
+
 # plat_poll returns several clicks queued in one poll, in order.
 cc -std=c99 -Wall -Wextra -Werror -Isrc -D_POSIX_C_SOURCE=200809L $(pkg-config --cflags sdl2) \
 	-o build/host/smoke-clicks tools/smoke/clicks.c src/plat/plat_sdl.c $(pkg-config --libs sdl2)

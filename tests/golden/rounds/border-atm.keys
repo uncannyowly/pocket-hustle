@@ -1,5 +1,6 @@
 # Round 2: cross the border to Tijuana, bank at an out-of-network ATM, hop to Cozumel and Los Cabos.
 @seed 11
+@expect day=6 city=16 cash=598 bank=0 debt=6613 over=0
 D A L1 L START A
 # FLY: the tab opens on the USA; R1 is the MEXICO tab, Tijuana is its first place
 R1 R1 R A R1

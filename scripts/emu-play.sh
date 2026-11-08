@@ -10,7 +10,8 @@
 # rebuilt first unless EMU_NO_BUILD=1. EMU_CONTAINER=NAME names the container (so it can be
 # stopped). Nothing is installed on the host and no container outlives its run. The game's
 # stdout (--record -) passes through; this script's own lines go to stderr. A round that ends
-# before the game does leaves save.dat; it is loaded and printed.
+# before the game does leaves save.dat; it is loaded and printed. The game's final state
+# (--summary, written to DATA_DIR.summary) must equal the round's @expect line, else exit 1.
 set -eu
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -57,7 +58,9 @@ fi
 docker run --rm ${EMU_CONTAINER:+--name "$EMU_CONTAINER"} --user "$(id -u):$(id -g)" -v "$ROOT:/src" -w /src \
 	-e "PH_FAKEFB=640x480:/src/$FB" -e PH_INPUT=/dev/null "$IMAGE" \
 	qemu-arm -L "$SYSROOT" build/miyoo/pocket-hustle --data "$DATA" --seed "$ROUND_SEED" --mute \
-	$ROUND_PARAMS --frames "$ROUND_FRAMES" --keys "$ROUND_KEYS" "$@"
+	$ROUND_PARAMS --frames "$ROUND_FRAMES" --keys "$ROUND_KEYS" --summary "$DATA.summary" "$@"
+
+round_check "$NAME" "$DATA.summary" "the ARM build" || exit 1
 
 if [ -f "$DATA/save.dat" ]; then
 	mkdir -p build/host

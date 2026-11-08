@@ -2,6 +2,7 @@
 # crew offer whenever the stash is big, and the crew never overdoses: back a chemical, take a find,
 # take the crew deal and get paid, then watch the stakes resolve.
 @seed 33
+@expect day=5 city=0 cash=11539 bank=0 debt=6039 over=0
 @param rc_offer_permille=1000
 @param rc_find_permille=1000
 @param cohort_offer_permille=1000

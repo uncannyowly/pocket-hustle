@@ -1,5 +1,6 @@
 # Round 3: cross the border to Sinaloa, borrow from the lender there, trade, sell and repay.
 @seed 21
+@expect day=4 city=17 cash=6717 bank=0 debt=5515 over=0
 D A L1 L START A A
 # FLY to Sinaloa (the fourth place of the MEXICO tab); the cards: ticket, then a mugging
 R1 R1 R A R1 D D D

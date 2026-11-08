@@ -5,7 +5,8 @@
  *   --param    sets a wild card or crew param for the next new game (see params_set); repeatable
  *   --pace MS  a scripted press every MS ms in real time (--frames is still counted at the
  *              default pace of one press per SCRIPT_EVERY frames); --nowait skips the sleeping
- *   --record   writes the 320 x 240 canvas as raw RGB24, one frame per 20 Hz tick, to FILE or "-" */
+ *   --record   writes the 320 x 240 canvas as raw RGB24, one frame per 20 Hz tick, to FILE or "-"
+ *   --summary  writes the final state as one line to FILE when the run ends (see write_summary) */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,7 +32,7 @@ static void audio_cb(int16_t *stereo, int frames, void *user)
 static void usage(void)
 {
 	fprintf(stderr, "usage: pocket-hustle [--data DIR] [--seed N] [--fullscreen] [--mute] [--param NAME=VALUE]... "
-			"[--frames N --keys \"TOKENS\" [--pace MS [--nowait]]] [--record FILE]\n");
+			"[--frames N --keys \"TOKENS\" [--pace MS [--nowait]]] [--record FILE] [--summary FILE]\n");
 }
 
 /* "A D START" to pad ids; the count, or -1 on an unknown token. */
@@ -90,6 +91,23 @@ static int parse_param(const char *s, ParamArg *out)
 	return 0;
 }
 
+/* The game's final state as one line, for the round scripts to check:
+ * "day=6 city=0 cash=441 bank=0 debt=6613 over=0" (debt is everything owed, over 1 once the game has ended). */
+static int write_summary(const char *path, const Game *g)
+{
+	FILE *f = fopen(path, "w");
+	long long debt = 0;
+	int c;
+
+	if (!f)
+		return -1;
+	for (c = 0; c < NUM_CITIES; c++)
+		debt += g->debt[c];
+	fprintf(f, "day=%d city=%d cash=%lld bank=%lld debt=%lld over=%d\n", (int)g->day, (int)g->loc.city,
+		(long long)g->cash, (long long)g->bank, debt, g->phase == PH_OVER);
+	return fclose(f);
+}
+
 /* One canvas as RGB24 to f. */
 static int write_rgb(FILE *f, const Canvas *cv)
 {
@@ -115,7 +133,7 @@ int main(int argc, char **argv)
 	int nparams = 0, every = SCRIPT_EVERY, nowait = 0;
 	long frames = 0, frame = 0, pace_ms = 0;
 	ParamArg params[MAX_PARAMS];
-	const char *record_path = NULL;
+	const char *record_path = NULL, *summary_path = NULL;
 	FILE *record = NULL;
 	uint64_t seed = (uint64_t)time(NULL);
 	int i, ticks = 0, audio = 0, redraw = 1, quit = 0, status = 0;
@@ -157,6 +175,8 @@ int main(int argc, char **argv)
 			nowait = 1;
 		else if (!strcmp(argv[i], "--record") && i + 1 < argc)
 			record_path = argv[++i];
+		else if (!strcmp(argv[i], "--summary") && i + 1 < argc)
+			summary_path = argv[++i];
 		else {
 			usage();
 			return 2;
@@ -299,6 +319,10 @@ int main(int argc, char **argv)
 
 	if (app.has_game && (app_save_now(&app) != 0 || app.io_failed)) {
 		fprintf(stderr, "pocket-hustle: the game could not be saved\n");
+		status = 1;
+	}
+	if (summary_path && (app.has_game || app.g.phase == PH_OVER) && write_summary(summary_path, &app.g) != 0) {
+		fprintf(stderr, "pocket-hustle: cannot write \"%s\"\n", summary_path);
 		status = 1;
 	}
 	if (record && fclose(record) != 0)

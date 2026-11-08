@@ -1,5 +1,6 @@
 # Round 1: trade and ride around Oklahoma City, then fly to Dallas and on to Seattle.
 @seed 7
+@expect day=6 city=10 cash=441 bank=0 debt=6613 over=0
 # title: NEW GAME, the 15 day chip, START, the opening card
 D A L1 L START A
 @shot okc-day1

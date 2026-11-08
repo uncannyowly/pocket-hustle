@@ -6,7 +6,7 @@
 #   <round>-arm.mp4         the same round on the ARM build under qemu
 #   <round>-sheet.png       a contact sheet of the round's key frames (the @shot lines of its file)
 #   <round>/<label>.png     each key frame at 2x
-# and checks that the two runs recorded the identical frames. Needs ffmpeg and python3 with PIL
+# and checks that the two runs recorded the identical frames and ended in the round's @expect state. Needs ffmpeg and python3 with PIL
 # on the host. Videos are not committed (build/ is ignored).
 set -eu
 
@@ -39,7 +39,9 @@ for r in $rounds; do
 	ARMRAW="$OUT/tmp/$NAME-arm.raw"
 	# shellcheck disable=SC2086
 	build/host/pocket-hustle --data "$OUT/tmp/$NAME-pc" --seed "$ROUND_SEED" --mute $ROUND_PARAMS \
-		--frames "$ROUND_FRAMES" --keys "$ROUND_KEYS" --pace "$PACE" --nowait --record "$PCRAW"
+		--frames "$ROUND_FRAMES" --keys "$ROUND_KEYS" --pace "$PACE" --nowait --record "$PCRAW" \
+		--summary "$OUT/tmp/$NAME-pc.summary"
+	round_check "$NAME" "$OUT/tmp/$NAME-pc.summary" "the PC build" || exit 1
 	EMU_NO_BUILD=1 scripts/emu-play.sh -d "$OUT/tmp/$NAME-arm" -f "$OUT/tmp/$NAME-fb.raw" "$NAME" \
 		--pace "$PACE" --nowait --record - > "$ARMRAW"
 	if cmp -s "$PCRAW" "$ARMRAW"; then same="identical frames on both"; else same="FRAMES DIFFER"; fi

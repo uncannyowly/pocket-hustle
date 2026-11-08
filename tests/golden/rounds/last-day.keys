@@ -1,6 +1,7 @@
 # Round 4: play a whole 15 day game (a plain buy low, sell high loop around Oklahoma City, repaying
 # the lender when the cash allows), reach the last day, then look at the final screen and the high scores.
 @seed 3
+@expect day=15 city=0 cash=51373 bank=0 debt=0 over=1
 D A L1 L START A A
 @shot day1-market
 A Y A L1 A D A A L1 A Y A R1 R R R A R A Y A B R1 D

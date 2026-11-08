@@ -190,7 +190,6 @@ int game_crew_accept(Game *g)
 		g->loc.hood = 0;
 		g->stats.moves++;
 		g->stats.flights++;
-		market_roll(g);
 		if (g->debt[old] > 0) {		/* the old lender sells the debt to the new city's */
 			if (g->debt[pick] <= 0)
 				g->debt_age[pick] = 0;
@@ -199,6 +198,7 @@ int game_crew_accept(Game *g)
 			g->debt_age[old] = 0;
 			game_msg(g, M_DEBT_SOLD, (int16_t)pick, 0, 0, g->debt[pick]);
 		}
+		market_roll(g);
 		if (g->day == g->last_day)
 			game_msg(g, M_LAST_DAY, 0, 0, 0, 0);
 	}
