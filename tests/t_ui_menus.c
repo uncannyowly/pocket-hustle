@@ -604,7 +604,7 @@ static void test_over_buttons(void)
 static void test_over_texts(void)
 {
 	char s[64];
-	StatCell cells[10];
+	StatCell cells[12];
 	int n, i, found = 0;
 
 	ui_test_setup(&app, &ui, 30);
@@ -635,8 +635,14 @@ static void test_over_texts(void)
 	app.g.stats.times_mugged = 2;
 	app.g.stats.goon_visits = 5;
 	app.g.stats.bank_fees_paid = 1234;
+	app.g.stats.wild_wins = 3;
+	app.g.stats.wild_losses = 2;
 	n = over_stats(&app.g, cells);
-	CHECK_EQ(n, 10);
+	CHECK_EQ(n, 12);
+	CHECK_STR(cells[10].label, "Wild wins");
+	CHECK_STR(cells[10].value, "3");
+	CHECK_STR(cells[11].label, "Wild busts");
+	CHECK_STR(cells[11].value, "2");
 	CHECK_STR(cells[0].label, "Days");
 	CHECK_STR(cells[0].value, "30");
 	CHECK_STR(cells[1].label, "Moves");

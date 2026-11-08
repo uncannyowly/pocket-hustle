@@ -17,7 +17,7 @@ enum { BOX_X = 36, BOX_Y = 48, BOX_W = 248, BOX_H = 144,
 
 static int is_money(PickKind k)
 {
-	return k == PK_DEPOSIT || k == PK_WITHDRAW || k == PK_BORROW || k == PK_REPAY;
+	return k == PK_DEPOSIT || k == PK_WITHDRAW || k == PK_BORROW || k == PK_REPAY || k == PK_STAKE;
 }
 
 static int good_ok(int good)
@@ -37,7 +37,10 @@ void picker_open(Ui *u, PickKind kind, int good, Screen back)
 
 static void picker_close(Ui *u)
 {
-	go(u, u->back);
+	if (u->pk.kind == PK_STAKE && u->news.n > 0)	/* the offer card is still waiting for its answer */
+		overlay(u, SCR_NEWS, SCR_MARKET);
+	else
+		go(u, u->back);
 }
 
 static int city_of(const Game *g)
@@ -62,6 +65,7 @@ int64_t picker_max(const Ui *u)
 			m = g->cash / g->p.hospital_per_hp;
 		return m > 0 ? m : 0;
 	case PK_DEPOSIT:
+	case PK_STAKE:
 		return g->cash > 0 ? g->cash : 0;
 	case PK_WITHDRAW:
 		return g->bank > 0 ? g->bank : 0;
@@ -274,6 +278,23 @@ static void money_text(const Game *g, PickKind kind, int64_t q, PickText *t)
 	}
 }
 
+/* "BACK 3-MMC", what is at stake, and the odds the chemical catches on and what it pays. */
+static void stake_text(const Game *g, int chem, int64_t q, PickText *t)
+{
+	const ChemDef *cd = &CHEMS[chem];
+	char name[16], a[28];
+
+	upper(name, sizeof name, cd->name);
+	snprintf(t->title, sizeof t->title, "BACK %s", name);
+	snprintf(t->unit, sizeof t->unit, "OR NOTHING");
+	fmt_money(q, a, sizeof a);
+	snprintf(t->total, sizeof t->total, "STAKE %s", a);
+	snprintf(t->info, sizeof t->info, "Hits %d%%. Pays %d.%d-%d.%dX.", cd->odds_permille / 10,
+		 cd->mult_lo_pct / 100, cd->mult_lo_pct % 100 / 10, cd->mult_hi_pct / 100,
+		 cd->mult_hi_pct % 100 / 10);
+	(void)g;
+}
+
 void picker_text(const Ui *u, PickText *t)
 {
 	const Game *g = &u->app->g;
@@ -286,6 +307,10 @@ void picker_text(const Ui *u, PickText *t)
 		sell_text(g, u->pk.good, u->pk.q, t);
 	else if (u->pk.kind == PK_HEAL)
 		heal_text(g, u->pk.q, t);
+	else if (u->pk.kind == PK_STAKE) {
+		if (u->pk.good >= 0 && u->pk.good < NUM_CHEMS)
+			stake_text(g, u->pk.good, u->pk.q, t);
+	}
 	else if (is_money(u->pk.kind))
 		money_text(g, u->pk.kind, u->pk.q, t);
 }
@@ -463,6 +488,13 @@ static void confirm(Ui *u)
 	char msg[96], amt[28];
 
 	msg[0] = '\0';
+	if (u->pk.kind == PK_STAKE) {		/* the offer card answers it, with its own sound */
+		int64_t stake = u->pk.q;
+
+		picker_close(u);
+		news_answer(u, 1, stake);
+		return;
+	}
 	if (u->pk.kind == PK_BUY) {
 		r = game_buy(g, good, q);
 		if (r == OK) {

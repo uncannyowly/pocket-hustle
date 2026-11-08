@@ -104,6 +104,16 @@ static void extreme(const char *city, int hood, int big_price)
 		g->stats.goon_visits = g->stats.spikes_seen = g->stats.crashes_seen = g->stats.rumors_true =
 		g->stats.rumors_joke = 99999;
 	g->stats.best_net_worth = g->stats.hospital_spent = g->stats.bank_fees_paid = MONEY_MAX;
+	g->stats.wild_wins = g->stats.wild_losses = 99999;
+	g->nstakes = MAX_STAKES;		/* the longest names, running */
+	g->stakes[0].chem = 5;
+	g->stakes[1].chem = 2;
+	g->stakes[2].chem = 8;
+	for (i = 0; i < MAX_STAKES; i++) {
+		g->stakes[i].stake = MONEY_MAX / 4;
+		g->stakes[i].resolve_day = 90;
+	}
+	g->banned = 0x3ffffu & ~(1u << g->loc.city);	/* every other city shows BANNED */
 	snprintf(app.save_path, sizeof app.save_path, "%s", "");
 }
 
@@ -189,10 +199,13 @@ static void sweep_screens(void)
 		ui.row = i;
 		edge("move");
 	}
-	for (i = 0; i < NUM_CITIES; i++) {
+	for (g = 0; g < 2; g++) {
 		go(&ui, SCR_FLY);
-		ui.row = i;
-		edge("fly");
+		ui.fly_tab = g;
+		for (i = 0; i < fly_count(&ui); i++) {
+			ui.row = i;
+			edge("fly");
+		}
 	}
 	go(&ui, SCR_BANK);
 	for (i = 0; i < 2; i++) {
@@ -296,6 +309,30 @@ static void sweep_news_and_chase(void)
 		ui.news.i = i;
 		edge("news");
 	}
+	{
+		int k;
+
+		for (k = OFFER_RC; k <= OFFER_CREW; k++) {	/* the offer cards, with their choices */
+			app.g.offer.kind = (uint8_t)k;
+			app.g.offer.chem = 8;
+			app.g.offer.day = app.g.day;
+			all_kinds_msgs();
+			ui_collect_news(&ui, SCR_MARKET);
+			for (i = 0; i < ui.news.n; i++) {
+				ui.news.i = i;
+				edge(k == OFFER_RC ? "news with a chemical offer" : "news with a crew offer");
+			}
+			if (k == OFFER_RC) {
+				picker_open(&ui, PK_STAKE, 8, SCR_MARKET);
+				edge("stake dial at zero");
+				ui.pk.q = picker_max(&ui);
+				edge("stake dial at max");
+				ui.pk.sel = 15;
+				edge("stake dial, last digit");
+			}
+		}
+		app.g.offer.kind = OFFER_NONE;
+	}
 	app.g.phase = PH_CHASE;
 	app.g.chase.posse = 99;
 	app.g.chase.cops_left = 99;
@@ -332,10 +369,15 @@ static void run_state(const char *label, const char *city, int hood, int big_pri
 
 static void test_every_screen_extreme(void)
 {
-	run_state("New York, big prices", "New York City", 4, 1);
-	run_state("New York, tiny prices", "New York City", 4, 0);
-	run_state("Portland, big prices", "Portland", 5, 1);
-	run_state("Portland, tiny prices", "Portland", 5, 0);
+	int city, big;
+
+	for (city = 0; city < NUM_CITIES; city++)
+		for (big = 0; big < 2; big++) {
+			char label[64];
+
+			snprintf(label, sizeof label, "%s, %s prices", CITIES[city].name, big ? "big" : "tiny");
+			run_state(label, CITIES[city].name, city % HOODS_PER_CITY, big);
+		}
 }
 
 static void test_negative_net_worth_over(void)
@@ -362,13 +404,13 @@ static void test_negative_net_worth_over(void)
 static void test_over_fees_fit_their_cell(void)
 {
 	static const int64_t V[] = {0, 999, 12345, 9999999999LL, 10000000000LL, 5000000000000LL, 999000000000000LL, MONEY_MAX};
-	StatCell cells[10];
+	StatCell cells[12];
 	size_t i;
 
 	ui_test_setup(&app, &ui, 30);
 	for (i = 0; i < sizeof V / sizeof V[0]; i++) {
 		app.g.stats.bank_fees_paid = V[i];
-		CHECK_EQ(over_stats(&app.g, cells), 10);
+		CHECK_EQ(over_stats(&app.g, cells), 12);
 		CHECK_STR(cells[9].label, "ATM fees");
 		CHECK(strlen(cells[9].value) <= 7);
 	}

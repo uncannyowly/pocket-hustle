@@ -604,7 +604,7 @@ void over_rank(const App *a, char *buf, size_t n)
 		snprintf(buf, n, "NO HIGH SCORE THIS TIME");
 }
 
-int over_stats(const Game *g, StatCell out[10])
+int over_stats(const Game *g, StatCell out[12])
 {
 	const Stats *s = &g->stats;
 	const struct { const char *label; int32_t v; } N[9] = {
@@ -626,7 +626,11 @@ int over_stats(const Game *g, StatCell out[10])
 		fmt_money_short(s->bank_fees_paid, out[9].value, sizeof out[9].value);
 	else
 		snprintf(out[9].value, sizeof out[9].value, "$%lldT", (long long)(s->bank_fees_paid / 1000000000000LL));
-	return 10;
+	snprintf(out[10].label, sizeof out[10].label, "Wild wins");
+	snprintf(out[10].value, sizeof out[10].value, "%d", (int)s->wild_wins);
+	snprintf(out[11].label, sizeof out[11].label, "Wild busts");
+	snprintf(out[11].value, sizeof out[11].value, "%d", (int)s->wild_losses);
+	return 12;
 }
 
 void over_draw(Ui *u, Canvas *c)
@@ -635,7 +639,7 @@ void over_draw(Ui *u, Canvas *c)
 	const Game *g = &u->app->g;
 	int64_t worth = game_net_worth(g);
 	char s[64];
-	StatCell cells[10];
+	StatCell cells[12];
 	int i, n, city = g->loc.city < NUM_CITIES ? g->loc.city : 0;
 
 	art_backdrop(c, city, 0, 240, u->frame);
@@ -652,7 +656,7 @@ void over_draw(Ui *u, Canvas *c)
 	cv_box(c, 24, 104, 272, 96, PAL_LINE);
 	n = over_stats(g, cells);
 	for (i = 0; i < n; i++) {
-		int x = i % 2 ? 168 : 32, y = 112 + (i / 2) * 16;
+		int x = i % 2 ? 168 : 32, y = 110 + (i / 2) * 14;
 
 		tx(c, cells[i].label, x, y, PAL_DIM, 1, TX_LEFT);
 		tx(c, cells[i].value, x + 120, y, PAL_TEXT, 1, TX_RIGHT);

@@ -104,6 +104,38 @@ static void draw_goods(Ui *u, Canvas *c)
 	}
 }
 
+enum { WILD_MAX = 17 };		/* characters that fit along the bag panel's bottom line */
+
+void bag_wild_line(const Game *g, char *buf, size_t n)
+{
+	int count = g->nstakes < MAX_STAKES ? g->nstakes : MAX_STAKES, k, i;
+
+	if (!n)
+		return;
+	buf[0] = '\0';
+	if (count <= 0)
+		return;
+	for (k = count; k >= 1; k--) {		/* as many names as fit, then how many more */
+		char line[48];
+		size_t len = (size_t)snprintf(line, sizeof line, "WILD: ");
+
+		for (i = 0; i < k && len < sizeof line; i++) {
+			int chem = g->stakes[i].chem;
+
+			if (chem < 0 || chem >= NUM_CHEMS)
+				chem = 0;
+			len += (size_t)snprintf(line + len, sizeof line - len, "%s%s", i ? ", " : "", CHEMS[chem].name);
+		}
+		if (k < count && len < sizeof line)
+			len += (size_t)snprintf(line + len, sizeof line - len, " +%d", count - k);
+		if (len <= WILD_MAX) {
+			snprintf(buf, n, "%s", line);
+			return;
+		}
+	}
+	snprintf(buf, n, "WILD: %d RUNNING", count);
+}
+
 static void draw_bag(Ui *u, Canvas *c, const int *held, int nh)
 {
 	const Game *g = &u->app->g;
@@ -128,7 +160,10 @@ static void draw_bag(Ui *u, Canvas *c, const int *held, int nh)
 		tx(c, s, 316, y, on ? PAL_WHITE : dir > 0 ? PAL_UP : dir < 0 ? PAL_DOWN : PAL_FAINT, 1, TX_RIGHT);
 		hit(u, 170, y - 1, 148, 10, HIT_BAG_ROW, i);
 	}
-	if (nh <= 8) {			/* a ninth line would sit on the weapon line */
+	bag_wild_line(g, s, sizeof s);
+	if (nh <= 8 && s[0]) {		/* running wild cards take the weapon's line */
+		tx(c, s, 173, 186, PAL_HOT, 1, TX_LEFT);
+	} else if (nh <= 8) {		/* a ninth line would sit on the weapon line */
 		art_icon(c, ICON_BOLT, 173, 186, 1, 0);
 		tx(c, g->weapon >= 0 && g->weapon < NUM_GEAR ? GEAR[g->weapon].name : "No weapon",
 		   182, 186, PAL_DIM, 1, TX_LEFT);

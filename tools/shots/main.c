@@ -122,17 +122,19 @@ int main(int argc, char **argv)
 		setup(30);
 		fly_open(&ui);
 		ui.row = i;
-		snprintf(nm, sizeof nm, "fly-%s", CITY[fly_city(&app.g, i)]);
+		snprintf(nm, sizeof nm, "fly-%s", CITY[fly_city(&ui, i)]);
 		shot(nm);
 	}
+	setup(30);
+	fly_open(&ui);
+	ui.fly_tab = 1;
+	shot("fly-mexico");
 	setup(30);
 	app.g.loc.city = 1;
 	app.g.loc.hood = 0;
 	game_move(&app.g, (Loc){1, 0});
 	fly_open(&ui);
-	for (i = 0; i < 6; i++)
-		if (fly_city(&app.g, i) == 0)
-			ui.row = i;
+	ui.row = 0;
 	snprintf(nm, sizeof nm, "fly-%s", CITY[0]);
 	shot(nm);
 

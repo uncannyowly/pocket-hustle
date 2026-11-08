@@ -13,9 +13,11 @@
 
 typedef enum { SCR_TITLE, SCR_NEWGAME, SCR_MARKET, SCR_PICKER, SCR_NEWS, SCR_MOVE, SCR_FLY, SCR_BANK,
 	       SCR_LENDER, SCR_STORE, SCR_CHASE, SCR_CHART, SCR_MENU, SCR_OVER, SCR_SCORES, NUM_SCREENS } Screen;
-typedef enum { PK_BUY, PK_SELL, PK_HEAL, PK_DEPOSIT, PK_WITHDRAW, PK_BORROW, PK_REPAY } PickKind;
-typedef enum { CARD_TRAVEL, CARD_MARKET, CARD_TROUBLE, CARD_RUMOR, CARD_DAY } CardKind;
-typedef struct { CardKind kind; int8_t good; char text[200]; } Card;
+typedef enum { PK_BUY, PK_SELL, PK_HEAL, PK_DEPOSIT, PK_WITHDRAW, PK_BORROW, PK_REPAY, PK_STAKE } PickKind;	/* PK_STAKE: backing a chemical, good = the chemical */
+typedef enum { CARD_TRAVEL, CARD_MARKET, CARD_TROUBLE, CARD_RUMOR, CARD_DAY, CARD_WILD } CardKind;
+/* A card that asks something: A and B answer it, and it stays until they do. */
+enum { CHOICE_NONE, CHOICE_RC, CHOICE_CREW };
+typedef struct { CardKind kind; int8_t good, choice; char text[200]; } Card;
 typedef struct { int x, y, w, h, action, arg; } Hit;	/* a clickable region, canvas pixels */
 
 typedef struct Ui {
@@ -23,6 +25,7 @@ typedef struct Ui {
 	Screen scr, under, back;		/* under: drawn beneath an overlay; back: where B returns */
 	int panel, mrow, brow, act;		/* market: 0 market, 1 bag, 2 actions */
 	int row;				/* the highlighted row on list screens */
+	int fly_tab;				/* the flight screen's tab: a COUNTRY_* */
 	struct { PickKind kind; int good; int64_t q; int sel; } pk;
 	struct { Card cards[MAX_MSGS + 2]; int n, i; Screen after; } news;
 	char chase_log[400]; int chase_done;	/* the last action's lines; a CR_* */

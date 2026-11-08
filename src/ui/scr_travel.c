@@ -17,7 +17,6 @@ static const uint32_t LINE_COL[NUM_CITIES] = {
 	0xf0e08au, 0xe05ac8u, 0x3ce0b0u, 0xf09a5au, 0xc0a0f0u,
 };
 static const Hint GO_HINTS[3] = {{"A", "Ride"}, {"B", "Back"}, {"START", "Menu"}};
-static const Hint FLY_HINTS[3] = {{"A", "Fly"}, {"B", "Back"}, {"START", "Menu"}};
 
 static int city_of(const Game *g)
 {
@@ -63,8 +62,10 @@ void move_draw(Ui *u, Canvas *c)
 	upper(transit, s, sizeof s);
 	tx(c, s, 8, 74, PAL_GOLD, 1, TX_LEFT);
 	tx(c, "PICK A STOP", 8, 84, PAL_DIM, 1, TX_LEFT);
-	art_icon(c, ICON_BANK, 112, 84, 1, 0);
-	tx(c, "= BANK BRANCH", 122, 84, PAL_DIM, 1, TX_LEFT);
+	if (cd->bank_hoods) {		/* across the border there are no branches to point out */
+		art_icon(c, ICON_BANK, 112, 84, 1, 0);
+		tx(c, "= BANK BRANCH", 122, 84, PAL_DIM, 1, TX_LEFT);
+	}
 	cv_rect(c, 22, 100, 4, 100, lc);
 	for (i = 0; i < HOODS_PER_CITY; i++) {
 		int y = 100 + i * 20, sel = u->row == i, at = here == i;
@@ -138,81 +139,177 @@ void move_click(Ui *u, int action, int arg)
 
 /* ---- flying ---- */
 
-int fly_city(const Game *g, int row)
+enum { GRID_ROWS = 7, GRID_Y = 90, GRID_STEP = 11, GRID_COL_W = 156, TAB_Y = 72 };
+
+int fly_count(const Ui *u)
 {
-	if (row < 0 || row >= NUM_CITIES - 1)
+	const Game *g = &u->app->g;
+	int c, n = 0;
+
+	for (c = 0; c < NUM_CITIES; c++)
+		if (c != city_of(g) && CITIES[c].country == u->fly_tab)
+			n++;
+	return n;
+}
+
+int fly_city(const Ui *u, int place)
+{
+	const Game *g = &u->app->g;
+	int c;
+
+	if (place < 0)
 		return -1;
-	return row < g->loc.city ? row : row + 1;
+	for (c = 0; c < NUM_CITIES; c++)
+		if (c != city_of(g) && CITIES[c].country == u->fly_tab && place-- == 0)
+			return c;
+	return -1;
 }
 
 void fly_open(Ui *u)
 {
 	go(u, SCR_FLY);
+	u->fly_tab = CITIES[city_of(&u->app->g)].country;
 	u->row = 0;
+}
+
+void fly_pass_text(const Ui *u, int dest, PassText *t)
+{
+	const Game *g = &u->app->g;
+	int from = city_of(g);
+	char name[16], hood[16];
+
+	memset(t, 0, sizeof *t);
+	if (dest < 0 || dest >= NUM_CITIES)
+		return;
+	upper(g->name[0] ? g->name : "YOU", name, sizeof name);
+	snprintf(t->passenger, sizeof t->passenger, "PASSENGER %s", name);
+	snprintf(t->route, sizeof t->route, "FROM %s  TO %s", CITIES[from].code, CITIES[dest].code);
+	upper(CITIES[dest].hoods[0], hood, sizeof hood);
+	snprintf(t->lands, sizeof t->lands, "LANDS %s", hood);
+	if (game_city_banned(g, dest)) {
+		snprintf(t->fare, sizeof t->fare, "BANNED");
+		t->fare_col = PAL_CORAL;
+	} else {
+		int64_t fare = game_flight_cost(g, dest);
+
+		fmt_money_short(fare, t->fare, sizeof t->fare);
+		t->fare_col = fare > g->cash ? PAL_CORAL : 0xb0195au;
+	}
+	if (game_flight_crosses(g, dest))
+		snprintf(t->border, sizeof t->border, "BORDER CROSSING");
+}
+
+static void draw_tabs(Ui *u, Canvas *c)
+{
+	static const char *const NAME[2] = {"USA", "MEXICO"};
+	static const int X[2] = {8, 64}, W[2] = {52, 68};
+	int t, from = city_of(&u->app->g);
+	char s[32];
+
+	for (t = 0; t < 2; t++) {
+		int on = u->fly_tab == t;
+
+		cv_rect(c, X[t], TAB_Y, W[t], 13, on ? PAL_HOT : PAL_NIGHT);
+		cv_box(c, X[t], TAB_Y, W[t], 13, on ? PAL_WHITE : PAL_LINE);
+		tx(c, NAME[t], X[t] + (W[t] >> 1), TAB_Y + 3, on ? PAL_WHITE : PAL_TEXT, 1, TX_CENTER);
+		hit(u, X[t], TAB_Y, W[t], 13, HIT_FLY_TAB, t);
+	}
+	if (u->fly_tab != CITIES[from].country)
+		snprintf(s, sizeof s, "CROSS THE BORDER");
+	else
+		snprintf(s, sizeof s, "FLIGHTS FROM %s", CITIES[from].code);
+	tx(c, s, 312, TAB_Y + 3, PAL_GOLD, 1, TX_RIGHT);
+}
+
+static void draw_grid(Ui *u, Canvas *c)
+{
+	const Game *g = &u->app->g;
+	int n = fly_count(u), i;
+	char s[32];
+
+	for (i = 0; i < n; i++) {
+		int city = fly_city(u, i), col = i / GRID_ROWS, x = 4 + col * GRID_COL_W;
+		int y = GRID_Y + (i % GRID_ROWS) * GRID_STEP, sel = u->row == i;
+		int banned = game_city_banned(g, city);
+		int64_t fare = game_flight_cost(g, city);
+
+		if (sel)
+			cv_rect(c, x, y - 2, GRID_COL_W - 4, GRID_STEP, PAL_HOT);
+		tx(c, CITIES[city].code, x + 4, y, sel ? PAL_WHITE : PAL_GOLD, 1, TX_LEFT);
+		tx(c, CITIES[city].short_name, x + 32, y, sel ? PAL_WHITE : banned ? PAL_DIM : PAL_TEXT, 1, TX_LEFT);
+		if (banned) {
+			snprintf(s, sizeof s, "BANNED");
+		} else {
+			fmt_money_short(fare, s, sizeof s);
+		}
+		tx(c, s, x + GRID_COL_W - 8, y, sel ? PAL_WHITE : banned || fare > g->cash ? PAL_CORAL : PAL_TEXT,
+		   1, TX_RIGHT);
+		hit(u, x, y - 2, GRID_COL_W - 4, GRID_STEP, HIT_FLY_ROW, i);
+	}
+}
+
+static void draw_pass(Canvas *c, const PassText *t)
+{
+	enum { BX = 8, BY = 168, BW = 304, BH = 54 };
+	int i;
+
+	cv_rect(c, BX, BY, BW, BH, PAL_PAPER);
+	cv_rect(c, BX, BY, BW, 11, PAL_SKY);
+	tx(c, "BOARDING PASS", BX + 4, BY + 2, PAL_INK, 1, TX_LEFT);
+	tx(c, "1 DAY", BX + BW - 4, BY + 2, PAL_INK, 1, TX_RIGHT);
+	for (i = 0; i < 10; i++)
+		cv_rect(c, BX + 230, BY + 14 + i * 4, 1, 2, PAL_INK);
+	tx(c, t->passenger, BX + 4, BY + 14, PAL_INK, 1, TX_LEFT);
+	tx(c, t->route, BX + 4, BY + 24, PAL_INK, 1, TX_LEFT);
+	tx(c, t->lands, BX + 4, BY + 34, PAL_INK, 1, TX_LEFT);
+	if (t->border[0])
+		tx(c, t->border, BX + 4, BY + 44, 0xb0195au, 1, TX_LEFT);
+	tx(c, "FARE", BX + 267, BY + 18, PAL_INK, 1, TX_CENTER);
+	tx(c, t->fare, BX + 267, BY + 32, t->fare_col, 1, TX_CENTER);
 }
 
 void fly_draw(Ui *u, Canvas *c)
 {
-	enum { BX = 8, BY = 158, BW = 304, BH = 60 };
+	static const Hint H[4] = {{"A", "Fly"}, {"B", "Back"}, {"L1R1", "Country"}, {"START", "Menu"}};
 	const Game *g = &u->app->g;
-	enum { FLY_VISIBLE = 6 };
-	int from = city_of(g), dest, i, first;
-	char s[64], name[16];
-	int64_t fare;
+	int dest;
+	char s[64];
+	PassText t;
 
-	if (u->row < 0 || u->row >= NUM_CITIES - 1)
+	if (u->fly_tab < 0 || u->fly_tab > 1)
+		u->fly_tab = 0;
+	if (u->row < 0 || u->row >= fly_count(u))
 		u->row = 0;
-	dest = fly_city(g, u->row);
-	fare = game_flight_cost(g, dest);
+	dest = fly_city(u, u->row);
+	if (dest < 0)
+		dest = city_of(g) ? 0 : 1;
 	top_bar(u, c, NULL, NULL);
 	art_backdrop(c, dest, 12, 56, u->frame);
 	snprintf(s, sizeof s, "Lands at %s", CITIES[dest].hoods[0]);
 	place_label(c, dest, s, 68);
 	cv_rect(c, 0, 68, CV_W, 156, PAL_PANEL);
 	cv_rect(c, 0, 68, CV_W, 1, PAL_LINE);
-	snprintf(s, sizeof s, "FLIGHTS FROM %s", CITIES[from].code);
-	tx(c, s, 8, 74, PAL_GOLD, 1, TX_LEFT);
-	/* Interim list (Task 5 redesigns this screen): six rows scroll with the selection. */
-	first = u->row > FLY_VISIBLE - 1 ? u->row - (FLY_VISIBLE - 1) : 0;
-	for (i = first; i < first + FLY_VISIBLE && i < NUM_CITIES - 1; i++) {
-		int city = fly_city(g, i), y = 88 + (i - first) * 11, sel = u->row == i;
-		int64_t f = game_flight_cost(g, city);
-
-		if (sel)
-			cv_rect(c, 4, y - 2, 312, 11, PAL_HOT);
-		tx(c, CITIES[city].code, 10, y, sel ? PAL_WHITE : PAL_GOLD, 1, TX_LEFT);
-		tx(c, CITIES[city].name, 46, y, sel ? PAL_WHITE : PAL_TEXT, 1, TX_LEFT);
-		fmt_money(f, s, sizeof s);
-		tx(c, s, 310, y, sel ? PAL_WHITE : f > g->cash ? PAL_CORAL : PAL_TEXT, 1, TX_RIGHT);
-		hit(u, 4, y - 2, 312, 11, HIT_FLY_ROW, i);
-	}
-	cv_rect(c, BX, BY, BW, BH, PAL_PAPER);			/* the boarding pass */
-	cv_rect(c, BX, BY, BW, 11, PAL_SKY);
-	tx(c, "BOARDING PASS", BX + 4, BY + 2, PAL_INK, 1, TX_LEFT);
-	tx(c, "1 DAY", BX + BW - 4, BY + 2, PAL_INK, 1, TX_RIGHT);
-	for (i = 0; i < 12; i++)
-		cv_rect(c, BX + 230, BY + 14 + i * 4, 1, 2, PAL_INK);
-	upper(g->name[0] ? g->name : "YOU", name, sizeof name);
-	snprintf(s, sizeof s, "PASSENGER %s", name);
-	tx(c, s, BX + 4, BY + 16, PAL_INK, 1, TX_LEFT);
-	snprintf(s, sizeof s, "FROM %s  TO %s", CITIES[from].code, CITIES[dest].code);
-	tx(c, s, BX + 4, BY + 28, PAL_INK, 1, TX_LEFT);
-	upper(CITIES[dest].hoods[0], name, sizeof name);
-	snprintf(s, sizeof s, "LANDS %s", name);
-	tx(c, s, BX + 4, BY + 40, PAL_INK, 1, TX_LEFT);
-	tx(c, "FARE", BX + 267, BY + 18, PAL_INK, 1, TX_CENTER);
-	fmt_money(fare, s, sizeof s);
-	tx(c, s, BX + 267, BY + 32, fare > g->cash ? PAL_CORAL : 0xb0195au, 1, TX_CENTER);
-	hints(c, FLY_HINTS, 3, HINTS_Y);
+	draw_tabs(u, c);
+	draw_grid(u, c);
+	fly_pass_text(u, dest, &t);
+	draw_pass(c, &t);
+	hints(c, H, 4, HINTS_Y);
 }
 
 static void fly(Ui *u, int city)
 {
 	Game *g = &u->app->g;
 	Loc dest = {(uint8_t)city, 0};
+	char msg[64];
 
 	if (city < 0)
 		return;
+	if (game_city_banned(g, city)) {
+		snprintf(msg, sizeof msg, "You're not welcome in %s anymore.", CITIES[city].name);
+		toast(u, msg);
+		play(u, SFX_DENY);
+		return;
+	}
 	if (game_flight_cost(g, city) > g->cash) {
 		toast(u, "You can't afford the ticket.");
 		play(u, SFX_DENY);
@@ -221,18 +318,46 @@ static void fly(Ui *u, int city)
 	ui_core_call(u, move_call, &dest, SFX_OK, 1);
 }
 
+/* The grid fills down the left column, then the right: place = col * 7 + row. */
+static int grid_move(const Ui *u, int pad)
+{
+	int n = fly_count(u), col = u->row / GRID_ROWS, row = u->row % GRID_ROWS;
+	int in_col = n - col * GRID_ROWS > GRID_ROWS ? GRID_ROWS : n - col * GRID_ROWS;
+	int to;
+
+	if (pad == PAD_UP)
+		return col * GRID_ROWS + (row + in_col - 1) % in_col;
+	if (pad == PAD_DOWN)
+		return col * GRID_ROWS + (row + 1) % in_col;
+	if (pad != PAD_LEFT && pad != PAD_RIGHT)
+		return u->row;
+	to = pad == PAD_RIGHT ? col + 1 : col - 1;
+	if (to < 0 || to * GRID_ROWS >= n)
+		return u->row;
+	return to * GRID_ROWS + (row < GRID_ROWS && to * GRID_ROWS + row < n ? row : n - 1 - to * GRID_ROWS);
+}
+
 void fly_press(Ui *u, int pad)
 {
-	if (pad == PAD_UP)
-		u->row = (u->row + NUM_CITIES - 2) % (NUM_CITIES - 1);
-	else if (pad == PAD_DOWN)
-		u->row = (u->row + 1) % (NUM_CITIES - 1);
-	else if (pad == PAD_B) {
+	if (pad == PAD_UP || pad == PAD_DOWN || pad == PAD_LEFT || pad == PAD_RIGHT) {
+		int to = grid_move(u, pad);
+
+		if (to == u->row)
+			return;
+		u->row = to;
+	} else if (pad == PAD_L1 || pad == PAD_R1) {
+		int tab = pad == PAD_R1 ? 1 : 0;
+
+		if (tab == u->fly_tab)
+			return;
+		u->fly_tab = tab;
+		u->row = 0;
+	} else if (pad == PAD_B) {
 		go(u, SCR_MARKET);
 		play(u, SFX_BACK);
 		return;
 	} else if (pad == PAD_A) {
-		fly(u, fly_city(&u->app->g, u->row));
+		fly(u, fly_city(u, u->row));
 		return;
 	} else
 		return;
@@ -241,6 +366,14 @@ void fly_press(Ui *u, int pad)
 
 void fly_click(Ui *u, int action, int arg)
 {
+	if (action == HIT_FLY_TAB) {
+		if (arg != u->fly_tab) {
+			u->fly_tab = arg;
+			u->row = 0;
+			play(u, SFX_MOVE);
+		}
+		return;
+	}
 	if (action != HIT_FLY_ROW)
 		return;
 	u->row = arg;

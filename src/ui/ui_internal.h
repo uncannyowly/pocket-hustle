@@ -30,7 +30,8 @@ enum {
 	HIT_BAG_ROW,		/* arg: a line of the bag */
 	HIT_MARKET_ACT,		/* arg: MKT_* */
 	HIT_MOVE_ROW,		/* arg: a hood */
-	HIT_FLY_ROW,		/* arg: a row of the flight list */
+	HIT_FLY_ROW,		/* arg: a place in the flight grid (see fly_city) */
+	HIT_FLY_TAB,		/* arg: a COUNTRY_*, the flight screen's tab */
 	HIT_MONEY_BTN,		/* arg: 0 or 1, the left or right button of the bank or the lender */
 	HIT_DIAL_UP,		/* arg: a digit of the money dial; adds 10^digit */
 	HIT_DIAL_DOWN,		/* arg: a digit of the money dial; removes 10^digit */
@@ -89,6 +90,9 @@ int  bag_pct(const Game *g, int good, char *buf, size_t n);
 /* PF_SPIKE or PF_CRASH when the market roll made today's price one (the core's hist_ev),
  * else PF_NORMAL; PF_NORMAL for a good that is not on sale. */
 int  price_flag(const Game *g, int good);
+/* "WILD: 3-MMC, 2C-B" for the stakes running (what does not fit becomes "+N"), at most 17
+ * characters; "" when none are. It takes the bag panel's bottom line from the weapon. */
+void bag_wild_line(const Game *g, char *buf, size_t n);
 
 /* News (scr_news.c), getting around and flying (scr_travel.c). */
 void news_draw(Ui *u, Canvas *c);
@@ -101,7 +105,14 @@ void fly_open(Ui *u);			/* the FLY button */
 void fly_draw(Ui *u, Canvas *c);
 void fly_press(Ui *u, int pad);
 void fly_click(Ui *u, int action, int arg);
-int  fly_city(const Game *g, int row);	/* the city on row 0..5 of the flight list: every city but this one */
+/* The flight grid: the cities of the open tab (u->fly_tab) except this one, in table order,
+ * filled down the left column (seven) and then the right. Places 0..fly_count-1. */
+int  fly_count(const Ui *u);
+int  fly_city(const Ui *u, int place);	/* -1 past the end */
+typedef struct { char passenger[32], route[32], lands[32], fare[24], border[24]; uint32_t fare_col; } PassText;
+void fly_pass_text(const Ui *u, int dest, PassText *t);	/* fare is BANNED for a closed city; border is "" without a crossing */
+void news_answer(Ui *u, int accept, int64_t stake);	/* answers the offer card on screen (stake: the chemical's) */
+int  news_choice_label(const Ui *u, int which, char *buf, size_t n);	/* which 1 = A, 2 = B; 0 if the card asks nothing */
 
 /* The bank and the loan shark (scr_money.c). The text the screens draw, for tests to read. */
 typedef struct { char head[16], tag[64], blurb[72]; uint32_t tag_col; } BankText;
@@ -166,7 +177,7 @@ void menu_press(Ui *u, int pad);
 void menu_click(Ui *u, int action, int arg);
 void over_title(const Game *g, char *buf, size_t n);	/* "TIME'S UP", "GAME OVER" or "RETIRED EARLY" */
 void over_rank(const App *a, char *buf, size_t n);	/* "HIGH SCORE #4 FOR 30 DAYS" or the no-score line */
-int  over_stats(const Game *g, StatCell out[10]);	/* the grid cells in reading order; the count */
+int  over_stats(const Game *g, StatCell out[12]);	/* the grid cells in reading order; the count */
 void over_draw(Ui *u, Canvas *c);
 void over_press(Ui *u, int pad);
 int  scores_hilite(const App *a, int tab);		/* the row just recorded on that tab, else -1 */
