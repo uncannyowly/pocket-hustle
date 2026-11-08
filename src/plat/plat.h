@@ -9,7 +9,13 @@
 #include "ui/input.h"		/* PAD_* ids and PAD_BIT */
 
 typedef struct { uint32_t *pixels; int w, h, pitch; } Framebuffer;	/* 640 x 480 XRGB8888; pitch in pixels */
-typedef struct { uint32_t held; int clicked, cx, cy; int quit; } PlatEvents;	/* cx, cy in framebuffer pixels */
+enum { PLAT_MAX_CLICKS = 8 };
+typedef struct {
+	uint32_t held;
+	int nclicks;				/* left clicks since the last poll, in arrival order */
+	struct { int x, y; } click[PLAT_MAX_CLICKS];	/* framebuffer pixels */
+	int quit;
+} PlatEvents;
 typedef void (*AudioCallback)(int16_t *stereo, int frames, void *user);
 
 int  plat_init(int fullscreen);
@@ -17,7 +23,8 @@ void plat_shutdown(void);
 Framebuffer *plat_framebuffer(void);
 void plat_present(void);
 /* Drains the event queue. held is the pad buttons down now (a press and release within one
- * poll still shows as held once). clicked is a left click since the last poll, at (cx, cy). */
+ * poll still shows as held once). click[0..nclicks) are the left clicks, in order. At most PLAT_MAX_CLICKS are
+ * returned per poll; polling stops there and the rest stay queued for the next poll. */
 void plat_poll(PlatEvents *ev);
 uint32_t plat_ms(void);
 void plat_sleep_ms(int ms);

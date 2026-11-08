@@ -24,4 +24,17 @@ rm -rf build/smoke build/smoke2
 
 "$BIN" --data build/smoke2 --seed 1 --mute --frames 80 --keys "$NEW $MOVE"
 "$CHECK" build/smoke2/save.dat 2 15
+# Run 3: an exit save that fails (save.dat is a directory) must make the exit status non-zero.
+rm -rf build/smoke3
+mkdir -p build/smoke3/save.dat
+if "$BIN" --data build/smoke3 --seed 1 --mute --frames 80 --keys "$NEW $MOVE" 2>/dev/null; then
+	echo "smoke: a failed exit save still exited 0" >&2
+	exit 1
+fi
+echo "smoke: failed exit save exits non-zero: ok"
+
+# plat_poll returns several clicks queued in one poll, in order.
+cc -std=c99 -Wall -Wextra -Werror -Isrc -D_POSIX_C_SOURCE=200809L $(pkg-config --cflags sdl2) \
+	-o build/host/smoke-clicks tools/smoke/clicks.c src/plat/plat_sdl.c $(pkg-config --libs sdl2)
+build/host/smoke-clicks
 echo "smoke: ok"

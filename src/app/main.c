@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 	int fullscreen = 0, mute = 0, scripted = 0, nkeys = 0, pads[MAX_KEYS];
 	long frames = 0, frame = 0;
 	uint64_t seed = (uint64_t)time(NULL);
-	int i, audio = 0, redraw = 1, quit = 0;
+	int i, audio = 0, redraw = 1, quit = 0, status = 0;
 	uint32_t last_tick, now;
 	Repeat rep;
 	PlatEvents ev;
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 		if (scripted) {	/* a virtual clock: one tick per frame, one press every few frames */
 			now = (uint32_t)frame * TICK_MS;
 			ev.held = 0;
-			ev.clicked = 0;
+			ev.nclicks = 0;
 			if (frame % SCRIPT_EVERY == 0 && frame / SCRIPT_EVERY < nkeys)
 				ev.held = PAD_BIT(pads[frame / SCRIPT_EVERY]);
 		} else
@@ -142,10 +142,10 @@ int main(int argc, char **argv)
 				ui_press(&ui, b);
 				pressed = 1;
 			}
-		if (ev.clicked) {
-			if (pressed)	/* a press voids the hit regions: redraw so the click lands */
+		for (i = 0; i < ev.nclicks; i++) {
+			if (pressed)	/* a press or click voids the hit regions: redraw so the next one lands */
 				ui_draw(&ui, &cv);
-			ui_click(&ui, ev.cx / 2, ev.cy / 2);
+			ui_click(&ui, ev.click[i].x / 2, ev.click[i].y / 2);
 			pressed = 1;
 		}
 		if (pressed)
@@ -186,10 +186,12 @@ int main(int argc, char **argv)
 			break;
 	}
 
-	if (app.has_game && app_save_now(&app) != 0)
+	if (app.has_game && (app_save_now(&app) != 0 || app.io_failed)) {
 		fprintf(stderr, "pocket-hustle: the game could not be saved\n");
+		status = 1;
+	}
 	plat_audio_close();
 	mixer_free(&mixer);
 	plat_shutdown();
-	return 0;
+	return status;
 }

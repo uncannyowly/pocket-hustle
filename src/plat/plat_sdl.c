@@ -132,9 +132,9 @@ void plat_poll(PlatEvents *ev)
 	SDL_Event e;
 	uint32_t tapped = 0;	/* pressed during this poll, so a quick tap is not lost */
 
-	ev->clicked = 0;
+	ev->nclicks = 0;
 	ev->quit = 0;
-	while (SDL_PollEvent(&e)) {
+	while (ev->nclicks < PLAT_MAX_CLICKS && SDL_PollEvent(&e)) {
 		switch (e.type) {
 		case SDL_QUIT:
 			ev->quit = 1;
@@ -176,9 +176,9 @@ void plat_poll(PlatEvents *ev)
 				cx = (int)lx;
 				cy = (int)ly;
 				if (cx >= 0 && cx < W && cy >= 0 && cy < H) {	/* not the letterbox bars */
-					ev->clicked = 1;
-					ev->cx = cx;
-					ev->cy = cy;
+					ev->click[ev->nclicks].x = cx;
+					ev->click[ev->nclicks].y = cy;
+					ev->nclicks++;
 				}
 			}
 			break;
