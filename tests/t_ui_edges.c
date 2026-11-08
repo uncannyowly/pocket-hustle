@@ -239,6 +239,12 @@ static void sweep_screens(void)
 		edge("new game lengths");
 		ui.ng.zone = 2;
 		edge("new game go");
+		app.has_game = 1;		/* START HUSTLING over a game in progress asks first */
+		ui_press(&ui, PAD_A);
+		CHECK_EQ(ui.confirm, CONFIRM_REPLACE);
+		CHECK_EQ(ui.scr, SCR_NEWGAME);
+		edge("new game replace prompt");
+		ui.confirm = CONFIRM_NONE;
 	}
 }
 
