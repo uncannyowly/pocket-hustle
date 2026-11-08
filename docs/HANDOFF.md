@@ -1,6 +1,6 @@
 # Handoff: Pocket Hustle
 
-Last updated: 2026-11-06. Keep this file current; it is the notes the next session continues from.
+Last updated: 2026-11-07. Keep this file current; it is the notes the next session continues from.
 
 ## Goal
 
@@ -9,8 +9,9 @@ Beermat Software's Dope Wars 2.1 (2001) but is entirely ours: name, characters, 
 sounds and cities. Seth chose this over porting Beermat's exe (its license forbids
 translating or reverse engineering it, it is wrapped in PC Guard, and its windows do not fit
 480 pixels). Design: `docs/superpowers/specs/2026-11-06-pocket-hustle-design.md` (approved).
-Current plan: `docs/superpowers/plans/2026-11-06-pocket-hustle-core.md` (Plan 1 of 3: the
-rules, a terminal version, a balance simulator).
+Plans: Plan 1 (`docs/superpowers/plans/2026-11-06-pocket-hustle-core.md`, done: the rules, a
+terminal version, a balance simulator), Plan 2 (screens and sound on the PC, done), Plan 3
+(the Miyoo build and release, next).
 
 ## Where things are
 
@@ -39,8 +40,11 @@ rules, a terminal version, a balance simulator).
 ```sh
 make test              # every unit test module, the golden transcript, the copy check
 make test T=rng        # one module
-make text              # build/host/ph-text, the terminal version (from Task 11)
-make sim               # build/host/ph-sim, the balance simulator (from Task 13)
+make text              # build/host/ph-text, the terminal version
+make sim               # build/host/ph-sim, the balance simulator
+make game              # build/host/pocket-hustle, the SDL2 game (needs SDL2)
+make smoke             # headless scripted runs of the game binary, checks the saves
+make shots             # build/shots/NN-name.png, every screen rendered by the real UI code
 scripts/arm-check.sh   # compile and link the tests for the Mini inside Docker
 ```
 
@@ -48,6 +52,30 @@ New source files are picked up by the Makefile's wildcards; new test modules nee
 `tests/tests.h` and in `MODULES[]` in `tests/run_tests.c`.
 
 ## State
+
+Plan 2 (screens and sound on the PC) is done as of 2026-11-07. Play it with
+`make game && build/host/pocket-hustle` (keys in the README, `--mute`, `--data DIR`,
+`--seed N`, `--fullscreen`).
+
+- `src/gfx`: 320 x 240 integer canvas, Press Start 2P font, palette, icons, sprites, skylines.
+- `src/sfx`: synthesized sound effects (parameter presets) and a six-voice mixer.
+- `src/ui`: the screen state machine (`ui.h`), the App with saves, scores and options
+  (`app.h`), and input edge detection with D-pad auto-repeat (`input.h`). No SDL here.
+- `src/plat/plat.h` and `plat_sdl.c`: the platform interface (framebuffer, events, audio
+  with a lock) and its SDL2 backend. `src/app/main.c`: the game loop. Only these two
+  directories link SDL; `make test` and `scripts/arm-check.sh` do not need it.
+- The loop: poll, `input_step`, `ui_press` per fired button, `ui_click` (redrawing first if a
+  press came in the same frame), `ui_tick` per 50 ms, redraw on input or tick, scale 2x, present.
+  Closing the window, the title's QUIT, or `--frames` running out saves the game in progress.
+- Scripted mode for the smoke test: `--frames N --keys "TOKENS"` (U D L R A B X Y L1 R1 SEL
+  START, one press every 3 frames, one tick per frame).
+- Screenshots: `make shots` (tools/shots/main.c, deterministic test games). The mockup
+  (`docs/mockups/screens-round1.html`) is the layout reference; the shots match it except the
+  items listed in the Task 13 report (title QUIT row, chart footer wording, game over stats).
+
+Known follow-ups: the chase line reads "1 more cops are right behind" when one cop is left
+(content text in `src/content/text.c`, needs a singular form). Seth has not played the PC
+build yet; his notes become follow-up tasks.
 
 Plan 1 (the rules, ph-text, ph-sim) is done as of 2026-11-06:
 
@@ -58,8 +86,7 @@ Plan 1 (the rules, ph-text, ph-sim) is done as of 2026-11-06:
 - Golden transcript: `tests/golden` (regenerate after deliberate rules or text changes; see
   `tests/golden/run.sh`).
 
-Waiting on Seth: review of the content names and joke tone (sent during Plan 1) and a
-playtest of ph-text. His notes become follow-up tasks. Settled 2026-11-07: the bank charges an
+Settled 2026-11-07: the bank charges an
 out-of-network fee (3%, at least $5) except at the two branch neighborhoods in each city, and
 the round 1 screen mockups (docs/mockups/screens-round1.html) are approved: keep Press Start 2P
 and the look, with tweaks later. The balance targets
@@ -76,5 +103,9 @@ QEMU (`docker run --platform linux/arm/v7 ...`) needs binfmt registered on the h
 
 ## Next
 
-Plan 2: screens and sound on the PC (mockups for Seth first). Plan 3: the Miyoo build,
-packaging and release. Both are outlined at the end of the Plan 1 document.
+Plan 3: the Miyoo build and release. Add `src/plat/plat_miyoo.c` beside `plat_sdl.c`, the
+same interface (`plat.h`), adapted from `../scorched-emiyoolator/src/platform_miyoo.c`: fb0
+with the 180 degree rotation, evdev buttons, MI_AO audio, frame pacing that allows for the
+Mini's 9 ms minimum sleep, MENU returns to OnionOS. Then OnionOS packaging, a test on Seth's
+card, a generic ARM SDL2 build, the GitHub repo going public on Seth's word and the
+MiYoo Mini Ports catalog entry. `src/app/main.c` is platform-neutral apart from `plat.h`.

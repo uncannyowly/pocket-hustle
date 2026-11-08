@@ -3,6 +3,9 @@
 #   make test            unit tests, golden transcript, copy check (T=<module> runs one module)
 #   make text            terminal version: build/host/ph-text
 #   make sim             balance simulator: build/host/ph-sim
+#   make game            PC version: build/host/pocket-hustle (needs SDL2)
+#   make smoke           scripted headless run of the game binary
+#   make shots           screenshots of every screen: build/shots/*.png
 #   make arm-check       compile and link the tests for the Miyoo (Docker toolchain image)
 
 CFLAGS := -std=c99 -Wall -Wextra -Werror -O2 -g -Isrc -D_POSIX_C_SOURCE=200809L
@@ -16,8 +19,12 @@ HEADERS = $(wildcard src/core/*.h src/content/*.h src/gfx/*.h src/sfx/*.h src/ui
 TEST_SRC = $(sort $(wildcard tests/*.c)) $(wildcard tools/sim/report.c tools/sim/bots.c)
 TEXT_SRC = $(sort $(wildcard src/text/*.c))
 SIM_SRC = $(sort $(wildcard tools/sim/*.c))
+GAME_SRC = $(sort $(wildcard src/app/*.c src/plat/plat_sdl.c))
+SHOTS_SRC = $(sort $(wildcard tools/shots/*.c))
+SDL_CFLAGS = $(shell pkg-config --cflags sdl2)
+SDL_LIBS = $(shell pkg-config --libs sdl2)
 
-.PHONY: all test text sim arm-check arm-check-inner clean
+.PHONY: all test text sim game smoke shots arm-check arm-check-inner clean
 
 all: build/host/run-tests
 
@@ -32,6 +39,22 @@ build/host/ph-text: $(CORE_SRC) $(TEXT_SRC) $(HEADERS)
 build/host/ph-sim: $(CORE_SRC) $(SIM_SRC) $(HEADERS)
 	@mkdir -p $(dir $@)
 	$(HOST_CC) $(CFLAGS) -Itools/sim -o $@ $(CORE_SRC) $(SIM_SRC) -lm
+
+build/host/pocket-hustle: $(CORE_SRC) $(UI_SRC) $(GAME_SRC) $(HEADERS)
+	@mkdir -p $(dir $@)
+	$(HOST_CC) $(CFLAGS) $(SDL_CFLAGS) -o $@ $(CORE_SRC) $(UI_SRC) $(GAME_SRC) $(SDL_LIBS) -lm
+
+build/host/ph-shots: $(CORE_SRC) $(UI_SRC) $(SHOTS_SRC) tests/helpers.c tests/ui_helpers.c $(HEADERS)
+	@mkdir -p $(dir $@)
+	$(HOST_CC) $(CFLAGS) -Itests -o $@ $(CORE_SRC) $(UI_SRC) $(SHOTS_SRC) tests/helpers.c tests/ui_helpers.c -lm
+
+game: build/host/pocket-hustle
+
+smoke: build/host/pocket-hustle
+	scripts/smoke.sh
+
+shots: build/host/ph-shots
+	scripts/shots.sh
 
 text: build/host/ph-text
 
