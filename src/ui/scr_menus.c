@@ -28,6 +28,19 @@ static const char *city_name(int city)
 	return CITIES[city].nickname[0] ? CITIES[city].nickname : CITIES[city].name;
 }
 
+/* A yes/no prompt: a blocker so clicks behind it do nothing, a box, a question, YES and NO. */
+static void prompt(Ui *u, Canvas *c, int x, int y, int w, const char *q)
+{
+	int bw = (w - 24) / 2;
+
+	hit(u, 0, 0, CV_W, CV_H, HIT_CONFIRM, -1);
+	cv_rect(c, x, y, w, 52, PAL_PANEL2);
+	cv_box(c, x, y, w, 52, PAL_GOLD);
+	tx(c, q, x + (w >> 1), y + 8, PAL_GOLD, 1, TX_CENTER);
+	button(u, c, x + 8, y + 26, bw, 18, "A YES", 1, HIT_CONFIRM, 1);
+	button(u, c, x + 16 + bw, y + 26, bw, 18, "B NO", 0, HIT_CONFIRM, 0);
+}
+
 /* ---- the title ---- */
 
 enum { T_CONTINUE, T_NEW, T_SCORES, T_QUIT };
@@ -156,6 +169,7 @@ static int key_at(int r, int c)
 void ng_open(Ui *u, int len, const char *name)
 {
 	memset(&u->ng, 0, sizeof u->ng);
+	u->confirm = CONFIRM_NONE;
 	u->ng.zone = 1;
 	u->ng.len = len >= 0 && len < 4 ? len : 1;
 	snprintf(u->ng.name, sizeof u->ng.name, "%s", name ? name : "");
@@ -250,9 +264,11 @@ void ng_draw(Ui *u, Canvas *c)
 	for (i = 0; i < nl; i++)
 		tx(c, lines[i], 16, 200 + i * 10, PAL_DIM, 1, TX_LEFT);
 	hints(c, H, 4, 229);
+	if (u->confirm == CONFIRM_REPLACE)
+		prompt(u, c, 40, 90, 240, "REPLACE YOUR SAVED GAME?");
 }
 
-static void ng_begin(Ui *u)
+static void ng_start(Ui *u)
 {
 	Game *g = &u->app->g;
 	char name[16] = "";
@@ -299,9 +315,31 @@ static void ng_begin(Ui *u)
 	u->news.cards[0] = first;
 }
 
+/* With a game in progress, ask before replacing it. */
+static void ng_begin(Ui *u)
+{
+	if (u->app->has_game) {
+		u->confirm = CONFIRM_REPLACE;
+		play(u, SFX_MOVE);
+		return;
+	}
+	ng_start(u);
+}
+
 void ng_press(Ui *u, int pad)
 {
 	int *zone = &u->ng.zone;
+
+	if (u->confirm == CONFIRM_REPLACE) {
+		if (pad == PAD_A) {
+			u->confirm = CONFIRM_NONE;
+			ng_start(u);
+		} else if (pad == PAD_B) {
+			u->confirm = CONFIRM_NONE;
+			play(u, SFX_BACK);
+		}
+		return;
+	}
 
 	if (pad == PAD_L1) {
 		*zone = (*zone + 2) % 3;
@@ -361,7 +399,10 @@ void ng_press(Ui *u, int pad)
 
 void ng_click(Ui *u, int action, int arg)
 {
-	if (action == HIT_LEN) {
+	if (action == HIT_CONFIRM) {
+		if (arg >= 0)
+			ui_press(u, arg ? PAD_A : PAD_B);
+	} else if (action == HIT_LEN) {
 		u->ng.zone = 0;
 		u->ng.len = arg;
 	} else if (action == HIT_KEY) {
@@ -393,6 +434,7 @@ void menu_label(const App *a, int row, char *buf, size_t n)
 void menu_open(Ui *u, Screen from)
 {
 	u->menu_row = 0;
+	u->confirm = CONFIRM_NONE;
 	u->menu_back = from;
 	overlay(u, SCR_MENU, from);
 	play(u, SFX_OK);
@@ -416,6 +458,14 @@ void menu_draw(Ui *u, Canvas *c)
 		menu_label(u->app, i, s, sizeof s);
 		tx(c, s, X + W / 2, y, on ? PAL_WHITE : PAL_TEXT, 1, TX_CENTER);
 		hit(u, X + 8, y - 4, W - 16, 15, HIT_MENU_ROW, i);
+	}
+	if (u->confirm == CONFIRM_END) {
+		cv_rect(c, X + 1, Y + 110, W - 2, H - 111, PAL_PANEL);
+		hit(u, 0, 0, CV_W, CV_H, HIT_CONFIRM, -1);
+		tx(c, "END THE GAME?", X + W / 2, Y + 114, PAL_CORAL, 1, TX_CENTER);
+		button(u, c, X + 8, Y + 122, 76, 16, "A YES", 1, HIT_CONFIRM, 1);
+		button(u, c, X + W - 84, Y + 122, 76, 16, "B NO", 0, HIT_CONFIRM, 0);
+		return;
 	}
 	snprintf(s, sizeof s, "Autosaved on day %d.", u->app->g.day);
 	tx(c, s, X + W / 2, Y + H - 14, PAL_DIM, 1, TX_CENTER);
@@ -454,6 +504,12 @@ static void menu_act(Ui *u)
 		go(u, SCR_TITLE);
 		break;
 	default:
+		if (u->confirm != CONFIRM_END) {	/* ask first; the second A ends it */
+			u->confirm = CONFIRM_END;
+			play(u, SFX_MOVE);
+			return;
+		}
+		u->confirm = CONFIRM_NONE;
 		if (ui_core_call(u, end_call, NULL, -1, 0) != OK)
 			return;
 		go(u, SCR_OVER);
@@ -464,6 +520,17 @@ static void menu_act(Ui *u)
 
 void menu_press(Ui *u, int pad)
 {
+	if (u->confirm == CONFIRM_END) {
+		if (pad == PAD_A) {
+			menu_act(u);
+			return;
+		}
+		u->confirm = CONFIRM_NONE;		/* B, START or moving away cancels */
+		if (pad == PAD_B || pad == PAD_START) {
+			play(u, SFX_BACK);
+			return;
+		}
+	}
 	if (pad == PAD_UP)
 		u->menu_row = (u->menu_row + MENU_ROWS - 1) % MENU_ROWS;
 	else if (pad == PAD_DOWN)
@@ -482,6 +549,11 @@ void menu_press(Ui *u, int pad)
 
 void menu_click(Ui *u, int action, int arg)
 {
+	if (action == HIT_CONFIRM) {
+		if (arg >= 0)
+			ui_press(u, arg ? PAD_A : PAD_B);
+		return;
+	}
 	if (action != HIT_MENU_ROW)
 		return;
 	u->menu_row = arg;

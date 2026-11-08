@@ -28,6 +28,7 @@ typedef struct Ui {
 	char chase_log[400]; int chase_done;	/* the last action's lines; a CR_* */
 	struct { int zone, len, kr, kc, shift; char name[16]; } ng;
 	int chart_good, scores_tab, title_row, menu_row;
+	int confirm;				/* a yes/no prompt is up: CONFIRM_END (menu) or CONFIRM_REPLACE (new game) */
 	Screen menu_back, scores_back;		/* the screen the pause menu covers; where the scores came from */
 	char toast[96]; uint32_t toast_until;
 	uint32_t frame;

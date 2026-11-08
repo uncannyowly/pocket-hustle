@@ -41,6 +41,7 @@ enum {
 	HIT_KEY,		/* arg: row * 10 + column of the on-screen keyboard */
 	HIT_NG_GO,		/* START HUSTLING */
 	HIT_MENU_ROW,		/* arg: a row of the pause menu */
+	HIT_CONFIRM,		/* arg: 1 yes, 0 no, -1 the blocker behind a prompt */
 	HIT_SCORES_TAB,		/* arg: a game length, 0..3 */
 };
 
@@ -146,6 +147,7 @@ void    chart_press(Ui *u, int pad);
 /* The title, the new game screen, the pause menu, game over and the high scores
  * (scr_menus.c). */
 typedef struct { char label[16], value[24]; } StatCell;
+enum { CONFIRM_NONE, CONFIRM_END, CONFIRM_REPLACE };
 enum { TITLE_ROWS = 4, MENU_ROWS = 5, NG_NAME_MAX = 15 };
 void title_detail(const App *a, char *buf, size_t n);	/* "DAY 3, HOUSTON" or "NO SAVED GAME" */
 int  title_city(const Ui *u);				/* the skyline behind the logo: changes every 80 ticks */

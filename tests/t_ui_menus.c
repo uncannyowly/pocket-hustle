@@ -233,7 +233,7 @@ static void test_new_game_flow(void)
 	CHECK_EQ(ui.ng.len, 0);
 	ui_draw(&ui, &cv);
 	CHECK_EQ(cv.overflow, 0);
-	press_seq(&ui, "START");
+	press_seq(&ui, "START A");		/* a game is in progress: confirm the replacement */
 	CHECK_EQ(app.g.last_day, 15);
 	CHECK_STR(app.g.name, "Seth");
 	CHECK_EQ(app.g.day, 1);
@@ -259,7 +259,7 @@ static void test_new_game_other_ways(void)
 	CHECK_EQ(cv.overflow, 0);
 	press_seq(&ui, "U");
 	CHECK_EQ(ui.ng.zone, 1);
-	press_seq(&ui, "D A");
+	press_seq(&ui, "D A A");
 	CHECK_EQ(app.g.last_day, 30);
 	CHECK_STR(app.g.name, "Test");
 	CHECK_EQ(app.g.day, 1);
@@ -272,7 +272,7 @@ static void test_new_game_other_ways(void)
 	press_seq(&ui, "U A");			/* CONTINUE */
 	CHECK_EQ(ui.scr, SCR_MARKET);
 	go(&ui, SCR_TITLE);
-	press_seq(&ui, "D A B B B B B START");
+	press_seq(&ui, "D A B B B B B START A");
 	CHECK(app.g.name[0] != '\0');
 	CHECK_EQ(app.g.day, 1);
 }
@@ -366,6 +366,8 @@ static void test_new_game_clicks(void)
 	CHECK_EQ(ui.ng.zone, 0);
 	ui_draw(&ui, &cv);
 	click_hit(&ui, hit_find(&ui, HIT_NG_GO, 0));
+	ui_draw(&ui, &cv);
+	click_hit(&ui, hit_find(&ui, HIT_CONFIRM, 1));
 	CHECK_EQ(app.g.last_day, 90);
 	CHECK_STR(app.g.name, "He");
 }
@@ -511,7 +513,7 @@ static void test_end_game_now(void)
 	setup_dir(30);
 	app_save_now(&app);
 	CHECK(file_exists("save.dat"));
-	press_seq(&ui, "START U A");
+	press_seq(&ui, "START U A A");
 	CHECK_EQ(ui.menu_row, 4);
 	CHECK_EQ(ui.scr, SCR_OVER);
 	CHECK_EQ(app.g.phase, PH_OVER);
@@ -528,7 +530,7 @@ static void test_end_game_now(void)
 static void test_over_buttons(void)
 {
 	ui_test_setup(&app, &ui, 60);
-	press_seq(&ui, "START U A");
+	press_seq(&ui, "START U A A");
 	CHECK_EQ(ui.scr, SCR_OVER);
 	press_seq(&ui, "A");
 	CHECK_EQ(ui.scr, SCR_NEWGAME);
@@ -715,7 +717,7 @@ static void test_scores_after_game(void)
 {
 	/* the title's HIGH SCORES opens on the tab of the game just finished */
 	ui_test_setup(&app, &ui, 60);
-	press_seq(&ui, "START U A");
+	press_seq(&ui, "START U A A");
 	CHECK_EQ(ui.scr, SCR_OVER);
 	CHECK(app.last_rank >= 0);
 	press_seq(&ui, "B D D A");
@@ -762,8 +764,151 @@ static void test_menu_over_market_dims(void)
 	CHECK(hit_find(&ui, HIT_MENU_ROW, 4) >= 0);
 }
 
+static void test_end_game_confirm(void)
+{
+	Canvas cvc;
+
+	setup_dir(30);
+	app_save_now(&app);
+	snap();
+	press_seq(&ui, "START U A");		/* END GAME NOW, once */
+	CHECK_EQ(ui.scr, SCR_MENU);
+	CHECK_EQ(ui.confirm, CONFIRM_END);
+	CHECK(same_game(&before, &app.g));
+	CHECK(file_exists("save.dat"));
+	CHECK_EQ(total_scores(&app), 0);
+	ui_draw(&ui, &cvc);
+	CHECK_EQ(cvc.overflow, 0);
+	CHECK(hit_find(&ui, HIT_CONFIRM, 1) >= 0);
+	CHECK(hit_find(&ui, HIT_CONFIRM, 0) >= 0);
+	press_seq(&ui, "B");			/* B cancels and keeps the menu */
+	CHECK_EQ(ui.scr, SCR_MENU);
+	CHECK_EQ(ui.confirm, CONFIRM_NONE);
+	CHECK(same_game(&before, &app.g));
+	CHECK(file_exists("save.dat"));
+	press_seq(&ui, "A");			/* asks again */
+	CHECK_EQ(ui.confirm, CONFIRM_END);
+	press_seq(&ui, "U");			/* moving off the row cancels */
+	CHECK_EQ(ui.confirm, CONFIRM_NONE);
+	CHECK_EQ(ui.scr, SCR_MENU);
+	CHECK(same_game(&before, &app.g));
+	press_seq(&ui, "D A START");		/* START cancels too, and stays */
+	CHECK_EQ(ui.confirm, CONFIRM_NONE);
+	CHECK_EQ(ui.scr, SCR_MENU);
+	CHECK(same_game(&before, &app.g));
+	press_seq(&ui, "A A");			/* the second A ends it */
+	CHECK_EQ(ui.scr, SCR_OVER);
+	CHECK_EQ(app.g.end, END_QUIT);
+	CHECK_EQ(total_scores(&app), 1);
+	CHECK(!file_exists("save.dat"));
+
+	/* the mouse: NO, then YES; a click on another row does not end anything */
+	setup_dir(30);
+	press_seq(&ui, "START U A");
+	ui_draw(&ui, &cvc);
+	click_hit(&ui, hit_find(&ui, HIT_MENU_ROW, 3));
+	CHECK_EQ(ui.scr, SCR_MENU);
+	CHECK_EQ(app.g.phase, PH_TRADING);
+	ui_draw(&ui, &cvc);
+	click_hit(&ui, hit_find(&ui, HIT_CONFIRM, 0));
+	CHECK_EQ(ui.confirm, CONFIRM_NONE);
+	CHECK_EQ(app.g.phase, PH_TRADING);
+	ui_draw(&ui, &cvc);
+	click_hit(&ui, hit_find(&ui, HIT_MENU_ROW, 4));
+	ui_draw(&ui, &cvc);
+	CHECK_EQ(ui.confirm, CONFIRM_END);
+	click_hit(&ui, hit_find(&ui, HIT_CONFIRM, 1));
+	CHECK_EQ(ui.scr, SCR_OVER);
+	CHECK_EQ(total_scores(&app), 1);
+}
+
+static void test_replace_confirm(void)
+{
+	Canvas cvc;
+	Game old;
+
+	/* a game in progress: the prompt comes first */
+	setup_dir(30);
+	app.g.cash = 777;
+	app_save_now(&app);
+	old = app.g;
+	go(&ui, SCR_TITLE);
+	press_seq(&ui, "D A");			/* NEW GAME */
+	press_seq(&ui, "L1 L");			/* 15 days */
+	press_seq(&ui, "START");
+	CHECK_EQ(ui.scr, SCR_NEWGAME);
+	CHECK_EQ(ui.confirm, CONFIRM_REPLACE);
+	CHECK(same_game(&old, &app.g));
+	ui_draw(&ui, &cvc);
+	CHECK_EQ(cvc.overflow, 0);
+	CHECK(hit_find(&ui, HIT_CONFIRM, 1) >= 0);
+	press_seq(&ui, "B");			/* back to the screen, nothing lost */
+	CHECK_EQ(ui.scr, SCR_NEWGAME);
+	CHECK_EQ(ui.confirm, CONFIRM_NONE);
+	CHECK_EQ(ui.ng.len, 0);
+	CHECK_STR(ui.ng.name, "Test");
+	CHECK(same_game(&old, &app.g));
+	{
+		Game disk;
+
+		CHECK_EQ(app.has_game, 1);
+		app_save_now(&app);
+		CHECK_EQ(save_read(&disk, app.save_path), 0);
+		CHECK_EQ(disk.cash, 777);
+		CHECK_EQ(disk.last_day, 30);
+	}
+	press_seq(&ui, "START");
+	CHECK_EQ(ui.confirm, CONFIRM_REPLACE);
+	press_seq(&ui, "U D");			/* other buttons do nothing while it is up */
+	CHECK_EQ(ui.confirm, CONFIRM_REPLACE);
+	CHECK(same_game(&old, &app.g));
+	press_seq(&ui, "A");
+	CHECK_EQ(app.g.last_day, 15);
+	CHECK_EQ(app.g.day, 1);
+	CHECK(!same_game(&old, &app.g));
+	CHECK_EQ(ui.confirm, CONFIRM_NONE);
+
+	/* the button, then the mouse */
+	setup_dir(30);
+	ng_open(&ui, 1, "Zed");
+	ui.ng.zone = 2;
+	press_seq(&ui, "A");
+	CHECK_EQ(ui.confirm, CONFIRM_REPLACE);
+	ui_draw(&ui, &cvc);
+	click_hit(&ui, hit_find(&ui, HIT_CONFIRM, -1));	/* the blocker eats stray clicks */
+	CHECK_EQ(ui.confirm, CONFIRM_REPLACE);
+	ui_draw(&ui, &cvc);
+	click_hit(&ui, hit_find(&ui, HIT_CONFIRM, 0));
+	CHECK_EQ(ui.confirm, CONFIRM_NONE);
+	CHECK_STR(app.g.name, "Test");
+	ui_draw(&ui, &cvc);
+	click_hit(&ui, hit_find(&ui, HIT_NG_GO, 0));
+	CHECK_EQ(ui.confirm, CONFIRM_REPLACE);
+	ui_draw(&ui, &cvc);
+	click_hit(&ui, hit_find(&ui, HIT_CONFIRM, 1));
+	CHECK_STR(app.g.name, "Zed");
+
+	/* nothing in progress: no prompt */
+	app_init(&app, NULL);
+	ui_init(&ui, &app);
+	press_seq(&ui, "D A START");
+	CHECK_EQ(ui.confirm, CONFIRM_NONE);
+	CHECK(app.has_game);
+	CHECK_EQ(app.g.day, 1);
+
+	/* after game over the old game is gone, so no prompt either */
+	ui_test_setup(&app, &ui, 30);
+	press_seq(&ui, "START U A A A");
+	CHECK_EQ(ui.scr, SCR_NEWGAME);
+	press_seq(&ui, "START");
+	CHECK_EQ(ui.confirm, CONFIRM_NONE);
+	CHECK(app.has_game);
+}
+
 void tests_ui_menus(void)
 {
+	test_end_game_confirm();
+	test_replace_confirm();
 	test_title_continue_without_game();
 	test_title_continue_resumes();
 	test_title_cycles_skyline();
