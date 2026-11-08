@@ -1110,10 +1110,28 @@ static void test_crew_confirm(void)
 	ui_draw(&ui, &cv);
 	CHECK_EQ(cv.overflow, 0);
 	CHECK_STR(news_ask_text(&ui), "Hand your whole stash to the crew?");
+	CHECK_STR(prompt_label(1, 0), "YES");		/* plain words on the crew prompt, glyphs elsewhere */
+	CHECK_STR(prompt_label(0, 0), "NO");
+	CHECK_STR(prompt_label(1, 1), "A YES");
+	CHECK_STR(prompt_label(0, 1), "B NO");
+	{
+		const Hint *h;
+
+		CHECK_EQ(news_ask_hints(&ui, &h), 2);
+		CHECK_STR(h[0].b, "A");
+		CHECK_STR(h[0].label, "Choose");
+		CHECK_STR(h[1].b, "B");
+		CHECK_STR(h[1].label, "Back");
+	}
 	m = heard_mask();
 	CHECK(!(m & (1u << SFX_CASH)));
 	press_seq(&ui, "A");			/* A on the default NO: back to the card */
 	CHECK(!ui.news.ask);
+	{
+		const Hint *h;
+
+		CHECK_EQ(news_ask_hints(&ui, &h), 0);
+	}
 	CHECK_EQ(ui.scr, SCR_NEWS);
 	CHECK_EQ(ui.news.cards[0].choice, CHOICE_CREW);
 	CHECK_EQ(app.g.offer.kind, OFFER_CREW);

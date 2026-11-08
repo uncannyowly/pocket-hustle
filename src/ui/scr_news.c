@@ -179,14 +179,30 @@ void news_draw(Ui *u, Canvas *c)
 			       k == 1 ? PAD_A : PAD_B);
 			badge(c, k == 1 ? "A" : "B", bx + 5, by + 5);
 		}
-		if (u->news.ask && cd->choice == CHOICE_CREW)
-			prompt_ask(u, c, 8, 114, 304, news_ask_text(u), u->news.yes);
+		if (u->news.ask && cd->choice == CHOICE_CREW) {
+			const Hint *h;
+			int n;
+
+			prompt_ask(u, c, 8, 114, 304, news_ask_text(u), u->news.yes, 0);
+			cv_rect(c, 0, HINTS_Y - 4, CV_W, CV_H - HINTS_Y + 4, PAL_NIGHT);
+			n = news_ask_hints(u, &h);
+			hints(c, h, n, HINTS_Y);
+		}
 		return;
 	}
 	last = u->news.i == u->news.n - 1;
 	badge(c, "A", X + W - 12 - 11 - 3 - (last ? 16 : 32), Y + H - 16);
 	tx(c, last ? "OK" : "Next", X + W - 12, Y + H - 16, PAL_TEXT, 1, TX_RIGHT);
 	hit(u, 0, 0, CV_W, CV_H, HIT_PAD, PAD_A);
+}
+
+int news_ask_hints(const Ui *u, const Hint **h)
+{
+	static const Hint ASK[2] = {{"A", "Choose"}, {"B", "Back"}};
+
+	*h = ASK;
+	return u->news.ask && u->news.n > 0 && u->news.i >= 0 && u->news.i < u->news.n &&
+	       u->news.cards[u->news.i].choice == CHOICE_CREW ? 2 : 0;
 }
 
 const char *news_ask_text(const Ui *u)

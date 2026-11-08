@@ -111,8 +111,10 @@ int  fly_count(const Ui *u);
 int  fly_city(const Ui *u, int place);	/* -1 past the end */
 typedef struct { char passenger[32], route[32], lands[32], fare[24], border[24]; uint32_t fare_col; } PassText;
 void fly_pass_text(const Ui *u, int dest, PassText *t);	/* fare is BANNED for a closed city; border is "" without a crossing */
-void prompt_ask(Ui *u, Canvas *c, int x, int y, int w, const char *q, int yes_on);	/* a yes/no prompt, either answer highlighted */
+const char *prompt_label(int yes, int glyphs);	/* "A YES"/"B NO" with glyphs, else "YES"/"NO" */
+void prompt_ask(Ui *u, Canvas *c, int x, int y, int w, const char *q, int yes_on, int glyphs);	/* a yes/no prompt, either answer highlighted */
 void news_answer(Ui *u, int accept, int64_t stake);	/* answers the offer card on screen (stake: the chemical's) */
+int  news_ask_hints(const Ui *u, const Hint **h);	/* the hint bar while the crew prompt is up; 0 when it is not */
 const char *news_ask_text(const Ui *u);	/* the crew prompt's question */
 void news_click(Ui *u, int action, int arg);
 int  news_choice_label(const Ui *u, int which, char *buf, size_t n);	/* which 1 = A, 2 = B; 0 if the card asks nothing */
