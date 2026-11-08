@@ -1,13 +1,7 @@
 /* The seven city backdrops, ported from the mockup's BD array.  Fractions become fixed point
  * rounded to the nearest pixel; radians become 256-step angles through art_fsin/art_fcos. */
-#include "gfx/art.h"
+#include "gfx/skyline_int.h"
 
-#define R(x, y, w, h, col) cv_rect(c, x, y, w, h, col)
-#define P(x, y, col) cv_px(c, x, y, col)
-#define L(x0, y0, x1, y1, col) cv_line(c, x0, y0, x1, y1, col)
-#define D(x, y, r_, col) cv_disc(c, x, y, r_, col)
-#define TRI(a, b, d, e, f, g, col) cv_tri(c, a, b, d, e, f, g, col)
-#define RD art_rd
 
 int art_rd(long long a, long long b)
 {
@@ -40,9 +34,7 @@ void art_bldg(Canvas *c, int x, int top, int w, int gy, uint32_t body, uint32_t 
 				P(xx, yy, win);
 }
 
-#define BLD(x, top, w, gy, body, win, lit) art_bldg(c, x, top, w, gy, body, win, lit, r)
-
-static void palm(Canvas *c, int x, int base, int ht, uint32_t trunk, uint32_t leaf)
+void art_palm(Canvas *c, int x, int base, int ht, uint32_t trunk, uint32_t leaf)
 {
 	static const int lf[6][2] = {{-9, 3}, {-7, -2}, {-2, -4}, {4, -3}, {8, 1}, {9, 4}};
 	int k, tx = x, ty = base;
@@ -59,7 +51,7 @@ static void palm(Canvas *c, int x, int base, int ht, uint32_t trunk, uint32_t le
 	}
 }
 
-static void pine(Canvas *c, int x, int base, int ht, uint32_t c1, uint32_t c2)
+void art_pine(Canvas *c, int x, int base, int ht, uint32_t c1, uint32_t c2)
 {
 	int k;
 
@@ -249,9 +241,9 @@ static void sjc(Canvas *c, int y0, int gy, ArtRng *r, uint32_t t)
 
 		R(240 + k, gy - 18 - hh, 1, hh, 0x356f7fu);
 	}
-	palm(c, 40, gy - 4, 22, 0x4a3a2au, 0x2e6a3au);
-	palm(c, 206, gy - 4, 18, 0x4a3a2au, 0x2e6a3au);
-	palm(c, 292, gy - 4, 24, 0x4a3a2au, 0x2e6a3au);
+	art_palm(c, 40, gy - 4, 22, 0x4a3a2au, 0x2e6a3au);
+	art_palm(c, 206, gy - 4, 18, 0x4a3a2au, 0x2e6a3au);
+	art_palm(c, 292, gy - 4, 24, 0x4a3a2au, 0x2e6a3au);
 	R(0, gy - 15, CV_W, 1, 0x384450u);
 	tx2 = (int)((3 * T) % 800) - 120;	/* train x in half pixels: (t * 1.5) % (W + 80) - 60 */
 	tx = RD(tx2, 2);
@@ -365,9 +357,9 @@ static void mia(Canvas *c, int y0, int gy, ArtRng *r, uint32_t t)
 	mia_hotel(c, gy, 224, gy - 22, 28, 0xc7a6ffu, 0x9a78d6u);
 	mia_hotel(c, gy, 256, gy - 30, 36, 0xffe08au, 0xd8b45cu);
 	mia_hotel(c, gy, 296, gy - 20, 28, 0x9fdcffu, 0x6cb3dcu);
-	palm(c, 140, gy - 4, 24, 0x3a2a3au, 0x1f4a3au);
-	palm(c, 220, gy - 4, 16, 0x3a2a3au, 0x1f4a3au);
-	palm(c, 300, gy - 4, 22, 0x3a2a3au, 0x1f4a3au);
+	art_palm(c, 140, gy - 4, 24, 0x3a2a3au, 0x1f4a3au);
+	art_palm(c, 220, gy - 4, 16, 0x3a2a3au, 0x1f4a3au);
+	art_palm(c, 300, gy - 4, 22, 0x3a2a3au, 0x1f4a3au);
 }
 
 static void nola(Canvas *c, int y0, int gy, ArtRng *r, uint32_t t)
@@ -448,7 +440,7 @@ static void pdx(Canvas *c, int y0, int gy, ArtRng *r, uint32_t t)
 		L(xx + 5, gy - 19, xx + 10, gy - 10, tr);
 	}
 	for (k = 0; k < 10; k++)
-		pine(c, pines[k][0], gy - 4, pines[k][1], 0x1d4632u, 0x28603fu);
+		art_pine(c, pines[k][0], gy - 4, pines[k][1], 0x1d4632u, 0x28603fu);
 	R(0, gy - 4, CV_W, 4, 0x2a3238u);
 	for (k = 0; k < 46; k++) {
 		int rx = (int)((k * 41 + T * 2) % CV_W), ry = y0 + (int)((k * 17 + T * 6) % (gy - y0));
@@ -463,7 +455,7 @@ void art_backdrop(Canvas *c, int city, int y0, int h, uint32_t t)
 	int sx0 = c->cx0, sy0 = c->cy0, sx1 = c->cx1, sy1 = c->cy1;
 	ArtRng r;
 
-	if (city < 0 || city > 6 || h <= 0)
+	if (city < 0 || city > 17 || h <= 0)
 		return;
 	cv_clip(c, 0, y0, CV_W, y0 + h);
 	if (c->cx0 < sx0) c->cx0 = sx0;
@@ -471,6 +463,9 @@ void art_backdrop(Canvas *c, int city, int y0, int h, uint32_t t)
 	if (c->cx1 > sx1) c->cx1 = sx1;
 	if (c->cy1 > sy1) c->cy1 = sy1;
 	art_seed(&r, 911 + (uint32_t)city * 31);
-	bd[city](c, y0, y0 + h, &r, t);
+	if (city < 7)
+		bd[city](c, y0, y0 + h, &r, t);
+	else
+		art_backdrop2(c, city - 7, y0, y0 + h, &r, t);
 	c->cx0 = sx0; c->cy0 = sy0; c->cx1 = sx1; c->cy1 = sy1;
 }

@@ -33,7 +33,7 @@ static void test_backdrop_stays_in_band(void)
 	static const int bands[2][2] = {{12, 56}, {0, 240}};
 	int city, b, i, outside;
 
-	for (city = 0; city < 7; city++)
+	for (city = 0; city < 18; city++)
 		for (b = 0; b < 2; b++) {
 			int y0 = bands[b][0], h = bands[b][1];
 
@@ -52,7 +52,7 @@ static void test_backdrop_fills_band(void)
 	static const int bands[2][2] = {{12, 56}, {0, 240}};
 	int city, b, i, left;
 
-	for (city = 0; city < 7; city++)
+	for (city = 0; city < 18; city++)
 		for (b = 0; b < 2; b++) {
 			int y0 = bands[b][0], h = bands[b][1];
 
@@ -68,14 +68,16 @@ static void test_backdrop_fills_band(void)
 
 static void test_backdrops_differ(void)
 {
-	uint32_t h[7];
+	uint32_t h[18], f[18];
 	int a, b, same = 0;
 
-	for (a = 0; a < 7; a++)
+	for (a = 0; a < 18; a++) {
 		h[a] = city_hash(a, 12, 56, 0);
-	for (a = 0; a < 7; a++)
-		for (b = a + 1; b < 7; b++)
-			if (h[a] == h[b])
+		f[a] = city_hash(a, 0, 240, 0);
+	}
+	for (a = 0; a < 18; a++)
+		for (b = a + 1; b < 18; b++)
+			if (h[a] == h[b] || f[a] == f[b])
 				same++;
 	CHECK_EQ(same, 0);
 }
@@ -84,20 +86,27 @@ static void test_backdrop_deterministic(void)
 {
 	int city;
 
-	for (city = 0; city < 7; city++)
+	for (city = 0; city < 18; city++)
 		CHECK(city_hash(city, 12, 56, 33) == city_hash(city, 12, 56, 33));
 }
 
 static void test_backdrops_animate(void)
 {
 	/* OKC (turbines), Houston (traffic), San Jose (train) and Portland (rain).  The mockup's
-	 * train enters from off screen and is first visible at t = 10, so San Jose compares t = 30. */
-	static const int cities[4] = {0, 1, 2, 6};
-	static const uint32_t later[4] = {7, 7, 30, 7};
-	int i;
+	 * train enters from off screen and is first visible at t = 10, so San Jose compares t = 30.
+	 * Every new city moves too (water, traffic, a ferry, a biplane...), compared at t = 30. */
+	int i, city;
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++) {
+		static const int cities[4] = {0, 1, 2, 6};
+		static const uint32_t later[4] = {7, 7, 30, 7};
+
 		CHECK(city_hash(cities[i], 12, 56, 0) != city_hash(cities[i], 12, 56, later[i]));
+	}
+	for (city = 7; city < 18; city++) {
+		CHECK(city_hash(city, 12, 56, 0) != city_hash(city, 12, 56, 30));
+		CHECK(city_hash(city, 0, 240, 0) != city_hash(city, 0, 240, 30));
+	}
 }
 
 static void test_portraits(void)
