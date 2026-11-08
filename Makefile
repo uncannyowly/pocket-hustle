@@ -8,6 +8,9 @@
 #   make shots           screenshots of every screen: build/shots/*.png
 #   make miyoo           the Miyoo binary build/miyoo/pocket-hustle (inside the toolchain container; scripts/build-miyoo.sh)
 #   make arm-check       compile and link the tests for the Miyoo (Docker toolchain image)
+#   make emu             play every round (tests/golden/rounds) on the Miyoo build under qemu (scripts/emu-play.sh)
+#   make cross-arch      play every round on the PC and the Miyoo build and compare the saves byte for byte
+#   make fbview         the host viewer of the emulator's framebuffer file: build/host/fbview (needs SDL2)
 
 CFLAGS := -std=c99 -Wall -Wextra -Werror -O2 -g -Isrc -D_POSIX_C_SOURCE=200809L
 HOST_CC ?= cc
@@ -26,7 +29,7 @@ SHOTS_SRC = $(sort $(wildcard tools/shots/*.c))
 SDL_CFLAGS = $(shell pkg-config --cflags sdl2)
 SDL_LIBS = $(shell pkg-config --libs sdl2)
 
-.PHONY: miyoo all test text sim game smoke shots arm-check arm-check-inner clean
+.PHONY: miyoo all test text sim game smoke shots arm-check arm-check-inner emu cross-arch fbview clean
 
 all: build/host/run-tests
 
@@ -50,7 +53,20 @@ build/host/ph-shots: $(CORE_SRC) $(UI_SRC) $(SHOTS_SRC) tests/helpers.c tests/ui
 	@mkdir -p $(dir $@)
 	$(HOST_CC) $(CFLAGS) -Itests -o $@ $(CORE_SRC) $(UI_SRC) $(SHOTS_SRC) tests/helpers.c tests/ui_helpers.c -lm
 
+build/host/fbview: tools/fbview/main.c
+	@mkdir -p $(dir $@)
+	$(HOST_CC) -std=c99 -Wall -Wextra -Werror -O2 -D_POSIX_C_SOURCE=200809L $(SDL_CFLAGS) -o $@ $< $(SDL_LIBS)
+
 game: build/host/pocket-hustle
+
+fbview: build/host/fbview
+
+emu:
+	scripts/emu-play.sh --all
+
+cross-arch:
+	scripts/cross-arch.sh
+
 
 smoke: build/host/pocket-hustle
 	scripts/smoke.sh

@@ -1,0 +1,34 @@
+# Round 3: cross the border to Sinaloa, borrow from the lender there, trade, sell and repay.
+@seed 21
+D A L1 L START A A
+# FLY to Sinaloa (the fourth place of the MEXICO tab); the cards: ticket, then a mugging
+R1 R1 R A R1 D D D
+@shot fly-sinaloa
+A A A
+@shot sinaloa-arrival
+# LOAN: borrow the most the lender allows
+R R A
+@shot lender-sinaloa
+A Y
+@shot borrow-dial
+A
+@shot borrowed
+B
+# buy as much Acid as the cash allows
+R1 D D D D A Y A
+# ride around Sinaloa: Olas Altas (the debt grew), then Zona Dorada where Sgt. Buzzkill gives chase
+R1 R1 L L L A D A
+A
+A D A
+A A A A
+@shot sinaloa-zona-dorada
+# sell the Acid, then LOAN and REPAY everything
+L1 A Y A
+@shot acid-sold
+R1 R R R A R
+@shot lender-repay
+A Y
+@shot repay-dial
+A
+@shot repaid
+B

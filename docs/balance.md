@@ -72,6 +72,19 @@ retuned: the new cities' biases and the $350 to $850 fare range are exactly the 
 values. For reference, 60 and 90 day greedy games (500 games) died 24.4% and 35.0% of the
 time (not measured before this change), and none crashed.
 
+## After the play-test task (Plan 4, Task 6; seed 1)
+
+Rerun over every game length with the wild cards, finds and crew in the code (the balance bots take
+no offers, and those draw from their own random stream): the 30 day numbers above are unchanged to
+the digit (greedy 752202 median, 5.4% died; cautious 325714, 0.2%), `--strict --targets` reports
+21 OK for both bots, and 500 game runs at 15, 60 and 90 days complete without a crash:
+
+| Days | Greedy median | Greedy died | Cautious median | Cautious died |
+|---|---|---|---|---|
+| 15 | 13598 | 0.4% | 9726 | 0.0% |
+| 60 | 6547621 | 24.4% | 2765189 | 2.0% |
+| 90 | 18177076 | 35.0% | 9414307 | 3.6% |
+
 ## Known limits
 
 - The feel targets are provisional: they come from only 20 observed days over two games,

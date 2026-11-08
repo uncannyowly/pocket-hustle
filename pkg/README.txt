@@ -2,10 +2,12 @@ POCKET HUSTLE FOR MIYOO MINI / MINI PLUS
 ========================================
 
 An original buy-low, sell-high trading game. You start broke and in debt, with a
-fixed number of days to work seven cities: Oklahoma City, Houston, San Jose, New
-York City, Miami, New Orleans and Portland. Dodge the cops, keep the loan sharks
-happy and finish with the biggest pile of cash. Everything in it (name, jokes,
-art, sounds, cities) is original.
+fixed number of days to work eighteen cities: fourteen in the USA (Oklahoma City,
+Houston, San Jose, New York City, Miami, New Orleans, Portland, Dallas, San
+Francisco, Los Angeles, Seattle, Cincinnati, Dayton and Destin) and four across
+the border in Mexico (Tijuana, Cozumel, Los Cabos and Sinaloa). Dodge the cops,
+keep the loan sharks happy and finish with the biggest pile of cash. Everything
+in it (name, jokes, art, sounds, cities) is original.
 
 INSTALL
 -------

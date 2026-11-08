@@ -1,0 +1,21 @@
+# Round 4: play a whole 15 day game (a plain buy low, sell high loop around Oklahoma City, repaying
+# the lender when the cash allows), reach the last day, then look at the final screen and the high scores.
+@seed 3
+D A L1 L START A A
+@shot day1-market
+A Y A L1 A D A A L1 A Y A R1 R R R A R A Y A B R1 D
+D A Y A L1 R R R A D A A L1 A Y A L1 U U U A Y A L1
+A D A B B L1 A Y A L1 A Y A L1 A D A A A L1 A Y A R1
+A D A A L1 A Y A L1 A Y A L1 A D A A A A A L1 A Y A
+R1 A D A A
+@shot day8-market
+L1 A Y A L1 A Y A L1 A D A A A L1 A Y A L1 A Y A L1 A
+D A A L1 A Y A L1 A Y A L1 A D A A A L1 A Y A L1 A Y
+A L1 A D A A A L1 A Y A L1 D D D D D A Y A L1 A D A
+A L1 A Y A R1 A D A A L1 A Y A R1 A D A A A L1 A Y A
+R1 A D A
+@shot times-up
+A
+@shot game-over
+B D D A
+@shot high-scores

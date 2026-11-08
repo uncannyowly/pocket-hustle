@@ -1,0 +1,47 @@
+# Round 2: cross the border to Tijuana, bank at an out-of-network ATM, hop to Cozumel and Los Cabos.
+@seed 11
+D A L1 L START A
+# FLY: the tab opens on the USA; R1 is the MEXICO tab, Tijuana is its first place
+R1 R1 R A R1
+@shot fly-mexico-tab
+A
+@shot tijuana-arrival
+A A A A
+# BANK: no branches across the border, so every deposit pays the fee. Deposit $500.
+R A
+@shot bank-tijuana
+A L L U U U U U
+@shot deposit-dial
+A
+@shot deposit-fee
+B
+# ride to Zona Rio; the chemist's offer card comes up, B passes
+L L A D A
+A
+@shot offer-card
+B
+# on to Cozumel
+R A
+@shot fly-cozumel
+A A
+# withdraw everything at the Cozumel ATM: the fee again
+R A R A Y
+@shot withdraw-dial
+A
+@shot withdraw-fee
+B
+# fly to Los Cabos (the second place), read the cards
+L A D
+@shot fly-loscabos
+A
+@shot loscabos-arrival
+A A
+# try the border the other way: the ticket costs more than the cash
+A L1 A
+@shot flight-denied
+B
+# ride a panga to Medano Beach
+L A D A
+@shot loscabos-medano
+A
+@shot loscabos-market

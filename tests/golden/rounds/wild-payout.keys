@@ -1,0 +1,44 @@
+# Round 5: forced wild cards. A chemist's offer on every arrival, a free find on every arrival, a
+# crew offer whenever the stash is big, and the crew never overdoses: back a chemical, take a find,
+# take the crew deal and get paid, then watch the stakes resolve.
+@seed 33
+@param rc_offer_permille=1000
+@param rc_find_permille=1000
+@param cohort_offer_permille=1000
+@param cohort_od_permille=0
+D A L1 L START A
+# ride to Midtown: three cards, the second is the chemist
+R1 R1 A D A
+A
+@shot chemist-card
+# BACK IT: the stake dial, $500
+A L L U U U U U
+@shot stake-dial
+A
+@shot find-card
+A
+# buy Weed with the cash that is left (a stash worth at least $5,000 at mid prices draws the crew)
+R1 A Y A
+# ride to Deep Deuce: the crew offers
+R1 R1 A D A
+A A
+@shot crew-card
+# DO IT: the crew pays
+A
+@shot crew-paid
+A A
+# two more rides: the stakes come due on day five
+A D A
+A A
+A D A
+A A
+@shot stake-bust
+A
+@shot stake-hit
+A A
+@shot chemist-again
+# walk away from the next chemist, then the find, back at the market
+B
+@shot find-again
+A
+@shot after-pass

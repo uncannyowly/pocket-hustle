@@ -1,0 +1,40 @@
+# Round 1: trade and ride around Oklahoma City, then fly to Dallas and on to Seattle.
+@seed 7
+# title: NEW GAME, the 15 day chip, START, the opening card
+D A L1 L START A
+@shot okc-day1
+# buy as much Weed as the cash allows, ride the streetcar to Midtown, read the three morning cards
+A Y A
+R1 R1 A D A
+A A A
+@shot okc-midtown
+# the Weed went viral: sell it all
+L1 A Y A
+# FLY: Dallas is the seventh place of the USA tab
+R1 R A D D D D D D
+@shot fly-dallas
+A
+@shot dallas-arrival
+# card, then buy as much of the third good as the cash allows
+A
+R1 D D A Y A
+# ride DART to Uptown; Sgt. Buzzkill gives chase, run
+R1 R1 L A D A
+A A A A A
+@shot dallas-uptown
+# Dallas is not buying Ketamine today; take it to Seattle (right column, third place)
+L1 A Y A
+R1 R A R D D
+@shot fly-seattle
+A
+A A A A A
+@shot seattle-arrival
+# sell the Ketamine, ride the light rail to Ballard, buy again, look at the price chart
+L1 A Y A
+@shot seattle-sold
+R1 L A D A
+A A
+R1 A Y A
+SEL
+@shot seattle-chart
+B

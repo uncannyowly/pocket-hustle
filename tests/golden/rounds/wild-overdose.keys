@@ -1,0 +1,29 @@
+# Round 6: forced crew offer that always overdoses. Take the deal, get banned from Oklahoma City and
+# driven to another city, then try to fly back to the banned city, then fly somewhere else.
+@seed 33
+@param rc_offer_permille=0
+@param rc_find_permille=0
+@param cohort_offer_permille=1000
+@param cohort_od_permille=1000
+@param cohort_min_stash=3000
+D A L1 L START A
+# buy the one Acid the cash allows: enough stash to draw the crew
+D D D D A Y A
+# ride to Midtown: the crew card
+R1 R1 A D A
+A
+@shot crew-card
+# DO IT: it goes wrong, Oklahoma City is closed to you and you wake up in Seattle
+A
+@shot overdose
+A A
+@shot seattle-market
+# FLY: Oklahoma City is the first place and it says BANNED; A is refused
+R A
+@shot fly-banned-grid
+A
+@shot fly-banned-refused
+# fly to the second place instead
+D A
+A
+@shot fly-elsewhere

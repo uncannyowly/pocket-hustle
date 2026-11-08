@@ -1,6 +1,6 @@
 # Handoff: Pocket Hustle
 
-Last updated: 2026-11-07. Keep this file current; it is the notes the next session continues from.
+Last updated: 2026-11-08. Keep this file current; it is the notes the next session continues from.
 
 ## Goal
 
@@ -127,15 +127,15 @@ How to tune: change `src/core/params.c` or the content ranges, then run ph-sim w
 game, outside the repo; screen-only, see that folder's notes.md). The check flags our
 numbers that land within 5% of theirs (TOO_CLOSE) as well as ones too far off.
 
-ARM: `scripts/arm-check.sh` compiles and links for the Mini. Running ARM binaries under
-QEMU (`docker run --platform linux/arm/v7 ...`) needs binfmt registered on the host
-(`docker run --privileged --rm tonistiigi/binfmt --install arm`); ask Seth first.
+ARM: `scripts/arm-check.sh` compiles and links for the Mini. Running the Mini binary on this
+host is `scripts/emu-play.sh` (qemu-user in a throwaway container, no binfmt; see the play-test
+section below).
 
 ## Mini build (Plan 3a task 1, 2026-11-08, untested on the device)
 
 `src/plat/plat_miyoo.c` (fb0 double buffer via `src/gfx/panel.c`, evdev, MENU hold via
 `src/ui/hold.c`, MI_AO by dlopen, no SDL 1.2 fallback: no MI_AO means silent). Test hooks:
-`PH_FAKEFB=WxH:file`, `PH_INPUT=dev`. Package sources are in `pkg/`; version 0.1.0.
+`PH_FAKEFB=WxH:file`, `PH_INPUT=dev`. Package sources are in `pkg/`; version 0.2.0 (VERSION).
 Only the device can show: the picture orientation, buttons, MENU hold, audio and volume.
 
 ## Next
@@ -156,3 +156,34 @@ arrive on a move and end with the next one (`g->offer`); `game_rc_back`, `game_o
 (`game_city_banned`, `E_BANNED`). ph-text has `back`, `pass`, `crew`. The balance bots in ph-sim
 run with all three chances off (finds are free money); `--bot wild` takes every offer. Until
 Task 5 the UI shows outcomes as news cards and no cards for the offers themselves.
+
+## Play-tests: rounds, the emulator, cross-arch (Plan 4, Task 6)
+
+Rounds are button scripts in `tests/golden/rounds/NAME.keys` (format at the top of
+`scripts/lib/round.sh`: `@seed`, `@param NAME=VALUE`, `@shot LABEL` and lines of button tokens).
+Each is replayed from a new 15 day game and is deterministic, so the PC and the ARM build must
+agree to the byte. The rounds: `okc-dallas-seattle` (trade, ride, fly), `border-atm` (Tijuana,
+Cozumel, Los Cabos, out-of-network ATM fees, a flight the cash cannot cover), `sinaloa-loan`
+(borrow at 12% a day, trade, repay), `last-day` (a whole 15 day game, the final screen, the high
+score table), `wild-payout` (forced chemist offer backed, finds, the crew pays, stakes resolve)
+and `wild-overdose` (the crew overdoses, the city bans you, the flight back is refused).
+
+```sh
+scripts/emu-play.sh ROUND [GAME ARGS]  # the ARM build under qemu-arm in a --rm container (image pocket-hustle-emu,
+                                       # scripts/emu/Dockerfile, built on first use); --all plays every round
+scripts/cross-arch.sh [ROUND...]       # PC vs ARM: saves, scores and recorded frames must be identical
+scripts/watch-pc.sh ROUND [MS]         # a visible window, one press every MS ms (default 400), no sound unless WATCH_SOUND=1
+scripts/watch-emu.sh ROUND [MS]        # the same on the emulated Mini: tools/fbview shows its PH_FAKEFB file
+scripts/record-rounds.sh [-p MS] [ROUND...]  # build/rounds/<round>.mp4 (PC), <round>-arm.mp4, <round>-sheet.png, <round>/<shot>.png
+make emu | make cross-arch | make fbview
+```
+
+Game options behind them (`src/app/main.c`, shared by both platforms): `--param NAME=VALUE`
+(repeatable; the wild card and crew params only, a bad name or value exits 2; it applies to a new
+game, a loaded save keeps its own), `--pace MS` (with `--frames`, which still counts frames at the
+default 3 per press; `--nowait` skips the sleeping), `--record FILE|-` (320 x 240 RGB24, one frame
+per 20 Hz tick). In scripted mode the virtual clock now ticks, so toasts end and the skylines move.
+To write a new round, drive the UI with a scratch program or the keys by hand and read the
+screens (record-rounds' sheet is the quick look); the opening cards vary by seed (one or two A
+presses after START), and a card that asks something stays until A or B answers it.
+
