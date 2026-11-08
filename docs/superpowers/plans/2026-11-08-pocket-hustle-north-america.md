@@ -34,7 +34,7 @@ Existing cities keep their biases, lenders, rates, limits and branch masks; thei
 | 4 | Miami | The 305 | Miami | MIA | Miami International | Metrorail | SoBe, Wynwood, Little Havana, Brickell, The Grove, Design District | 3, 4 | Flamingo Flo 800 30000 | US |
 | 5 | New Orleans | The Big Easy | NOLA | MSY | Louis Armstrong | the St. Charles streetcar | The Quarter, Marigny, Bywater, Garden District, Uptown, Mid-City | 3, 5 | Mardi Gras Marge 1100 20000 | US |
 | 6 | Portland | Rip City | Portland | PDX | PDX | MAX | The Pearl, Alberta Arts, Hawthorne, Sellwood, St. Johns, Mississippi Ave | 0, 2 | Kombucha Kyle 600 18000 | US |
-| 7 | Dallas | Big D | Dallas | DFW | DFW International | DART | Deep Ellum, Uptown, Bishop Arts, Lower Greenville, Oak Cliff, Design District | 1, 5 | Brisket Brenda 850 25000 | US |
+| 7 | Dallas | Big D | Dallas | DFW | DFW International | DART | Deep Ellum, Uptown, Bishop Arts, Greenville Ave, Oak Cliff, Design District | 1, 5 | Brisket Brenda 850 25000 | US |
 | 8 | San Francisco | The City | SF | SFO | SFO | Muni | The Mission, SoMa, The Haight, The Castro, North Beach, Dogpatch | 1, 4 | Sourdough Sam 650 50000 | US |
 | 9 | Los Angeles | La La Land | LA | LAX | LAX | the Metro | DTLA, WeHo, K-Town, Silver Lake, Venice, Echo Park | 0, 1 | Influencer Ivy 750 45000 | US |
 | 10 | Seattle | Emerald City | Seattle | SEA | Sea-Tac | Link light rail | Cap Hill, Ballard, Fremont, SoDo, The Ave, Pioneer Square | 0, 3 | Espresso Ezra 600 30000 | US |
@@ -42,7 +42,7 @@ Existing cities keep their biases, lenders, rates, limits and branch masks; thei
 | 12 | Dayton | Gem City | Dayton | DAY | Dayton International | the trolley bus | Oregon District, Fire Blocks, Webster Station, South Park, Grafton Hill, Wright-Dunbar | 1, 2 | Propeller Pat 1000 15000 | US |
 | 13 | Destin | Emerald Coast | Destin | VPS | Destin-Fort Walton | the water taxi | The Harbor, Crab Island, Miramar Beach, Okaloosa Island, Henderson Beach, Holiday Isle | 0, 2 | Snapper Sally 800 25000 | US |
 | 14 | Tijuana | TJ | TJ | TIJ | Tijuana International | a calafia | La Revu, Zona Rio, La Cacho, Playas, Hipodromo, Otay | none | Zonkey Zoe 1100 15000 | MX |
-| 15 | Cozumel | Coz | Cozumel | CZM | Cozumel International | a moped | San Miguel, The Malecon, Chankanaab, Punta Sur, El Cedral, San Gervasio | none | Reef Rita 900 20000 | MX |
+| 15 | Cozumel | Coz | Cozumel | CZM | Cozumel International | a moped | San Miguel, The Malecon, Chankanaab, Punta Sur, El Cedral, San Gervasio | none | Reef Rita 875 22000 | MX |
 | 16 | Los Cabos | Cabo | Cabo | SJD | Los Cabos International | a panga | The Marina, Medano Beach, Land's End, Art District, The Corridor, Pedregal | none | Timeshare Tim 1000 25000 | MX |
 | 17 | Sinaloa | La Perla | Sinaloa | MZT | Mazatlan International | a pulmonia | El Malecon, Olas Altas, Zona Dorada, El Centro, Stone Island, Culiacan | none | Banda Bea 1200 15000 | MX |
 
@@ -50,17 +50,17 @@ Price tendencies (bias percent, in GOODS order Carts, Weed, Shrooms, Ketamine, M
 
 | # | biases |
 |---|---|
-| 7 Dallas | 95, 110, 100, 100, 105, 100, 100, 85, 100, 95 |
-| 8 San Francisco | 110, 60, 70, 105, 110, 75, 90, 120, 110, 130 |
-| 9 Los Angeles | 90, 65, 90, 95, 115, 100, 100, 110, 100, 120 |
-| 10 Seattle | 100, 65, 60, 100, 100, 90, 95, 120, 110, 125 |
-| 11 Cincinnati | 90, 105, 115, 105, 100, 110, 115, 85, 90, 110 |
-| 12 Dayton | 85, 100, 110, 110, 105, 110, 115, 80, 85, 115 |
-| 13 Destin | 110, 120, 125, 115, 130, 120, 120, 105, 110, 135 |
-| 14 Tijuana | 100, 70, 100, 90, 95, 105, 100, 70, 80, 65 |
-| 15 Cozumel | 115, 110, 120, 110, 125, 115, 110, 100, 105, 85 |
-| 16 Los Cabos | 115, 115, 120, 110, 135, 120, 110, 100, 110, 80 |
-| 17 Sinaloa | 100, 60, 95, 95, 100, 100, 100, 60, 75, 55 |
+| 7 Dallas | 75, 110, 100, 100, 125, 100, 100, 80, 100, 125 |
+| 8 San Francisco | 110, 60, 70, 105, 110, 75, 90, 120, 125, 130 |
+| 9 Los Angeles | 80, 65, 90, 95, 125, 100, 100, 110, 100, 125 |
+| 10 Seattle | 100, 65, 60, 100, 100, 90, 95, 120, 125, 125 |
+| 11 Cincinnati | 90, 105, 115, 105, 100, 110, 125, 80, 80, 125 |
+| 12 Dayton | 80, 100, 110, 110, 105, 110, 125, 80, 85, 125 |
+| 13 Destin | 110, 120, 125, 115, 130, 120, 120, 80, 80, 135 |
+| 14 Tijuana | 100, 70, 100, 90, 125, 125, 100, 70, 80, 65 |
+| 15 Cozumel | 115, 125, 120, 110, 125, 115, 110, 80, 105, 80 |
+| 16 Los Cabos | 115, 115, 120, 110, 135, 125, 110, 80, 110, 80 |
+| 17 Sinaloa | 125, 60, 95, 95, 125, 100, 100, 60, 75, 55 |
 
 Podcast Pete's local jokes for the new cities (C(city, ...) lines in `src/content/text.c`, exact text):
 

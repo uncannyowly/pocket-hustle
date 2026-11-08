@@ -43,7 +43,7 @@ static const Row ROWS[18] = {
 	 {"The Pearl", "Alberta Arts", "Hawthorne", "Sellwood", "St. Johns", "Mississippi Ave"},
 	 "Kombucha Kyle", 600, 18000, 0x05, 0},
 	{"Dallas", "Big D", "Dallas", "DFW", "DFW International", "DART",
-	 {"Deep Ellum", "Uptown", "Bishop Arts", "Lower Greenville", "Oak Cliff", "Design District"},
+	 {"Deep Ellum", "Uptown", "Bishop Arts", "Greenville Ave", "Oak Cliff", "Design District"},
 	 "Brisket Brenda", 850, 25000, 0x22, 0},
 	{"San Francisco", "The City", "SF", "SFO", "SFO", "Muni",
 	 {"The Mission", "SoMa", "The Haight", "The Castro", "North Beach", "Dogpatch"},
@@ -68,7 +68,7 @@ static const Row ROWS[18] = {
 	 "Zonkey Zoe", 1100, 15000, 0, 1},
 	{"Cozumel", "Coz", "Cozumel", "CZM", "Cozumel International", "a moped",
 	 {"San Miguel", "The Malecon", "Chankanaab", "Punta Sur", "El Cedral", "San Gervasio"},
-	 "Reef Rita", 900, 20000, 0, 1},
+	 "Reef Rita", 875, 22000, 0, 1},
 	{"Los Cabos", "Cabo", "Cabo", "SJD", "Los Cabos International", "a panga",
 	 {"The Marina", "Medano Beach", "Land's End", "Art District", "The Corridor", "Pedregal"},
 	 "Timeshare Tim", 1000, 25000, 0, 1},
@@ -78,17 +78,17 @@ static const Row ROWS[18] = {
 };
 
 static const int16_t NEW_BIAS[11][NUM_GOODS] = {
-	{ 95, 110, 100, 100, 105, 100, 100,  85, 100,  95},
-	{110,  60,  70, 105, 110,  75,  90, 120, 110, 130},
-	{ 90,  65,  90,  95, 115, 100, 100, 110, 100, 120},
-	{100,  65,  60, 100, 100,  90,  95, 120, 110, 125},
-	{ 90, 105, 115, 105, 100, 110, 115,  85,  90, 110},
-	{ 85, 100, 110, 110, 105, 110, 115,  80,  85, 115},
-	{110, 120, 125, 115, 130, 120, 120, 105, 110, 135},
-	{100,  70, 100,  90,  95, 105, 100,  70,  80,  65},
-	{115, 110, 120, 110, 125, 115, 110, 100, 105,  85},
-	{115, 115, 120, 110, 135, 120, 110, 100, 110,  80},
-	{100,  60,  95,  95, 100, 100, 100,  60,  75,  55},
+	{ 75, 110, 100, 100, 125, 100, 100,  80, 100, 125},
+	{110,  60,  70, 105, 110,  75,  90, 120, 125, 130},
+	{ 80,  65,  90,  95, 125, 100, 100, 110, 100, 125},
+	{100,  65,  60, 100, 100,  90,  95, 120, 125, 125},
+	{ 90, 105, 115, 105, 100, 110, 125,  80,  80, 125},
+	{ 80, 100, 110, 110, 105, 110, 125,  80,  85, 125},
+	{110, 120, 125, 115, 130, 120, 120,  80,  80, 135},
+	{100,  70, 100,  90, 125, 125, 100,  70,  80,  65},
+	{115, 125, 120, 110, 125, 115, 110,  80, 105,  80},
+	{115, 115, 120, 110, 135, 125, 110,  80, 110,  80},
+	{125,  60,  95,  95, 125, 100, 100,  60,  75,  55},
 };
 
 static void test_cities_in_plan_order(void)
@@ -190,7 +190,7 @@ static void test_names_fit_and_unique(void)
 	for (c = 0; c < NUM_CITIES; c++) {
 		CHECK(strlen(CITIES[c].lender) <= 19);
 		for (i = 0; i < HOODS_PER_CITY; i++) {
-			CHECK(strlen(CITIES[c].hoods[i]) <= 16);	/* Lower Greenville is 16 */
+			CHECK(strlen(CITIES[c].hoods[i]) <= 15);
 			for (j = i + 1; j < HOODS_PER_CITY; j++)
 				CHECK(strcmp(CITIES[c].hoods[i], CITIES[c].hoods[j]) != 0);
 		}
@@ -233,19 +233,15 @@ static void test_city_tendencies(void)
 {
 	int c, i;
 	for (c = 0; c < NUM_CITIES; c++) {
-		int cheap = 0, dear = 0, off = 0;
+		int cheap = 0, dear = 0;
 		for (i = 0; i < NUM_GOODS; i++) {
 			int b = CITIES[c].bias_pct[i];
 			CHECK(b >= 50 && b <= 200);
 			if (b <= 80) cheap++;
 			if (b >= 125) dear++;
-			if (b != 100) off++;
 		}
-		CHECK(off >= 3);	/* every city has a character */
-		if (c < 7) {	/* the original seven are strongly shaped; the table's Plan 4 cities may be mild */
-			CHECK(cheap >= 2);
-			CHECK(dear >= 2);
-		}
+		CHECK(cheap >= 2);
+		CHECK(dear >= 2);
 	}
 }
 
@@ -255,8 +251,11 @@ static void test_lenders_differ(void)
 	for (c = 0; c < NUM_CITIES; c++) {
 		CHECK(CITIES[c].lender_rate_bp >= 1 && CITIES[c].lender_rate_bp <= 3000);
 		CHECK(CITIES[c].lender_max > 0);
-		for (d = c + 1; d < NUM_CITIES; d++)	/* the table gives Cincinnati and Cozumel the same terms */
+		for (d = c + 1; d < NUM_CITIES; d++) {
 			CHECK(strcmp(CITIES[c].lender, CITIES[d].lender) != 0);
+			CHECK(CITIES[c].lender_rate_bp != CITIES[d].lender_rate_bp ||
+			      CITIES[c].lender_max != CITIES[d].lender_max);
+		}
 	}
 }
 

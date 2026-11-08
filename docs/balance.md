@@ -60,16 +60,16 @@ changes):
 
 | | Greedy before | Greedy after | Cautious before | Cautious after |
 |---|---|---|---|---|
-| Median score | 768332 | 818459 | 356604 | 345552 |
-| 10th / 90th percentile | -39006 / 3424984 | -35493 / 3699346 | 29 / 1276852 | 20 / 1410171 |
-| Died | 6.0% | 5.2% | 0.2% | 0.2% |
-| Cop chases per game | 5.57 | 5.65 | 4.35 | 4.41 |
-| Spikes / crashes per game | 7.19 / 1.39 | 7.23 / 1.36 | 7.27 / 1.42 | 7.27 / 1.40 |
-| Muggings / goon visits per game | 1.13 / 0.78 | 1.12 / 0.63 | 1.25 / 0.32 | 1.23 / 0.23 |
+| Median score | 768332 | 752202 | 356604 | 325714 |
+| 10th / 90th percentile | -39006 / 3424984 | -36828 / 3607767 | 29 / 1276852 | 20 / 1415723 |
+| Died | 6.0% | 5.4% | 0.2% | 0.2% |
+| Cop chases per game | 5.57 | 5.63 | 4.35 | 4.42 |
+| Spikes / crashes per game | 7.19 / 1.39 | 7.26 / 1.36 | 7.27 / 1.42 | 7.29 / 1.40 |
+| Muggings / goon visits per game | 1.13 / 0.78 | 1.13 / 0.63 | 1.25 / 0.32 | 1.23 / 0.22 |
 
 `ph-sim --strict --targets` still reports all 21 comparisons OK for both bots. Nothing was
 retuned: the new cities' biases and the $350 to $850 fare range are exactly the plan's
-values. For reference, 60 and 90 day greedy games (500 games) died 23.0% and 34.4% of the
+values. For reference, 60 and 90 day greedy games (500 games) died 24.4% and 35.0% of the
 time (not measured before this change), and none crashed.
 
 ## Known limits
