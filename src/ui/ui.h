@@ -25,7 +25,7 @@ typedef struct Ui {
 	int row;				/* the highlighted row on list screens */
 	struct { PickKind kind; int good; int64_t q; int sel; } pk;
 	struct { Card cards[MAX_MSGS + 2]; int n, i; Screen after; } news;
-	char chase_log[4][TX_LINE_MAX * 2]; int chase_done;
+	char chase_log[400]; int chase_done;	/* the last action's lines; a CR_* */
 	struct { int zone, len, kr, kc, shift; char name[16]; } ng;
 	int chart_good, scores_tab, title_row, menu_row;
 	char toast[96]; uint32_t toast_until;
@@ -47,6 +47,8 @@ void ui_after_action(Ui *u, int16_t day_before, Phase phase_before);
 /* Turns g->msgs into news cards and shows them over the market, then goes to `after`; with
  * no cards, goes straight there. */
 void ui_collect_news(Ui *u, Screen after);
+/* Where Continue on the title goes: SCR_CHASE for a save in a chase, else SCR_MARKET. */
+Screen ui_resume_screen(const Ui *u);
 void ui_tick(Ui *u);				/* 20 Hz */
 void ui_draw(Ui *u, Canvas *c);			/* rebuilds hits for the topmost screen only */
 int  ui_take_sfx(Ui *u);			/* next SfxId, or -1 */

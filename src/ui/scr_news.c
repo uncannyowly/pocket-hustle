@@ -64,7 +64,30 @@ void ui_after_action(Ui *u, int16_t day_before, Phase phase_before)
 
 	app_after_action(u->app, day_before, phase_before);
 	ph = u->app->g.phase;
+	if (ph == PH_CHASE)
+		chase_begin(u);
 	ui_collect_news(u, ph == PH_CHASE ? SCR_CHASE : ph == PH_OVER ? SCR_OVER : SCR_MARKET);
+}
+
+int ui_core_call(Ui *u, CoreCall fn, const void *arg, int ok_sfx, int news)
+{
+	Game *g = &u->app->g;
+	int16_t day = g->day;
+	Phase ph = g->phase;
+	int r = fn(g, arg);
+
+	if (r != OK) {
+		toast(u, err_text(r));
+		play(u, SFX_DENY);
+		return r;
+	}
+	if (ok_sfx >= 0)
+		play(u, (SfxId)ok_sfx);
+	if (news)
+		ui_after_action(u, day, ph);
+	else
+		app_after_action(u->app, day, ph);
+	return OK;
 }
 
 void news_draw(Ui *u, Canvas *c)

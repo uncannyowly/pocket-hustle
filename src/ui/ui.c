@@ -32,7 +32,7 @@ static const ScreenDef SCREENS[NUM_SCREENS] = {
 	[SCR_BANK]    = {bank_draw, bank_press, bank_click, 0, "BANK"},
 	[SCR_LENDER]  = {lender_draw, lender_press, lender_click, 0, "LOAN SHARK"},
 	[SCR_STORE]   = {store_draw, store_press, store_click, 0, "SHOP"},
-	[SCR_CHASE]   = {NULL, NULL, NULL, 0, "COP CHASE"},
+	[SCR_CHASE]   = {chase_draw, chase_press, chase_click, 0, "COP CHASE"},
 	[SCR_CHART]   = {chart_draw, chart_press, NULL, 0, "PRICE CHART"},
 	[SCR_MENU]    = {NULL, NULL, NULL, 1, "PAUSED"},
 	[SCR_OVER]    = {NULL, NULL, NULL, 0, "GAME OVER"},
@@ -55,6 +55,11 @@ void ui_init(Ui *u, App *a)
 	u->app = a;
 	u->scr = u->under = u->back = SCR_TITLE;
 	u->mrow = 1;			/* the mockup's market starts on the second good */
+}
+
+Screen ui_resume_screen(const Ui *u)
+{
+	return u->app->g.phase == PH_CHASE ? SCR_CHASE : SCR_MARKET;
 }
 
 /* ---- screens not built yet ---- */

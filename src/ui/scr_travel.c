@@ -90,27 +90,22 @@ void move_draw(Ui *u, Canvas *c)
 	hints(c, GO_HINTS, 3, HINTS_Y);
 }
 
+static int move_call(Game *g, const void *arg)
+{
+	return game_move(g, *(const Loc *)arg);
+}
+
 static void ride(Ui *u, int hood)
 {
 	Game *g = &u->app->g;
-	int16_t day = g->day;
-	Phase ph = g->phase;
 	Loc dest = {g->loc.city, (uint8_t)hood};
-	int r;
 
 	if (hood == g->loc.hood) {
 		toast(u, "You're already here.");
 		play(u, SFX_DENY);
 		return;
 	}
-	r = game_move(g, dest);
-	if (r != OK) {
-		toast(u, err_text(r));
-		play(u, SFX_DENY);
-		return;
-	}
-	play(u, SFX_OK);
-	ui_after_action(u, day, ph);
+	ui_core_call(u, move_call, &dest, SFX_OK, 1);
 }
 
 void move_press(Ui *u, int pad)
@@ -209,10 +204,7 @@ void fly_draw(Ui *u, Canvas *c)
 static void fly(Ui *u, int city)
 {
 	Game *g = &u->app->g;
-	int16_t day = g->day;
-	Phase ph = g->phase;
 	Loc dest = {(uint8_t)city, 0};
-	int r;
 
 	if (city < 0)
 		return;
@@ -221,14 +213,7 @@ static void fly(Ui *u, int city)
 		play(u, SFX_DENY);
 		return;
 	}
-	r = game_move(g, dest);
-	if (r != OK) {
-		toast(u, err_text(r));
-		play(u, SFX_DENY);
-		return;
-	}
-	play(u, SFX_OK);
-	ui_after_action(u, day, ph);
+	ui_core_call(u, move_call, &dest, SFX_OK, 1);
 }
 
 void fly_press(Ui *u, int pad)

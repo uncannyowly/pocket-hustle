@@ -35,6 +35,7 @@ enum {
 	HIT_DIAL_UP,		/* arg: a digit of the money dial; adds 10^digit */
 	HIT_DIAL_DOWN,		/* arg: a digit of the money dial; removes 10^digit */
 	HIT_STORE_ROW,		/* arg: a row of the shop (a GEAR index) */
+	HIT_CHASE_BTN,		/* arg: 0 RUN, 1 FIGHT, 2 SURRENDER */
 };
 
 /* Chrome. */
@@ -59,6 +60,14 @@ void play(Ui *u, SfxId s);				/* a full queue drops it */
 void go(Ui *u, Screen s);				/* a full screen */
 void overlay(Ui *u, Screen s, Screen under);		/* s over under; back = under */
 const char *err_text(int err);				/* a core Err as a toast */
+
+/* One core call from a screen: remember the day and phase, call fn, toast the error (and
+ * play SFX_DENY) on failure, else play ok_sfx (-1: none) and run the after-action work.
+ * news 1: ui_after_action (autosave, score, morning news, on to the next screen); news 0:
+ * only the autosave and score, and the screen stays (the chase shows its own result first).
+ * Returns the core's result. */
+typedef int (*CoreCall)(Game *g, const void *arg);
+int ui_core_call(Ui *u, CoreCall fn, const void *arg, int ok_sfx, int news);
 
 /* The market (scr_market.c). */
 enum { MKT_MOVE, MKT_FLY, MKT_BANK, MKT_LOAN, MKT_SHOP, MKT_DOC, NUM_MKT_ACTS };	/* its buttons */
@@ -109,6 +118,15 @@ void store_open(Ui *u);					/* the SHOP button */
 void store_draw(Ui *u, Canvas *c);
 void store_press(Ui *u, int pad);
 void store_click(Ui *u, int action, int arg);
+
+/* The cop chase (scr_chase.c). chase_done says how it ended once the phase leaves PH_CHASE. */
+enum { CR_NONE, CR_ESCAPED, CR_WON, CR_JAILED, CR_DEAD };
+void chase_begin(Ui *u);				/* a chase just started: RUN, siren, the cops' line */
+void chase_title(const Game *g, char *buf, size_t n);	/* "SGT. BUZZKILL + 2 COPS" */
+void chase_odds(const Game *g, int row, char *buf, size_t n);	/* the line under the buttons */
+void chase_draw(Ui *u, Canvas *c);
+void chase_press(Ui *u, int pad);
+void chase_click(Ui *u, int action, int arg);
 
 /* The price chart (scr_chart.c). */
 typedef struct { char title[32], day[24], range[64], have[64]; } ChartText;
