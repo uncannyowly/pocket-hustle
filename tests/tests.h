@@ -28,5 +28,6 @@ void tests_ui_money(void);
 void tests_ui_store(void);
 void tests_ui_chase(void);
 void tests_ui_menus(void);
+void tests_ui_edges(void);
 
 #endif
