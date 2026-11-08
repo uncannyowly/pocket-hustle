@@ -146,3 +146,13 @@ with the 180 degree rotation, evdev buttons, MI_AO audio, frame pacing that allo
 Mini's 9 ms minimum sleep, MENU returns to OnionOS. Then OnionOS packaging, a test on Seth's
 card, a generic ARM SDL2 build, the GitHub repo going public on Seth's word and the
 MiYoo Mini Ports catalog entry. `src/app/main.c` is platform-neutral apart from `plat.h`.
+
+## Wild cards, finds and the shady crew (Plan 4, Task 2)
+
+The core owns them (`src/core/wild.c`, chemicals in `src/content/chems.c`); all their randomness
+comes from a third stream, `g->wild`, so a game that never sees an offer plays as before. Offers
+arrive on a move and end with the next one (`g->offer`); `game_rc_back`, `game_offer_pass`,
+`game_crew_accept` act on them; stakes live in `g->stakes[]`; `g->banned` is the blacklist
+(`game_city_banned`, `E_BANNED`). ph-text has `back`, `pass`, `crew`. The balance bots in ph-sim
+run with all three chances off (finds are free money); `--bot wild` takes every offer. Until
+Task 5 the UI shows outcomes as news cards and no cards for the offers themselves.

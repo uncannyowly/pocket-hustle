@@ -18,7 +18,9 @@ static const IconId KICON[] = {
 	[CARD_RUMOR] = ICON_MIC, [CARD_DAY] = ICON_SUN,
 };
 
-/* The card a message makes, or -1 when it is not news (chase and shop messages). */
+/* The card a message makes, or -1 when it is not news (chase and shop messages). The wild
+ * card and crew offers need a choice the screens don't have yet (Plan 4, Task 5), so for now
+ * they make no card; their outcomes do. The crew's outcomes are TROUBLE: no jokes, no cheer. */
 static int card_kind(int msg_kind)
 {
 	switch (msg_kind) {
@@ -27,6 +29,8 @@ static int card_kind(int msg_kind)
 	case M_GOONS: case M_MUGGED: case M_DEAD: case M_COPS: return CARD_TROUBLE;
 	case M_RUMOR_TIP: case M_RUMOR_JOKE: return CARD_RUMOR;
 	case M_LAST_DAY: case M_GAME_OVER: return CARD_DAY;
+	case M_RC_FIND: case M_RC_HIT: case M_RC_BUST: case M_RC_BUST_FOUND: return CARD_MARKET;
+	case M_CREW_PAID: case M_OVERDOSE: return CARD_TROUBLE;
 	default: return -1;
 	}
 }
@@ -45,7 +49,7 @@ void ui_collect_news(Ui *u, Screen after)
 			continue;
 		cd = &u->news.cards[n++];
 		cd->kind = (CardKind)k;
-		cd->good = k == CARD_MARKET && m->a >= 0 && m->a < NUM_GOODS ? (int8_t)m->a : -1;
+		cd->good = (m->kind == M_SPIKE || m->kind == M_CRASH) && m->a >= 0 && m->a < NUM_GOODS ? (int8_t)m->a : -1;
 		text_msg(g, m, cd->text, sizeof cd->text);
 	}
 	if (!n) {

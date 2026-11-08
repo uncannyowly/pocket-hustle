@@ -1,5 +1,5 @@
 /* Game text: message templates and money formatting. Placeholders:
- *   {good} {gear} {hood} {city} {transit} {lender} {cop} {rumor} {name}
+ *   {good} {gear} {rc} (a research chemical, chemical kinds only) {hood} {city} {transit} {lender} {cop} {rumor} {name}
  *   {amount} money   {qty} amount as a number   {n} a as a number
  *   {loc} "Hood, City" from b   {day} "day N" from amount   {trend} from c (tips)
  * Where a message's a names a city or hood, {city}/{hood}/{lender} use it;
@@ -146,6 +146,27 @@ LINES(t_healed,
 LINES(t_bought_gear,
 	L("You bought the {gear}."),
 	L("New gear: {gear}. Use it wisely."));
+LINES(t_rc_offer,
+	L("A chemist in {hood} has a new research chemical: {rc}. Back it before the scene decides?"),
+	L("Word in {hood} is that {rc} might be the next big thing. Want a piece?"));
+LINES(t_rc_find,
+	L("You found a forgotten batch of {rc}. If it catches on, it could be worth {amount}."));
+LINES(t_rc_hit,
+	L("{rc} caught on in the scene. Your stake pays {amount}!"),
+	L("Everybody wants {rc} now. You cash out {amount}."));
+LINES(t_rc_bust,
+	L("{rc} flopped. Nobody wants it, and your {amount} is gone."),
+	L("The scene passed on {rc}. You lose {amount}."));
+LINES(t_rc_bust_found,
+	L("Your batch of {rc} never caught on. Easy come, easy go."));
+/* The crew path is serious: no jokes, and Podcast Pete never goes near it. */
+LINES(t_crew_offer,
+	L("A shady crew in {hood} wants to cut your stash with fentanyl. They promise a huge payout."),
+	L("Some people you would rather not know offer to stretch your stash with fentanyl. Big money, they say."));
+LINES(t_crew_paid,
+	L("The cut batch moved fast. The crew pays you {amount}. You try not to think about it."));
+LINES(t_overdose,
+	L("The cut batch hit the streets and people overdosed. {city} wants you gone, for good. You leave with nothing."));
 
 typedef struct { const TextLine *lines; int n; const char *allowed; } KindText;
 
@@ -174,6 +195,14 @@ static const KindText KINDS[NUM_MSG_KINDS] = {
 	[M_RUMOR_JOKE]  = K(t_rumor_joke, "rumor city name cop"),
 	[M_HEALED]      = K(t_healed, "qty"),
 	[M_BOUGHT_GEAR] = K(t_bought_gear, "gear"),
+	[M_RC_OFFER]    = K(t_rc_offer, "rc hood city name"),
+	[M_RC_FIND]     = K(t_rc_find, "rc amount hood city name"),
+	[M_RC_HIT]      = K(t_rc_hit, "rc amount name"),
+	[M_RC_BUST]     = K(t_rc_bust, "rc amount name"),
+	[M_RC_BUST_FOUND] = K(t_rc_bust_found, "rc name"),
+	[M_CREW_OFFER]  = K(t_crew_offer, "hood city name"),
+	[M_CREW_PAID]   = K(t_crew_paid, "amount name"),
+	[M_OVERDOSE]    = K(t_overdose, "city name"),
 };
 
 int text_lines(MsgKind k, const TextLine **lines)
@@ -266,7 +295,7 @@ static const char *hood_name(int c, int h)
 
 static int a_is_city(MsgKind k)
 {
-	return k == M_FLEW || k == M_GOONS || k == M_RUMOR_JOKE;
+	return k == M_FLEW || k == M_GOONS || k == M_RUMOR_JOKE || k == M_OVERDOSE;
 }
 
 /* Writes the value of placeholder ph into v. Returns 0 for an unknown placeholder. */
@@ -277,6 +306,8 @@ static int fill(const Game *g, const Msg *m, const char *ph, char *v, size_t vn)
 
 	if (!strcmp(ph, "good"))
 		snprintf(v, vn, "%s", m->a >= 0 && m->a < NUM_GOODS ? GOODS[m->a].name : "?");
+	else if (!strcmp(ph, "rc"))
+		snprintf(v, vn, "%s", m->a >= 0 && m->a < NUM_CHEMS ? CHEMS[m->a].name : "?");
 	else if (!strcmp(ph, "gear"))
 		snprintf(v, vn, "%s", m->a >= 0 && m->a < NUM_GEAR ? GEAR[m->a].name : "?");
 	else if (!strcmp(ph, "hood"))

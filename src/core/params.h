@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+enum { MAX_STAKES = 3 };
+
 typedef struct {
 	int64_t start_cash, start_debt;			/* debt is owed to the start city's lender */
 	int32_t start_city, start_capacity;
@@ -26,6 +28,16 @@ typedef struct {
 	int32_t hospital_per_hp;
 	int64_t flight_lo, flight_hi;			/* a flight within one country */
 	int64_t intl_flight_lo, intl_flight_hi;		/* a flight across the border */
+	/* Wild cards and finds: a chemist offers a stake on arrival; a stake resolves days later. */
+	int32_t rc_offer_permille, rc_max_stakes;	/* chance per arrival; stakes running at once (at most MAX_STAKES) */
+	int32_t rc_days_lo, rc_days_hi;			/* days until a stake resolves */
+	int32_t rc_find_permille;			/* chance per arrival of finding a free batch */
+	int64_t rc_find_lo, rc_find_hi;			/* a found batch's notional value */
+	/* The shady crew: at most cohort_max offers per run, only to a big stash. */
+	int32_t cohort_max, cohort_offer_permille;
+	int64_t cohort_min_stash;			/* stash value at mid prices */
+	int32_t cohort_od_permille, cohort_mult_pct;	/* chance of the overdose; payout as pct of the stash's value */
+	int64_t cohort_min_payout;
 } Params;
 
 Params params_default(void);

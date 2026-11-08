@@ -375,6 +375,9 @@ Commands:
   gear <item#>              heal <hp|all>
   run | fight | surrender   (when the cops show up)
   chart <good#>             (prices you've seen)
+  back <amt|all>            stake cash on today's research chemical offer
+  pass                      decline today's offer
+  crew                      take today's shady crew offer (all or nothing)
 > bogus command
 Huh?
 > quit

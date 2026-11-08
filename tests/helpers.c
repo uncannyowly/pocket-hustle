@@ -18,6 +18,9 @@ Params test_params(void)
 	p.drop_permille = 0;
 	p.enforce_days = 1000;
 	p.min_goods = 0;
+	p.rc_offer_permille = 0;
+	p.rc_find_permille = 0;
+	p.cohort_offer_permille = 0;
 	return p;
 }
 

@@ -61,6 +61,21 @@ Params params_default(void)
 	p.flight_hi = 450;
 	p.intl_flight_lo = 350;
 	p.intl_flight_hi = 850;
+
+	p.rc_offer_permille = 80;
+	p.rc_max_stakes = 3;
+	p.rc_days_lo = 2;
+	p.rc_days_hi = 4;
+	p.rc_find_permille = 25;
+	p.rc_find_lo = 1000;
+	p.rc_find_hi = 5000;
+
+	p.cohort_max = 2;
+	p.cohort_offer_permille = 40;
+	p.cohort_min_stash = 5000;
+	p.cohort_od_permille = 550;
+	p.cohort_mult_pct = 300;
+	p.cohort_min_payout = 10000;
 	return p;
 }
 
@@ -91,5 +106,11 @@ int params_sane(const Params *p)
 	       PAIR(p->rumor_lead_lo, p->rumor_lead_hi, 0, MAX_DAYS) &&
 	       IN(p->hospital_per_hp, 0, 1000000000) &&
 	       PAIR(p->flight_lo, p->flight_hi, 0, 1000000000) &&
-	       PAIR(p->intl_flight_lo, p->intl_flight_hi, 0, 1000000000);
+	       PAIR(p->intl_flight_lo, p->intl_flight_hi, 0, 1000000000) &&
+	       IN(p->rc_offer_permille, 0, 1000) && IN(p->rc_max_stakes, 0, MAX_STAKES) &&
+	       PAIR(p->rc_days_lo, p->rc_days_hi, 1, 30) && IN(p->rc_find_permille, 0, 1000) &&
+	       PAIR(p->rc_find_lo, p->rc_find_hi, 0, 1000000000) &&
+	       IN(p->cohort_max, 0, 10) && IN(p->cohort_offer_permille, 0, 1000) &&
+	       IN(p->cohort_min_stash, 0, MONEY_MAX) && IN(p->cohort_od_permille, 0, 1000) &&
+	       IN(p->cohort_mult_pct, 0, 10000) && IN(p->cohort_min_payout, 0, 1000000000000LL);
 }

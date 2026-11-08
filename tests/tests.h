@@ -30,5 +30,6 @@ void tests_ui_chase(void);
 void tests_ui_menus(void);
 void tests_ui_edges(void);
 void tests_mini(void);
+void tests_wild(void);
 
 #endif

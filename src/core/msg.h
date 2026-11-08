@@ -28,6 +28,14 @@ typedef enum {
 	M_RUMOR_JOKE,	/* a city */
 	M_HEALED,	/* amount hp */
 	M_BOUGHT_GEAR,	/* a gear */
+	M_RC_OFFER,	/* a chemical */
+	M_RC_FIND,	/* a chemical, amount notional value */
+	M_RC_HIT,	/* a chemical, amount payout */
+	M_RC_BUST,	/* a chemical, amount the stake lost */
+	M_RC_BUST_FOUND,	/* a chemical (a found batch: nothing lost) */
+	M_CREW_OFFER,
+	M_CREW_PAID,	/* amount payout */
+	M_OVERDOSE,	/* a the city that banned you */
 	NUM_MSG_KINDS
 } MsgKind;
 

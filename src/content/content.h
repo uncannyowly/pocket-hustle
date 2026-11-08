@@ -10,6 +10,15 @@ enum { NUM_GOODS = 10, NUM_CITIES = 18, HOODS_PER_CITY = 6,
 
 enum { COUNTRY_US = 0, COUNTRY_MX = 1 };
 
+enum { NUM_CHEMS = 10 };
+
+/* A research chemical a stake can ride on: the odds it catches on and what it pays then. */
+typedef struct {
+	const char *name, *blurb;
+	int16_t odds_permille;			/* chance it catches on */
+	int16_t mult_lo_pct, mult_hi_pct;	/* payout multiplier range, percent of the stake */
+} ChemDef;
+
 typedef struct { const char *name, *blurb; int32_t lo, hi; } GoodDef;	/* base price range */
 
 typedef struct {
@@ -38,6 +47,7 @@ typedef struct {
 extern const GoodDef GOODS[NUM_GOODS];
 extern const CityDef CITIES[NUM_CITIES];
 extern const GearDef GEAR[];
+extern const ChemDef CHEMS[NUM_CHEMS];
 extern const int NUM_GEAR;
 extern const char *const COP_NAME;	/* the cop who chases you */
 extern const char *const RUMOR_NAME;	/* the rumor-monger */

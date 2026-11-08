@@ -25,7 +25,7 @@ static void sell_all(Game *g, int i)
 
 static void chase_action(Game *g, BotKind k)
 {
-	if (k == BOT_GREEDY)
+	if (k != BOT_CAUTIOUS)
 		game_chase(g, g->weapon >= 0 && g->health >= 50 ? CH_FIGHT : CH_RUN);
 	else
 		game_chase(g, g->health < 30 ? CH_SURRENDER : CH_RUN);
@@ -83,7 +83,7 @@ static void trade(Game *g, BotKind k)
 			game_repay(g, g->debt[c]);
 	}
 
-	if (k == BOT_GREEDY)
+	if (k != BOT_CAUTIOUS)
 		buy_gear(g);
 
 	if (g->day == g->last_day)
@@ -124,12 +124,21 @@ static void move(Game *g)
 	} else {
 		dest.city = (uint8_t)((g->loc.city + 1 + rng_below(&bot_rng, NUM_CITIES - 1)) % NUM_CITIES);
 		dest.hood = (uint8_t)rng_below(&bot_rng, HOODS_PER_CITY);
-		if (game_flight_cost(g, dest.city) > g->cash) {
+		if (game_city_banned(g, dest.city) || game_flight_cost(g, dest.city) > g->cash) {
 			dest = g->loc;
 			dest.hood = (uint8_t)((g->loc.hood + 1) % HOODS_PER_CITY);
 		}
 	}
 	game_move(g, dest);
+}
+
+/* The test bot says yes to everything: half its cash on a chemical, the crew's deal. */
+static void take_offers(Game *g)
+{
+	if (g->offer.kind == OFFER_RC && g->cash > 0)
+		game_rc_back(g, g->cash / 2 > 0 ? g->cash / 2 : g->cash);
+	else if (g->offer.kind == OFFER_CREW)
+		game_crew_accept(g);
 }
 
 void bot_play_day(Game *g, BotKind k)
@@ -140,6 +149,11 @@ void bot_play_day(Game *g, BotKind k)
 	if (g->phase == PH_CHASE) {
 		chase_action(g, k);
 		return;
+	}
+	if (k == BOT_WILD) {
+		take_offers(g);
+		if (g->phase == PH_OVER)
+			return;
 	}
 	trade(g, k);
 	move(g);

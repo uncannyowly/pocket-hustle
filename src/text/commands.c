@@ -17,7 +17,10 @@ static const char *const help_text =
 	"  deposit <amt|all>         withdraw <amt|all>\n"
 	"  gear <item#>              heal <hp|all>\n"
 	"  run | fight | surrender   (when the cops show up)\n"
-	"  chart <good#>             (prices you've seen)\n";
+	"  chart <good#>             (prices you've seen)\n"
+	"  back <amt|all>            stake cash on today's research chemical offer\n"
+	"  pass                      decline today's offer\n"
+	"  crew                      take today's shady crew offer (all or nothing)\n";
 
 static void money(int64_t v, char *buf, size_t n)
 {
@@ -48,6 +51,29 @@ static void print_market(const Game *g)
 	}
 }
 
+/* Running stakes and today's offer. */
+static void print_wild(const Game *g)
+{
+	char p[32];
+	int i;
+
+	for (i = 0; i < g->nstakes; i++) {
+		const Stake *s = &g->stakes[i];
+		money(s->stake, p, sizeof p);
+		if (s->found)
+			printf("Wild card: %s, a found batch worth %s if it catches on, resolves day %d\n",
+			       CHEMS[s->chem].name, p, (int)s->resolve_day);
+		else
+			printf("Wild card: %s, your stake %s, resolves day %d\n",
+			       CHEMS[s->chem].name, p, (int)s->resolve_day);
+	}
+	if (g->offer.kind == OFFER_RC)
+		printf("Offer: %s (%s) Type back <amount|all> or pass.\n", CHEMS[g->offer.chem].name,
+		       CHEMS[g->offer.chem].blurb);
+	else if (g->offer.kind == OFFER_CREW)
+		printf("Offer: a shady crew will cut your stash with fentanyl. Type crew to take it or pass.\n");
+}
+
 void ph_print_status(const Ctx *c)
 {
 	const Game *g = &c->g;
@@ -71,6 +97,7 @@ void ph_print_status(const Ctx *c)
 	if (g->weapon >= 0)
 		printf("  Packing: %s", GEAR[g->weapon].name);
 	printf("\n");
+	print_wild(g);
 	print_market(g);
 	printf("Neighborhoods ($ = bank branch):");
 	for (h = 0; h < HOODS_PER_CITY; h++)
@@ -102,6 +129,7 @@ static void print_err(int rc)
 	case E_PHASE:    printf("Can't do that now.\n"); break;
 	case E_LIMIT:    printf("That's over the limit.\n"); break;
 	case E_FEE:      printf("That won't even cover the ATM fee.\n"); break;
+	case E_BANNED:   printf("You're not welcome there anymore.\n"); break;
 	default:         printf("Huh?\n"); break;
 	}
 }
@@ -130,7 +158,10 @@ static void print_flights(const Game *g)
 		if (c == g->loc.city)
 			continue;
 		money(game_flight_cost(g, c), p, sizeof p);
-		printf("%d %-14s %s (lands at %s)\n", c, CITIES[c].name, p, CITIES[c].hoods[0]);
+		if (game_city_banned(g, c))
+			printf("%d %-14s BANNED\n", c, CITIES[c].name);
+		else
+			printf("%d %-14s %s (lands at %s)\n", c, CITIES[c].name, p, CITIES[c].hoods[0]);
 	}
 }
 
@@ -362,6 +393,29 @@ int ph_command(Ctx *c, const char *line)
 			n = -1;
 		}
 		rc = n < 0 ? E_BAD_ARG : game_heal(g, (int32_t)n);
+	} else if (!strcmp(verb, "back")) {
+		if (!strcmp(a1, "all"))
+			n = g->cash > 0 ? g->cash : 1;	/* with no cash, let the rules say why */
+		else if (!parse_num(a1, &n))
+			n = -1;
+		if (n < 0 || g->offer.kind != OFFER_RC) {
+			rc = n < 0 ? E_BAD_ARG : game_rc_back(g, n);
+		} else {
+			int chem = g->offer.chem;
+			rc = game_rc_back(g, n);
+			if (rc == OK) {
+				char p[32];
+				money(n, p, sizeof p);
+				printf("You back %s with %s. It resolves on day %d.\n", CHEMS[chem].name, p,
+				       (int)g->stakes[g->nstakes - 1].resolve_day);
+			}
+		}
+	} else if (!strcmp(verb, "pass")) {
+		rc = game_offer_pass(g);
+		if (rc == OK)
+			printf("You pass.\n");
+	} else if (!strcmp(verb, "crew")) {
+		rc = game_crew_accept(g);
 	} else if (!strcmp(verb, "run")) {
 		rc = game_chase(g, CH_RUN);
 	} else if (!strcmp(verb, "fight")) {

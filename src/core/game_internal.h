@@ -13,5 +13,8 @@ void     game_check_death(Game *g);		/* health <= 0 ends the game */
 void     encounters_on_arrival(Game *g);	/* goons, cops, muggings, rumors */
 int      cops_check(Game *g);			/* 1 if a chase started (chase.c) */
 void     rumor_check(Game *g);			/* tips and jokes (rumor.c) */
+void     wild_resolve(Game *g);			/* due stakes pay or bust (wild.c) */
+void     wild_offers(Game *g);			/* crew or chemist offer, then a find (wild.c) */
+void     wild_expire(Game *g);			/* a move closes today's offer */
 
 #endif

@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <string.h>
 
 #include "check.h"
 #include "core/params.h"
@@ -339,6 +340,70 @@ static void test_strings_not_beermat(void)
 	CHECK(contains_ci("Rubber Chicken", "chicken"));	/* the matcher itself works */
 }
 
+
+/* The plan's research chemical table, in order: name, odds, multiplier range. */
+static const struct { const char *name; int odds, lo, hi; } CHEM_ROWS[10] = {
+	{"2C-B", 600, 200, 250}, {"1V-LSD", 550, 200, 300}, {"4-AcO-DMT", 550, 200, 300},
+	{"3-MMC", 450, 220, 320}, {"2-FDCK", 450, 220, 320}, {"5-MeO-MiPT", 400, 250, 350},
+	{"4-HO-MET", 420, 230, 330}, {"Hexen", 250, 300, 450}, {"3-HO-PCP", 300, 300, 450},
+	{"4-FA", 400, 230, 330},
+};
+
+static void test_chemicals(void)
+{
+	int i, j;
+	CHECK_EQ(NUM_CHEMS, 10);
+	for (i = 0; i < NUM_CHEMS; i++) {
+		const unsigned char *p;
+		CHECK_STR(CHEMS[i].name, CHEM_ROWS[i].name);
+		CHECK_EQ(CHEMS[i].odds_permille, CHEM_ROWS[i].odds);
+		CHECK_EQ(CHEMS[i].mult_lo_pct, CHEM_ROWS[i].lo);
+		CHECK_EQ(CHEMS[i].mult_hi_pct, CHEM_ROWS[i].hi);
+		CHECK(strlen(CHEMS[i].name) >= 1 && strlen(CHEMS[i].name) <= 15);
+		CHECK(CHEMS[i].blurb && strlen(CHEMS[i].blurb) >= 10 && strlen(CHEMS[i].blurb) <= 80);
+		for (p = (const unsigned char *)CHEMS[i].name; *p; p++)
+			CHECK(*p >= 0x21 && *p <= 0x7e);
+		/* big or bust: a real gamble, a real prize */
+		CHECK(CHEMS[i].odds_permille >= 100 && CHEMS[i].odds_permille <= 900);
+		CHECK(CHEMS[i].mult_lo_pct >= 200 && CHEMS[i].mult_lo_pct <= CHEMS[i].mult_hi_pct &&
+		      CHEMS[i].mult_hi_pct <= 1000);
+		/* a fair-ish bet: the expected return stays within reach of the stake (0.8x .. 1.6x) */
+		{
+			int ev = CHEMS[i].odds_permille * (CHEMS[i].mult_lo_pct + CHEMS[i].mult_hi_pct) / 2 / 1000;
+			CHECK(ev >= 80 && ev <= 160);
+		}
+		for (j = i + 1; j < NUM_CHEMS; j++)
+			CHECK(strcmp(CHEMS[i].name, CHEMS[j].name) != 0);
+	}
+}
+
+static void test_wild_params(void)
+{
+	Params p = params_default();
+	CHECK_EQ(p.rc_offer_permille, 80);
+	CHECK_EQ(p.rc_max_stakes, 3);
+	CHECK_EQ(p.rc_days_lo, 2);
+	CHECK_EQ(p.rc_days_hi, 4);
+	CHECK_EQ(p.rc_find_permille, 25);
+	CHECK_EQ(p.rc_find_lo, 1000);
+	CHECK_EQ(p.rc_find_hi, 5000);
+	CHECK_EQ(p.cohort_max, 2);
+	CHECK_EQ(p.cohort_offer_permille, 40);
+	CHECK_EQ(p.cohort_min_stash, 5000);
+	CHECK_EQ(p.cohort_od_permille, 550);
+	CHECK_EQ(p.cohort_mult_pct, 300);
+	CHECK_EQ(p.cohort_min_payout, 10000);
+	CHECK(params_sane(&p));
+	p.rc_max_stakes = 4;
+	CHECK(!params_sane(&p));
+	p = params_default();
+	p.rc_days_lo = 0;
+	CHECK(!params_sane(&p));
+	p = params_default();
+	p.cohort_od_permille = 1001;
+	CHECK(!params_sane(&p));
+}
+
 void tests_content(void)
 {
 	test_cities_in_plan_order();
@@ -353,6 +418,8 @@ void tests_content(void)
 	test_lenders_differ();
 	test_bank_branches();
 	test_gear_mix();
+	test_chemicals();
+	test_wild_params();
 	test_strings_ascii();
 	test_strings_not_beermat();
 }

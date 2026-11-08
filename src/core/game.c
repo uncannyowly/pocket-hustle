@@ -15,6 +15,7 @@ int game_new(Game *g, const Params *p, uint64_t seed, int days, const char *name
 	g->seed = seed;
 	rng_seed(&g->rng, seed, 1);
 	rng_seed(&g->flavor, seed, 2);
+	rng_seed(&g->wild, seed, 3);
 	if (name)
 		strncpy(g->name, name, sizeof g->name - 1);
 

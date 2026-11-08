@@ -1,6 +1,6 @@
 /* ph-sim: bots play many games; the report shows how the rules feel, and with
  * --targets compares that against numbers observed in another game.
- *   ph-sim --games N --seed S --days D --bot greedy|cautious [--targets FILE] [--strict] */
+ *   ph-sim --games N --seed S --days D --bot greedy|cautious|wild [--targets FILE] [--strict] */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -139,13 +139,21 @@ int main(int argc, char **argv)
 			i++;
 			if (!strcmp(argv[i], "greedy")) bot = BOT_GREEDY;
 			else if (!strcmp(argv[i], "cautious")) bot = BOT_CAUTIOUS;
+			else if (!strcmp(argv[i], "wild")) bot = BOT_WILD;
 			else { fprintf(stderr, "unknown bot %s\n", argv[i]); return 2; }
 		} else if (!strcmp(argv[i], "--targets") && i + 1 < argc) targets = argv[++i];
 		else if (!strcmp(argv[i], "--strict")) strict = 1;
 		else {
-			fprintf(stderr, "usage: ph-sim --games N --seed S --days D --bot greedy|cautious [--targets FILE] [--strict]\n");
+			fprintf(stderr, "usage: ph-sim --games N --seed S --days D --bot greedy|cautious|wild [--targets FILE] [--strict]\n");
 			return 2;
 		}
+	}
+	if (bot != BOT_WILD) {
+		/* the balance bots never take offers, and a find is free money they cannot refuse:
+		 * keep every wild card off so the balance numbers measure trading alone */
+		p.rc_offer_permille = 0;
+		p.rc_find_permille = 0;
+		p.cohort_offer_permille = 0;
 	}
 	if (games < 1) games = 1;
 	scores = calloc((size_t)games, sizeof *scores);
@@ -185,7 +193,7 @@ int main(int argc, char **argv)
 	if (moves < 1)
 		moves = 1;
 
-	printf("games %d\ndays %d\nbot %s\n", games, days, bot == BOT_GREEDY ? "greedy" : "cautious");
+	printf("games %d\ndays %d\nbot %s\n", games, days, bot == BOT_GREEDY ? "greedy" : bot == BOT_WILD ? "wild" : "cautious");
 	put("score_p10", (double)scores[games / 10], "%.0f");
 	put("score_p50", (double)scores[games / 2], "%.0f");
 	put("score_p90", (double)scores[games * 9 / 10], "%.0f");

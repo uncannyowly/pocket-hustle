@@ -10,7 +10,7 @@
 
 #include "core/save.h"
 
-#define SAVE_VERSION 4		/* 2: bank fee params and stat; 3: market events per day; 4: 18 cities, border fares */
+#define SAVE_VERSION 4		/* 2: bank fee params and stat; 3: market events per day; 4: 18 cities, border fares, wild cards and the crew */
 #define HISCORE_VERSION 1
 #define MAX_FILE (1L << 20)
 
@@ -62,6 +62,7 @@ static uint64_t io_le(Io *io, uint64_t v, int n)
 static void io_u8(Io *io, uint8_t *v) { *v = (uint8_t)io_le(io, *v, 1); }
 static void io_i8(Io *io, int8_t *v) { *v = (int8_t)(uint8_t)io_le(io, (uint8_t)*v, 1); }
 static void io_i16(Io *io, int16_t *v) { *v = (int16_t)(uint16_t)io_le(io, (uint16_t)*v, 2); }
+static void io_u32(Io *io, uint32_t *v) { *v = (uint32_t)io_le(io, *v, 4); }
 static void io_i32(Io *io, int32_t *v) { *v = (int32_t)(uint32_t)io_le(io, (uint32_t)*v, 4); }
 static void io_i64(Io *io, int64_t *v) { *v = (int64_t)io_le(io, (uint64_t)*v, 8); }
 static void io_u64(Io *io, uint64_t *v) { *v = io_le(io, *v, 8); }
@@ -98,6 +99,14 @@ static void io_params(Io *io, Params *p)
 	io_i32(io, &p->hospital_per_hp);
 	io_i64(io, &p->flight_lo); io_i64(io, &p->flight_hi);
 	io_i64(io, &p->intl_flight_lo); io_i64(io, &p->intl_flight_hi);
+	io_i32(io, &p->rc_offer_permille); io_i32(io, &p->rc_max_stakes);
+	io_i32(io, &p->rc_days_lo); io_i32(io, &p->rc_days_hi);
+	io_i32(io, &p->rc_find_permille);
+	io_i64(io, &p->rc_find_lo); io_i64(io, &p->rc_find_hi);
+	io_i32(io, &p->cohort_max); io_i32(io, &p->cohort_offer_permille);
+	io_i64(io, &p->cohort_min_stash);
+	io_i32(io, &p->cohort_od_permille); io_i32(io, &p->cohort_mult_pct);
+	io_i64(io, &p->cohort_min_payout);
 }
 
 static void io_game(Io *io, Game *g)
@@ -138,6 +147,46 @@ static void io_game(Io *io, Game *g)
 	io_i32(io, &s->spikes_seen); io_i32(io, &s->crashes_seen); io_i32(io, &s->rumors_true);
 	io_i32(io, &s->rumors_joke);
 	io_i64(io, &s->best_net_worth); io_i64(io, &s->hospital_spent); io_i64(io, &s->bank_fees_paid);
+	io_i32(io, &s->wild_wins); io_i32(io, &s->wild_losses);
+	io_u64(io, &g->wild.state); io_u64(io, &g->wild.inc);
+	for (i = 0; i < MAX_STAKES; i++) {
+		io_i64(io, &g->stakes[i].stake); io_i16(io, &g->stakes[i].resolve_day);
+		io_i8(io, &g->stakes[i].chem); io_i8(io, &g->stakes[i].found);
+	}
+	io_i8(io, &g->nstakes);
+	io_u8(io, &g->offer.kind); io_i8(io, &g->offer.chem); io_i16(io, &g->offer.day);
+	io_u8(io, &g->crew_offers);
+	io_u32(io, &g->banned);
+}
+
+/* The wild cards' state: a banned city is never where you stand, slots in use are real
+ * stakes and the rest are empty, an open offer is today's. */
+static int wild_sane(const Game *g)
+{
+	int i;
+
+	if (g->nstakes < 0 || g->nstakes > MAX_STAKES ||
+	    g->offer.kind > OFFER_CREW || g->crew_offers > g->p.cohort_max ||
+	    (g->banned >> NUM_CITIES) != 0 || ((g->banned >> g->loc.city) & 1u) ||
+	    g->stats.wild_wins < 0 || g->stats.wild_losses < 0)
+		return 0;
+	for (i = 0; i < MAX_STAKES; i++) {
+		const Stake *s = &g->stakes[i];
+		if (i < g->nstakes) {
+			if (s->chem < 0 || s->chem >= NUM_CHEMS || s->stake <= 0 || s->stake > MONEY_MAX ||
+			    (s->found != 0 && s->found != 1) || s->resolve_day < 1 || s->resolve_day > MAX_DAYS + 30)
+				return 0;
+		} else if (s->stake != 0 || s->chem != 0 || s->found != 0 || s->resolve_day != 0) {
+			return 0;
+		}
+	}
+	if (g->offer.kind == OFFER_NONE)
+		return g->offer.chem == 0 && g->offer.day == 0;
+	if (g->offer.day != g->day)
+		return 0;
+	if (g->offer.kind == OFFER_RC)
+		return g->offer.chem >= 0 && g->offer.chem < NUM_CHEMS;
+	return g->offer.chem == 0 && g->crew_offers >= 1;
 }
 
 /* A loaded game must make sense, or the rules could index out of bounds or overflow.
@@ -171,6 +220,8 @@ static int game_sane(const Game *g)
 			if (g->hist[i][d] < 0 || g->hist_ev[i][d] < EV_NONE || g->hist_ev[i][d] > EV_CRASH)
 				return 0;
 	}
+	if (!wild_sane(g))
+		return 0;
 	return carried <= g->capacity;
 }
 

@@ -39,6 +39,8 @@ int game_move(Game *g, Loc dest)
 	if (dest.city >= NUM_CITIES || dest.hood >= HOODS_PER_CITY ||
 	    (dest.city == g->loc.city && dest.hood == g->loc.hood))
 		return E_BAD_ARG;
+	if (game_city_banned(g, dest.city))
+		return E_BANNED;
 	flying = dest.city != g->loc.city;
 	crossing = flying && game_flight_crosses(g, dest.city);
 	cost = flying ? game_flight_cost(g, dest.city) : 0;
@@ -46,6 +48,7 @@ int game_move(Game *g, Loc dest)
 		return E_NO_CASH;
 
 	game_clear_msgs(g);
+	wild_expire(g);
 	if (g->day >= g->last_day) {
 		g->phase = PH_OVER;
 		g->end = END_DAYS_UP;
@@ -67,6 +70,8 @@ int game_move(Game *g, Loc dest)
 	market_roll(g);
 	if (g->day == g->last_day)
 		game_msg(g, M_LAST_DAY, 0, 0, 0, 0);
+	wild_resolve(g);
 	encounters_on_arrival(g);
+	wild_offers(g);
 	return OK;
 }

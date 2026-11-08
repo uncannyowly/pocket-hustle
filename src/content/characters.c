@@ -31,6 +31,10 @@ int content_strings(const char **out, int max)
 		for (i = 0; i < HOODS_PER_CITY; i++)
 			n = put(out, max, n, CITIES[c].hoods[i]);
 	}
+	for (i = 0; i < NUM_CHEMS; i++) {
+		n = put(out, max, n, CHEMS[i].name);
+		n = put(out, max, n, CHEMS[i].blurb);
+	}
 	for (i = 0; i < NUM_GEAR; i++) {
 		n = put(out, max, n, GEAR[i].name);
 		n = put(out, max, n, GEAR[i].blurb);

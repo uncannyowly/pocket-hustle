@@ -199,7 +199,8 @@ static int a_range(MsgKind k)
 {
 	switch (k) {
 	case M_SPIKE: case M_CRASH: case M_DROPPED: case M_RUMOR_TIP: return NUM_GOODS;
-	case M_FLEW: case M_GOONS: case M_RUMOR_JOKE: return NUM_CITIES;
+	case M_FLEW: case M_GOONS: case M_RUMOR_JOKE: case M_OVERDOSE: return NUM_CITIES;
+	case M_RC_OFFER: case M_RC_FIND: case M_RC_HIT: case M_RC_BUST: case M_RC_BUST_FOUND: return NUM_CHEMS;
 	case M_RODE: return HOODS_PER_CITY;
 	case M_BOUGHT_GEAR: return NUM_GEAR;
 	default: return 1;
@@ -240,6 +241,123 @@ static void test_lengths_worst_case(void)
 						}
 	}
 	CHECK(worst <= 120);
+}
+
+
+static const MsgKind CHEM_KINDS[] = { M_RC_OFFER, M_RC_FIND, M_RC_HIT, M_RC_BUST, M_RC_BUST_FOUND };
+
+static int is_chem_kind(int k)
+{
+	size_t i;
+	for (i = 0; i < sizeof CHEM_KINDS / sizeof CHEM_KINDS[0]; i++)
+		if ((int)CHEM_KINDS[i] == k)
+			return 1;
+	return 0;
+}
+
+static int has_line(MsgKind k, const char *want)
+{
+	const TextLine *lines;
+	int n = text_lines(k, &lines), i;
+	for (i = 0; i < n; i++)
+		if (strcmp(lines[i].t, want) == 0 && lines[i].city == -1)
+			return 1;
+	return 0;
+}
+
+static void test_wild_lines_exact(void)
+{
+	const TextLine *lines;
+	CHECK_EQ(text_lines(M_RC_OFFER, &lines), 2);
+	CHECK(has_line(M_RC_OFFER, "A chemist in {hood} has a new research chemical: {rc}. Back it before the scene decides?"));
+	CHECK(has_line(M_RC_OFFER, "Word in {hood} is that {rc} might be the next big thing. Want a piece?"));
+	CHECK_EQ(text_lines(M_RC_FIND, &lines), 1);
+	CHECK(has_line(M_RC_FIND, "You found a forgotten batch of {rc}. If it catches on, it could be worth {amount}."));
+	CHECK_EQ(text_lines(M_RC_HIT, &lines), 2);
+	CHECK(has_line(M_RC_HIT, "{rc} caught on in the scene. Your stake pays {amount}!"));
+	CHECK(has_line(M_RC_HIT, "Everybody wants {rc} now. You cash out {amount}."));
+	CHECK_EQ(text_lines(M_RC_BUST, &lines), 2);
+	CHECK(has_line(M_RC_BUST, "{rc} flopped. Nobody wants it, and your {amount} is gone."));
+	CHECK(has_line(M_RC_BUST, "The scene passed on {rc}. You lose {amount}."));
+	CHECK_EQ(text_lines(M_RC_BUST_FOUND, &lines), 1);
+	CHECK(has_line(M_RC_BUST_FOUND, "Your batch of {rc} never caught on. Easy come, easy go."));
+	CHECK_EQ(text_lines(M_CREW_OFFER, &lines), 2);
+	CHECK(has_line(M_CREW_OFFER, "A shady crew in {hood} wants to cut your stash with fentanyl. They promise a huge payout."));
+	CHECK(has_line(M_CREW_OFFER, "Some people you would rather not know offer to stretch your stash with fentanyl. Big money, they say."));
+	CHECK_EQ(text_lines(M_CREW_PAID, &lines), 1);
+	CHECK(has_line(M_CREW_PAID, "The cut batch moved fast. The crew pays you {amount}. You try not to think about it."));
+	CHECK_EQ(text_lines(M_OVERDOSE, &lines), 1);
+	CHECK(has_line(M_OVERDOSE, "The cut batch hit the streets and people overdosed. {city} wants you gone, for good. You leave with nothing."));
+}
+
+static void test_rc_placeholder_only_in_chem_kinds(void)
+{
+	int k;
+	for (k = 0; k < NUM_MSG_KINDS; k++)
+		CHECK_EQ(text_allowed((MsgKind)k, "rc"), is_chem_kind(k));
+}
+
+static void test_wild_lines_format(void)
+{
+	Game g;
+	Msg m;
+	char b[256];
+	game_for_text(&g);
+	g.loc.city = 3;
+	g.loc.hood = 2;
+	memset(&m, 0, sizeof m);
+	m.kind = M_RC_HIT;
+	m.a = 7;
+	m.amount = 12345;
+	m.variant = 0;
+	text_msg(&g, &m, b, sizeof b);
+	CHECK_STR(b, "Hexen caught on in the scene. Your stake pays $12,345!");
+	m.kind = M_RC_OFFER;
+	m.a = 0;
+	text_msg(&g, &m, b, sizeof b);
+	CHECK(strstr(b, CITIES[3].hoods[2]) != NULL && strstr(b, "2C-B") != NULL);
+	m.kind = M_RC_HIT;
+	m.a = 99;	/* out of range: no crash */
+	text_msg(&g, &m, b, sizeof b);
+	CHECK(strstr(b, "?") != NULL);
+	m.kind = M_OVERDOSE;
+	m.a = 4;
+	text_msg(&g, &m, b, sizeof b);
+	CHECK(strstr(b, "Miami wants you gone") != NULL);
+}
+
+/* Serious, and kept away from Podcast Pete. */
+static void test_crew_path_is_sober(void)
+{
+	static const MsgKind crew[] = { M_CREW_OFFER, M_CREW_PAID, M_OVERDOSE };
+	const TextLine *lines;
+	size_t i;
+	int n, j, k;
+	for (i = 0; i < sizeof crew / sizeof crew[0]; i++) {
+		n = text_lines(crew[i], &lines);
+		for (j = 0; j < n; j++) {
+			CHECK(strchr(lines[j].t, '!') == NULL);
+			CHECK(strstr(lines[j].t, "rumor") == NULL);
+			CHECK(lines[j].city == -1);
+		}
+	}
+	n = text_lines(M_RUMOR_JOKE, &lines);
+	for (j = 0; j < n; j++) {
+		CHECK(strstr(lines[j].t, "fentanyl") == NULL);
+		CHECK(strstr(lines[j].t, "overdose") == NULL);
+		CHECK(strstr(lines[j].t, "crew") == NULL);
+	}
+	n = text_lines(M_RUMOR_TIP, &lines);
+	for (j = 0; j < n; j++)
+		CHECK(strstr(lines[j].t, "fentanyl") == NULL);
+	/* only the crew kinds mention it */
+	for (k = 0; k < NUM_MSG_KINDS; k++) {
+		int is_crew = k == M_CREW_OFFER || k == M_CREW_PAID || k == M_OVERDOSE;
+		n = text_lines((MsgKind)k, &lines);
+		for (j = 0; j < n; j++)
+			if (!is_crew)
+				CHECK(strstr(lines[j].t, "fentanyl") == NULL && strstr(lines[j].t, "overdos") == NULL);
+	}
 }
 
 static void test_count_grammar(void)
@@ -293,6 +411,10 @@ void tests_text(void)
 	test_money_format();
 	test_every_kind_has_text();
 	test_placeholders_allowed();
+	test_wild_lines_exact();
+	test_rc_placeholder_only_in_chem_kinds();
+	test_wild_lines_format();
+	test_crew_path_is_sober();
 	test_line_counts();
 	test_city_jokes();
 	test_new_city_jokes_format();

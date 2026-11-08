@@ -256,6 +256,7 @@ const char *err_text(int err)
 	case E_LIMIT: return "That's over the limit.";
 	case E_FEE: return "That won't even cover the ATM fee.";
 	case E_NO_STOCK: return "You don't have that many.";
+	case E_BANNED: return "You're not welcome there anymore.";
 	default: return "You can't do that right now.";
 	}
 }

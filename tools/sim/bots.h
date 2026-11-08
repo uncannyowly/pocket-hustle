@@ -4,7 +4,8 @@
 
 #include "core/game.h"
 
-typedef enum { BOT_GREEDY, BOT_CAUTIOUS } BotKind;
+/* BOT_WILD plays the greedy game and takes every offer (a test bot; the balance bots never do). */
+typedef enum { BOT_GREEDY, BOT_CAUTIOUS, BOT_WILD } BotKind;
 
 /* Trades, then moves once (or takes one chase action when the cops are on it). */
 void bot_play_day(Game *g, BotKind k);

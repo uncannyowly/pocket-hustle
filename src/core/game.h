@@ -1,6 +1,7 @@
 /* Pocket Hustle rules: the game state and every action a frontend can take.
- * Deterministic: integer math only, all randomness from g->rng (gameplay) and
- * g->flavor (which joke to tell). */
+ * Deterministic: integer math only, all randomness from g->rng (gameplay),
+ * g->flavor (which joke to tell) and g->wild (wild cards, finds and the crew, kept apart
+ * so a game that never sees an offer plays exactly as it would without them). */
 #ifndef PH_GAME_H
 #define PH_GAME_H
 
@@ -16,7 +17,8 @@
 enum { MAX_DAYS = 90, MAX_MSGS = 32 };
 
 typedef enum { OK = 0, E_PHASE = -1, E_BAD_ARG = -2, E_NOT_SOLD = -3, E_NO_CASH = -4,
-	       E_NO_SPACE = -5, E_NO_STOCK = -6, E_LIMIT = -7, E_FEE = -8 } Err;
+	       E_NO_SPACE = -5, E_NO_STOCK = -6, E_LIMIT = -7, E_FEE = -8,
+	       E_BANNED = -9 } Err;
 typedef enum { EV_NONE, EV_SPIKE, EV_CRASH } MarketEvent;	/* a good's market event on a day */
 typedef enum { PH_TRADING, PH_CHASE, PH_OVER } Phase;
 typedef enum { END_NONE, END_DAYS_UP, END_DEAD, END_QUIT } EndReason;
@@ -26,10 +28,18 @@ typedef struct { uint8_t city, hood; } Loc;
 typedef struct { int16_t day; Loc loc; int8_t good, spike; } Tip;	/* day 0 = none */
 typedef struct { int16_t posse, cops_left; } Chase;
 
+enum { OFFER_NONE, OFFER_RC, OFFER_CREW };
+/* A stake in a research chemical. found = 1: a free batch, stake is its notional value and a
+ * bust costs nothing. resolve_day: it resolves on the first arrival on or after that day. */
+typedef struct { int64_t stake; int16_t resolve_day; int8_t chem, found; } Stake;
+/* Today's open offer; it ends with the next move. For OFFER_RC chem is the chemical. */
+typedef struct { uint8_t kind; int8_t chem; int16_t day; } Offer;
+
 typedef struct {
 	int32_t moves, flights, cop_chases, cops_beaten, escapes, times_jailed, times_mugged,
 		times_dropped, goon_visits, spikes_seen, crashes_seen, rumors_true, rumors_joke;
 	int64_t best_net_worth, hospital_spent, bank_fees_paid;
+	int32_t wild_wins, wild_losses;		/* stakes that caught on, stakes that busted */
 } Stats;
 
 typedef struct {
@@ -57,6 +67,12 @@ typedef struct {
 	Stats stats;
 	Msg msgs[MAX_MSGS];
 	int16_t nmsgs;
+	Rng wild;				/* the wild cards' own random stream */
+	Stake stakes[MAX_STAKES];		/* the first nstakes are running */
+	int8_t nstakes;
+	Offer offer;
+	uint8_t crew_offers;			/* crew offers made this run, taken or not */
+	uint32_t banned;			/* bit c set: city c blacklisted for the rest of the run */
 } Game;
 
 int     game_new(Game *g, const Params *p, uint64_t seed, int days, const char *name);
@@ -74,6 +90,14 @@ int     game_move(Game *g, Loc dest);
 int64_t game_flight_cost(const Game *g, int city);	/* 0 inside the current city; a border crossing uses the international range */
 int     game_flight_crosses(const Game *g, int city);	/* 1 if flying to city crosses the border */
 int     game_end(Game *g);				/* quit early */
+
+/* Wild cards, finds and the crew (wild.c). An offer made on arrival lasts until the next move.
+ * Backing a chemical takes cash and starts a stake; a stake pays stake x multiplier or nothing
+ * when it resolves on an arrival. The crew deal is all or nothing. All are PH_TRADING only. */
+int     game_rc_back(Game *g, int64_t stake);	/* E_PHASE without a chemical offer; E_BAD_ARG <= 0; E_NO_CASH; E_LIMIT no free slot */
+int     game_offer_pass(Game *g);		/* declines either offer; E_PHASE without one */
+int     game_crew_accept(Game *g);		/* E_PHASE without a crew offer; E_NO_STOCK if the stash is gone */
+int     game_city_banned(const Game *g, int city);	/* 1 if the city has blacklisted you */
 
 /* Money: the current city's lender, and the bank (any city). Banking is free at a branch
  * (CITIES[].bank_hoods). Anywhere else the out-of-network fee comes out of the amount moved,
