@@ -169,6 +169,52 @@ static void test_lengths_worst_case(void)
 	CHECK(worst <= 120);
 }
 
+static void test_count_grammar(void)
+{
+	static const MsgKind kinds[] = {M_COPS, M_YOU_HIT};
+	static const char *bad[] = {
+		"1 cops", "1 more cops", "1 friends", "1 more friends", "1 buddies", "1 officers",
+	};
+	Game g;
+	Msg m;
+	char b[256];
+	size_t ki, bi;
+	int n, v, nl;
+	game_for_text(&g);
+	for (ki = 0; ki < sizeof kinds / sizeof kinds[0]; ki++) {
+		const TextLine *lines;
+		nl = text_lines(kinds[ki], &lines);
+		for (n = 1; n <= 2; n++)
+			for (v = 0; v < nl * 4; v++) {
+				memset(&m, 0, sizeof m);
+				m.kind = (uint8_t)kinds[ki];
+				m.a = (int16_t)n;
+				m.variant = (uint16_t)v;
+				text_msg(&g, &m, b, sizeof b);
+				for (bi = 0; bi < sizeof bad / sizeof bad[0]; bi++) {
+					if (n == 1 && strstr(b, bad[bi]))
+						fprintf(stderr, "bad count grammar: %s\n", b);
+					CHECK(n != 1 || !strstr(b, bad[bi]));
+				}
+				/* a count directly followed by a plural noun is wrong at 1 */
+				if (n == 1) {
+					const char *p = strstr(b, "1 ");
+					while (p) {
+						int w = 0;
+						const char *q = p + 2;
+						while (q[w] && q[w] != ' ' && q[w] != '.' && q[w] != '!' && q[w] != ',')
+							w++;
+						if (w > 2 && q[w - 1] == 's' && (p == b || p[-1] == ' ')) {
+							fprintf(stderr, "plural after 1: %s\n", b);
+							CHECK(0);
+						}
+						p = strstr(p + 2, "1 ");
+					}
+				}
+			}
+	}
+}
+
 void tests_text(void)
 {
 	test_money_format();
@@ -177,4 +223,5 @@ void tests_text(void)
 	test_line_counts();
 	test_city_jokes();
 	test_lengths_worst_case();
+	test_count_grammar();
 }

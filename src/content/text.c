@@ -41,8 +41,8 @@ LINES(t_goons,
 LINES(t_dead,
 	L("You're dead, {name}. The hustle is over."));
 LINES(t_cops,
-	L("It's {cop}! {n} more cops are right behind."),
-	L("{cop} spotted you and called in {n} friends."),
+	L("It's {cop}! Backup is right behind: {n}."),
+	L("{cop} spotted you and called for backup. Backup count: {n}."),
 	L("Sirens! {cop} is chasing you with {n} backup."));
 LINES(t_escaped,
 	L("You ducked into a laundromat. {cop} ran right past."),
@@ -53,7 +53,7 @@ LINES(t_dropped,
 	L("{qty} {good} fell out of your pocket. Gone."),
 	L("In the chase you lost {qty} {good}."));
 LINES(t_you_hit,
-	L("Got one! {n} cops left."),
+	L("Got one! Cops left: {n}."),
 	L("Direct hit. {n} to go."));
 LINES(t_you_missed,
 	L("You missed. {cop} laughs."),
