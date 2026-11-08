@@ -93,7 +93,7 @@ static void test_line_counts(void)
 		CHECK(text_lines(three[i], &lines) >= 3);
 	CHECK(count_city(M_RUMOR_JOKE, -1) >= 14);
 	for (c = 0; c < NUM_CITIES; c++)
-		CHECK(count_city(M_RUMOR_JOKE, c) >= 3);
+		CHECK(count_city(M_RUMOR_JOKE, c) >= (c < 7 ? 3 : 2));
 	for (k = 0; k < NUM_MSG_KINDS; k++)
 		if (k != M_RUMOR_JOKE)
 			for (c = 0; c < NUM_CITIES; c++)
@@ -120,6 +120,79 @@ static void test_city_jokes(void)
 	}
 	CHECK(ok);
 	CHECK(miami);
+}
+
+static void test_new_city_jokes_format(void)
+{
+	Game g;
+	Msg m;
+	char b[256];
+	int city, v, seen;
+	game_for_text(&g);
+	for (city = 7; city < NUM_CITIES; city++) {
+		seen = 0;
+		for (v = 0; v < 400; v++) {
+			const TextLine *l;
+			memset(&m, 0, sizeof m);
+			m.kind = M_RUMOR_JOKE;
+			m.a = (int16_t)city;
+			m.variant = (uint16_t)v;
+			l = text_pick(&g, &m);
+			CHECK(l != NULL);
+			if (l && l->city == city) {
+				seen++;
+				CHECK(text_msg(&g, &m, b, sizeof b) > 0);
+				CHECK(!strchr(b, '{') && !strchr(b, '}'));
+				CHECK(strstr(b, "Podcast Pete") == b);
+				if (strstr(l->t, "{city}"))
+					CHECK(strstr(b, CITIES[city].name) != NULL);
+			}
+		}
+		CHECK(seen > 0);
+		CHECK_EQ(count_city(M_RUMOR_JOKE, city), 2);
+	}
+	/* a spot check of exact text */
+	memset(&m, 0, sizeof m);
+	m.kind = M_RUMOR_JOKE;
+	m.a = 7;
+	for (v = 0; v < 400; v++) {
+		m.variant = (uint16_t)v;
+		if (text_pick(&g, &m)->city == 7)
+			break;
+	}
+	text_msg(&g, &m, b, sizeof b);
+	CHECK(!strcmp(b, "Podcast Pete says everything is bigger in Dallas. He means his ego.") ||
+	      !strcmp(b, "Podcast Pete waited two hours for brisket in Deep Ellum and calls it a personality."));
+}
+
+static void test_border_lines(void)
+{
+	Game g;
+	Msg m;
+	char b[256];
+	int v, crossing_seen = 0, plain_seen = 0;
+	game_for_text(&g);
+	for (v = 0; v < 40; v++) {
+		memset(&m, 0, sizeof m);
+		m.kind = M_FLEW;
+		m.a = 14;
+		m.amount = 500;
+		m.variant = (uint16_t)v;
+		m.c = 1;
+		text_msg(&g, &m, b, sizeof b);
+		CHECK(strstr(b, "$500") != NULL && strstr(b, "Tijuana") != NULL);
+		CHECK(strstr(b, "border") != NULL || strstr(b, "Passport") != NULL);
+		if (strstr(b, "You cross the border to Tijuana. The ticket cost $500.") ||
+		    strstr(b, "Passport out, Tijuana here you come. That flight cost $500."))
+			crossing_seen++;
+		m.c = 0;
+		text_msg(&g, &m, b, sizeof b);
+		CHECK(strstr(b, "border") == NULL && strstr(b, "Passport") == NULL);
+		if (strstr(b, "You fly to Tijuana") || strstr(b, "Your flight to Tijuana"))
+			plain_seen++;
+	}
+	CHECK(crossing_seen == 40);
+	CHECK(plain_seen == 40);
 }
 
 static int a_range(MsgKind k)
@@ -222,6 +295,8 @@ void tests_text(void)
 	test_placeholders_allowed();
 	test_line_counts();
 	test_city_jokes();
+	test_new_city_jokes_format();
+	test_border_lines();
 	test_lengths_worst_case();
 	test_count_grammar();
 }

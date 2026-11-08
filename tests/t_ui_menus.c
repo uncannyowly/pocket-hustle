@@ -180,7 +180,7 @@ static void test_title_cycles_skyline(void)
 	CHECK_EQ(title_city(&ui), 0);
 	ui.frame = 80;
 	CHECK_EQ(title_city(&ui), 1);
-	ui.frame = 80 * 7;
+	ui.frame = 80 * NUM_CITIES;
 	CHECK_EQ(title_city(&ui), 0);
 	{
 		Canvas other;

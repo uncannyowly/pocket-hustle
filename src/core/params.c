@@ -59,6 +59,8 @@ Params params_default(void)
 	p.hospital_per_hp = 60;
 	p.flight_lo = 150;
 	p.flight_hi = 450;
+	p.intl_flight_lo = 350;
+	p.intl_flight_hi = 850;
 	return p;
 }
 
@@ -88,5 +90,6 @@ int params_sane(const Params *p)
 	       IN(p->rumor_permille, 0, 1000) && IN(p->rumor_true_permille, 0, 1000) &&
 	       PAIR(p->rumor_lead_lo, p->rumor_lead_hi, 0, MAX_DAYS) &&
 	       IN(p->hospital_per_hp, 0, 1000000000) &&
-	       PAIR(p->flight_lo, p->flight_hi, 0, 1000000000);
+	       PAIR(p->flight_lo, p->flight_hi, 0, 1000000000) &&
+	       PAIR(p->intl_flight_lo, p->intl_flight_hi, 0, 1000000000);
 }

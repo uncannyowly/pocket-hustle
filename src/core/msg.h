@@ -9,7 +9,7 @@ typedef enum {
 	M_SPIKE,	/* a good, amount price */
 	M_CRASH,	/* a good, amount price */
 	M_RODE,		/* a hood */
-	M_FLEW,		/* a city, amount cost */
+	M_FLEW,		/* a city, c 1 if it crossed the border, amount cost */
 	M_LAST_DAY,
 	M_GAME_OVER,
 	M_GOONS,	/* a city, amount damage */

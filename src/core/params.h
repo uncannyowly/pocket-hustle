@@ -24,7 +24,8 @@ typedef struct {
 	int32_t mug_permille, mug_lo_pct, mug_hi_pct;
 	int32_t rumor_permille, rumor_true_permille, rumor_lead_lo, rumor_lead_hi;
 	int32_t hospital_per_hp;
-	int64_t flight_lo, flight_hi;
+	int64_t flight_lo, flight_hi;			/* a flight within one country */
+	int64_t intl_flight_lo, intl_flight_hi;		/* a flight across the border */
 } Params;
 
 Params params_default(void);

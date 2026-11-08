@@ -292,7 +292,7 @@ static void test_fly_lists_other_cities(void)
 	open_fly();
 	CHECK_EQ(ui.scr, SCR_FLY);
 	CHECK_EQ(ui.row, 0);
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < NUM_CITIES - 1; i++) {
 		int city = fly_city(&app.g, i);
 
 		CHECK(city >= 0 && city < NUM_CITIES);
@@ -302,10 +302,10 @@ static void test_fly_lists_other_cities(void)
 	for (i = 0; i < NUM_CITIES; i++)
 		CHECK_EQ(seen[i], i == app.g.loc.city ? 0 : 1);
 	press_seq(&ui, "U");
-	CHECK_EQ(ui.row, 5);
+	CHECK_EQ(ui.row, NUM_CITIES - 2);
 	press_seq(&ui, "D D");
 	CHECK_EQ(ui.row, 1);
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < NUM_CITIES - 1; i++) {
 		ui.row = i;
 		ui_draw(&ui, &cv);
 		CHECK_EQ(cv.overflow, 0);

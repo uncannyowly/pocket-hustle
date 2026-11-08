@@ -5,13 +5,16 @@
 
 #include <stdint.h>
 
-enum { NUM_GOODS = 10, NUM_CITIES = 7, HOODS_PER_CITY = 6,
+enum { NUM_GOODS = 10, NUM_CITIES = 18, HOODS_PER_CITY = 6,
        NUM_LOCS = NUM_CITIES * HOODS_PER_CITY, MAX_GEAR = 16 };
+
+enum { COUNTRY_US = 0, COUNTRY_MX = 1 };
 
 typedef struct { const char *name, *blurb; int32_t lo, hi; } GoodDef;	/* base price range */
 
 typedef struct {
-	const char *name, *nickname;		/* nickname "" if none */
+	const char *name, *nickname;		/* nickname: the local name, shown on the skyline */
+	const char *short_name;			/* at most 9 characters, for the flight grid */
 	const char *transit, *airport, *code;	/* code: three-letter airport code */
 	const char *hoods[HOODS_PER_CITY];
 	int16_t bias_pct[NUM_GOODS];		/* 50..200, 100 = no tendency */
@@ -19,6 +22,7 @@ typedef struct {
 	int32_t lender_rate_bp;			/* daily interest, basis points */
 	int64_t lender_max;			/* most you can owe this lender */
 	uint8_t bank_hoods;			/* bit h set: a bank branch in hoods[h], no fee */
+	uint8_t country;			/* COUNTRY_US or COUNTRY_MX; flights between differ cost more */
 } CityDef;
 
 typedef enum { GEAR_WEAPON, GEAR_SPACE } GearKind;

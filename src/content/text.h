@@ -6,7 +6,7 @@
 
 #include "core/game.h"
 
-typedef struct { int8_t city; const char *t; } TextLine;	/* city -1 = any city */
+typedef struct { int8_t city; const char *t; } TextLine;	/* city -1 = any city, -2 = border crossings only (M_FLEW with c = 1) */
 
 /* Formats m into buf (always NUL-terminated, truncated to n). Returns the length. */
 size_t text_msg(const Game *g, const Msg *m, char *buf, size_t n);

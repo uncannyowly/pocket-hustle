@@ -160,6 +160,54 @@ static void test_other_version(void)
 	CHECK_EQ(save_read(&g, p1), -2);
 }
 
+static void test_version_3_refused(void)
+{
+	static unsigned char a[200000];
+	char p1[128];
+	Game g, target, snap;
+	long n;
+	path_in(p1, sizeof p1, "v3.sav");
+	played_game(&g);
+	save_write(&g, p1);
+	n = read_file(p1, a, sizeof a);
+	CHECK_EQ(a[4], 4);	/* SAVE_VERSION */
+	a[4] = 3;
+	write_bytes(p1, a, n);
+	played_game(&target);
+	memcpy(&snap, &target, sizeof snap);
+	CHECK_EQ(save_read(&target, p1), -2);
+	CHECK(same_game(&target, &snap));
+}
+
+static void test_save_eighteen_cities(void)
+{
+	char p1[128];
+	Game g, g2;
+	int c;
+	path_in(p1, sizeof p1, "big.sav");
+	played_game(&g);
+	for (c = 0; c < NUM_CITIES; c++) {
+		g.debt[c] = 1000 + c;
+		g.debt_age[c] = (int16_t)c;
+	}
+	g.cash = 50000;
+	game_move(&g, at(17, 2));
+	game_move(&g, at(14, 1));
+	CHECK_EQ(save_write(&g, p1), 0);
+	CHECK_EQ(save_read(&g2, p1), 0);
+	g.nmsgs = 0;
+	CHECK_EQ(g2.loc.city, 14);
+	CHECK_EQ(g2.debt[17], g.debt[17]);
+	CHECK_EQ(g2.debt_age[16], g.debt_age[16]);
+	CHECK_EQ(g2.p.intl_flight_lo, 350);
+	CHECK_EQ(g2.p.intl_flight_hi, 850);
+	CHECK_EQ(g2.stats.flights, g.stats.flights);
+	g.p.intl_flight_lo = 900;
+	g.p.intl_flight_hi = 100;
+	save_write(&g, p1);
+	CHECK_EQ(save_read(&g2, p1), -2);	/* insane params refused */
+}
+
 /* A save whose CRC is right but whose values could never come from the rules (edited by
  * hand) must be rejected, or play would overflow. */
 static void test_save_rejects_out_of_range_values(void)
@@ -325,6 +373,8 @@ void tests_save(void)
 	test_truncated_save();
 	test_bitflip_save();
 	test_other_version();
+	test_version_3_refused();
+	test_save_eighteen_cities();
 	test_save_keeps_events();
 	test_missing_save();
 	test_save_rejects_out_of_range_values();

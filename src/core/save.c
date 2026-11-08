@@ -10,7 +10,7 @@
 
 #include "core/save.h"
 
-#define SAVE_VERSION 3		/* 2: bank fee params and stat; 3: market events per day */
+#define SAVE_VERSION 4		/* 2: bank fee params and stat; 3: market events per day; 4: 18 cities, border fares */
 #define HISCORE_VERSION 1
 #define MAX_FILE (1L << 20)
 
@@ -97,6 +97,7 @@ static void io_params(Io *io, Params *p)
 	io_i32(io, &p->rumor_lead_lo); io_i32(io, &p->rumor_lead_hi);
 	io_i32(io, &p->hospital_per_hp);
 	io_i64(io, &p->flight_lo); io_i64(io, &p->flight_hi);
+	io_i64(io, &p->intl_flight_lo); io_i64(io, &p->intl_flight_hi);
 }
 
 static void io_game(Io *io, Game *g)

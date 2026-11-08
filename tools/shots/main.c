@@ -85,7 +85,9 @@ int main(int argc, char **argv)
 {
 	int i;
 	char nm[32];
-	static const char *const CITY[NUM_CITIES] = {"okc", "houston", "sanjose", "nyc", "miami", "neworleans", "portland"};
+	static const char *const CITY[NUM_CITIES] = {"okc", "houston", "sanjose", "nyc", "miami", "neworleans", "portland",
+		"dallas", "sanfrancisco", "losangeles", "seattle", "cincinnati", "dayton", "destin", "tijuana",
+		"cozumel", "loscabos", "sinaloa"};
 
 	if (argc != 2) {
 		fprintf(stderr, "usage: ph-shots OUTDIR\n");

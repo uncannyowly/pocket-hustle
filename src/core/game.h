@@ -71,7 +71,8 @@ int32_t game_carried(const Game *g);
 /* Moving: transit inside a city is free, a flight costs a ticket. Each move is a day.
  * Moving on the last day ends the game instead. */
 int     game_move(Game *g, Loc dest);
-int64_t game_flight_cost(const Game *g, int city);	/* 0 inside the current city */
+int64_t game_flight_cost(const Game *g, int city);	/* 0 inside the current city; a border crossing uses the international range */
+int     game_flight_crosses(const Game *g, int city);	/* 1 if flying to city crosses the border */
 int     game_end(Game *g);				/* quit early */
 
 /* Money: the current city's lender, and the bank (any city). Banking is free at a branch

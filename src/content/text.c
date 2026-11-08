@@ -11,6 +11,7 @@
 
 #define L(t) {-1, t}
 #define C(city, t) {city, t}
+#define X(t) {-2, t}		/* a flight that crosses the border */
 #define LINES(name, ...) static const TextLine name[] = { __VA_ARGS__ }
 
 LINES(t_spike,
@@ -28,7 +29,9 @@ LINES(t_rode,
 	L("You take {transit} over to {hood}."));
 LINES(t_flew,
 	L("You fly to {city}. The ticket cost {amount}."),
-	L("Your flight to {city} cost {amount}, plus nine bucks for a water."));
+	L("Your flight to {city} cost {amount}, plus nine bucks for a water."),
+	X("You cross the border to {city}. The ticket cost {amount}."),
+	X("Passport out, {city} here you come. That flight cost {amount}."));
 LINES(t_last_day,
 	L("Last day, {name}. Sell everything."),
 	L("Final day! Anything you're still holding tomorrow is worth nothing."));
@@ -115,7 +118,29 @@ LINES(t_rumor_joke,
 	C(5, "{rumor} says a ghost in the French Quarter owes him five bucks."),
 	C(6, "{rumor} says it's been raining in {city} since 1987."),
 	C(6, "{rumor} says everyone in {city} has a band and a bike."),
-	C(6, "{rumor} is fermenting his own kombucha. It's sentient now."));
+	C(6, "{rumor} is fermenting his own kombucha. It's sentient now."),
+	C(7, "{rumor} says everything is bigger in {city}. He means his ego."),
+	C(7, "{rumor} waited two hours for brisket in Deep Ellum and calls it a personality."),
+	C(8, "{rumor} called it Frisco. Six people corrected him at once."),
+	C(8, "{rumor} says the fog in {city} has its own podcast now. It's better than his."),
+	C(9, "{rumor} is pitching his podcast as a streaming series. Nobody called back."),
+	C(9, "{rumor} says the 405 is not a freeway, it's a lifestyle."),
+	C(10, "{rumor} says it only rained once in {city}. It started in October."),
+	C(10, "{rumor} is on his fourth espresso and his second podcast."),
+	C(11, "{rumor} put chili on spaghetti and called it a three-way. He's not wrong."),
+	C(11, "{rumor} says the Nati has more hills than Rome. He has never been to Rome."),
+	C(12, "{rumor} says {city} invented flight, so he invented the podcast."),
+	C(12, "{rumor} calls {city} the Land of Funk and will not stop doing the dance."),
+	C(13, "{rumor} says he caught a 46-pound snapper. It was a flip-flop."),
+	C(13, "{rumor} anchored at Crab Island in June. Nobody has seen him leave."),
+	C(14, "{rumor} took a picture with a zonkey on La Revu. It's his new profile pic."),
+	C(14, "{rumor} says the Caesar salad was invented in {city}, and so was his podcast."),
+	C(15, "{rumor} rented a moped on {city} three days ago. Still looking for the rental shop."),
+	C(15, "{rumor} says the reef off Punta Sur is quieter than his podcast. Much quieter."),
+	C(16, "{rumor} sat through a timeshare pitch for free tacos. He bought two timeshares."),
+	C(16, "{rumor} says swim at Lover's Beach, never at Divorce Beach. He learned the hard way."),
+	C(17, "{rumor} rode a pulmonia the length of the Malecon twice. The driver wants a cut."),
+	C(17, "{rumor} says the aguachile in La Perla made him cry, in a good way."));
 LINES(t_healed,
 	L("The doctor patches you up. (+{qty} health)"));
 LINES(t_bought_gear,
@@ -182,7 +207,11 @@ int text_allowed(MsgKind k, const char *ph)
 
 static int eligible(const TextLine *l, MsgKind k, const Msg *m)
 {
-	return l->city < 0 || (k == M_RUMOR_JOKE && l->city == m->a);
+	if (l->city == -2)	/* border crossings only */
+		return k == M_FLEW && m->c;
+	if (l->city == -1)
+		return !(k == M_FLEW && m->c);
+	return k == M_RUMOR_JOKE && l->city == m->a;
 }
 
 const TextLine *text_pick(const Game *g, const Msg *m)

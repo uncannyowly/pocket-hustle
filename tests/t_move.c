@@ -10,6 +10,11 @@ static Loc at(int city, int hood)
 	return l;
 }
 
+static int game_flight_crosses_from(int from, int to)
+{
+	return CITIES[from].country != CITIES[to].country;
+}
+
 static int has_msg(const Game *g, MsgKind k, int a, int64_t amount, int check_amount)
 {
 	int i;
@@ -78,9 +83,53 @@ static void test_bad_destinations(void)
 	new_test_game(&g, &p, 30);
 	memcpy(&snap, &g, sizeof g);
 	CHECK_EQ(game_move(&g, g.loc), E_BAD_ARG);
-	CHECK_EQ(game_move(&g, at(7, 0)), E_BAD_ARG);
+	CHECK_EQ(game_move(&g, at(NUM_CITIES, 0)), E_BAD_ARG);
 	CHECK_EQ(game_move(&g, at(0, 6)), E_BAD_ARG);
 	CHECK(same_game(&g, &snap));
+}
+
+static void test_border_flights(void)
+{
+	Params p = test_params();
+	Game g;
+	int from, to, ok = 1, crossings = 0, domestic = 0, i;
+	CHECK_EQ(p.intl_flight_lo, 350);
+	CHECK_EQ(p.intl_flight_hi, 850);
+	for (from = 0; from < NUM_CITIES; from++)
+		for (to = 0; to < NUM_CITIES; to++) {
+			int64_t c;
+			new_test_game(&g, &p, 30);
+			g.loc.city = (uint8_t)from;
+			g.cash = 10000;
+			c = game_flight_cost(&g, to);
+			if (from == to) {
+				CHECK_EQ(c, 0);
+				CHECK_EQ(game_flight_crosses(&g, to), 0);
+				continue;
+			}
+			if (game_flight_crosses(&g, to) != (CITIES[from].country != CITIES[to].country))
+				ok = 0;
+			if (CITIES[from].country != CITIES[to].country) {
+				crossings++;
+				if (c < 350 || c > 850) ok = 0;
+			} else {
+				domestic++;
+				if (c < p.flight_lo || c > p.flight_hi) ok = 0;
+			}
+			CHECK_EQ(game_move(&g, at(to, 0)), OK);
+			CHECK_EQ(g.cash, 10000 - c);
+			for (i = 0; i < g.nmsgs; i++)
+				if (g.msgs[i].kind == M_FLEW) {
+					if (g.msgs[i].c != game_flight_crosses_from(from, to)) ok = 0;
+					if (g.msgs[i].a != to || g.msgs[i].amount != c) ok = 0;
+				}
+		}
+	CHECK(ok);
+	CHECK_EQ(crossings, 2 * 14 * 4);
+	CHECK(domestic > 0);
+	g.loc.city = 0;
+	CHECK_EQ(game_flight_crosses(&g, -1), 0);
+	CHECK_EQ(game_flight_crosses(&g, NUM_CITIES), 0);
 }
 
 static void test_debt_interest_rounds_up(void)
@@ -177,6 +226,7 @@ void tests_move(void)
 	test_flight_needs_cash();
 	test_flight_cost_stable();
 	test_bad_destinations();
+	test_border_flights();
 	test_debt_interest_rounds_up();
 	test_bank_interest_rounds_down();
 	test_final_day_ends_without_events();

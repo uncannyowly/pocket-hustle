@@ -47,7 +47,7 @@ static void test_params_default_sane(void)
 	LOHI(p.enforce_dmg_lo, p.enforce_dmg_hi); LOHI(p.cop_dmg_lo, p.cop_dmg_hi);
 	LOHI(p.loot_lo, p.loot_hi); LOHI(p.drop_lo_pct, p.drop_hi_pct);
 	LOHI(p.mug_lo_pct, p.mug_hi_pct); LOHI(p.rumor_lead_lo, p.rumor_lead_hi);
-	LOHI(p.flight_lo, p.flight_hi);
+	LOHI(p.flight_lo, p.flight_hi); LOHI(p.intl_flight_lo, p.intl_flight_hi);
 	CHECK(p.start_city >= 0 && p.start_city < NUM_CITIES);
 	CHECK(p.bank_rate_bp >= 0 && p.bank_rate_bp <= 3000);
 	CHECK(p.min_goods >= 0 && p.min_goods <= NUM_GOODS);

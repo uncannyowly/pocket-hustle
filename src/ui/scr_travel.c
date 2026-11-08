@@ -153,7 +153,8 @@ void fly_draw(Ui *u, Canvas *c)
 {
 	enum { BX = 8, BY = 158, BW = 304, BH = 60 };
 	const Game *g = &u->app->g;
-	int from = city_of(g), dest, i;
+	enum { FLY_VISIBLE = 6 };
+	int from = city_of(g), dest, i, first;
 	char s[64], name[16];
 	int64_t fare;
 
@@ -169,8 +170,10 @@ void fly_draw(Ui *u, Canvas *c)
 	cv_rect(c, 0, 68, CV_W, 1, PAL_LINE);
 	snprintf(s, sizeof s, "FLIGHTS FROM %s", CITIES[from].code);
 	tx(c, s, 8, 74, PAL_GOLD, 1, TX_LEFT);
-	for (i = 0; i < NUM_CITIES - 1; i++) {
-		int city = fly_city(g, i), y = 88 + i * 11, sel = u->row == i;
+	/* Interim list (Task 5 redesigns this screen): six rows scroll with the selection. */
+	first = u->row > FLY_VISIBLE - 1 ? u->row - (FLY_VISIBLE - 1) : 0;
+	for (i = first; i < first + FLY_VISIBLE && i < NUM_CITIES - 1; i++) {
+		int city = fly_city(g, i), y = 88 + (i - first) * 11, sel = u->row == i;
 		int64_t f = game_flight_cost(g, city);
 
 		if (sel)

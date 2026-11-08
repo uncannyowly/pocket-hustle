@@ -23,6 +23,8 @@ int content_strings(const char **out, int max)
 	for (c = 0; c < NUM_CITIES; c++) {
 		n = put(out, max, n, CITIES[c].name);
 		n = put(out, max, n, CITIES[c].nickname);
+		n = put(out, max, n, CITIES[c].short_name);
+		n = put(out, max, n, CITIES[c].code);
 		n = put(out, max, n, CITIES[c].transit);
 		n = put(out, max, n, CITIES[c].airport);
 		n = put(out, max, n, CITIES[c].lender);
