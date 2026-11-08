@@ -160,7 +160,10 @@ Task 5 the UI shows outcomes as news cards and no cards for the offers themselve
 ## Play-tests: rounds, the emulator, cross-arch (Plan 4, Task 6)
 
 Rounds are button scripts in `tests/golden/rounds/NAME.keys` (format at the top of
-`scripts/lib/round.sh`: `@seed`, `@param NAME=VALUE`, `@shot LABEL` and lines of button tokens).
+`scripts/lib/round.sh`: `@seed`, `@param NAME=VALUE`, `@expect day=.. city=.. cash=.. bank=.. debt=.. over=..`,
+`@shot LABEL` and lines of button tokens). `@expect` is the final state the game's `--summary FILE` must report
+on both builds; the scripts fail otherwise. After a deliberate rules change, re-run the rounds, check the
+frames, and update the lines.
 Each is replayed from a new 15 day game and is deterministic, so the PC and the ARM build must
 agree to the byte. The rounds: `okc-dallas-seattle` (trade, ride, fly), `border-atm` (Tijuana,
 Cozumel, Los Cabos, out-of-network ATM fees, a flight the cash cannot cover), `sinaloa-loan`
