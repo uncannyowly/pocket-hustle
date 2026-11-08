@@ -258,6 +258,19 @@ static void test_new_game_seeds_advance(void)
 	CHECK(s1 != s2);
 }
 
+static void test_new_game_uses_app_params(void)
+{
+	static App a;
+	Params d = params_default();
+
+	app_init(&a, NULL);
+	CHECK_EQ(a.params.rc_offer_permille, d.rc_offer_permille);
+	CHECK_EQ(params_set(&a.params, "rc_offer_permille", 1000), 0);
+	CHECK_EQ(app_new_game(&a, 15, "A"), 0);
+	CHECK_EQ(a.g.p.rc_offer_permille, 1000);
+	CHECK_EQ(a.g.p.cohort_od_permille, d.cohort_od_permille);
+}
+
 static void test_options_round_trip(void)
 {
 	static App a, b;
@@ -292,6 +305,7 @@ void tests_app(void)
 	test_score_write_failure_retries();
 	test_save_failure_flag();
 	test_new_game_seeds_advance();
+	test_new_game_uses_app_params();
 	test_options_round_trip();
 	test_options_garbage();
 }

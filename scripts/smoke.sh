@@ -33,6 +33,53 @@ if "$BIN" --data build/smoke3 --seed 1 --mute --frames 80 --keys "$NEW $MOVE" 2>
 fi
 echo "smoke: failed exit save exits non-zero: ok"
 
+# The play-test options: --param, --record, --pace. A bad --param is a usage error (exit 2).
+for bad in "nope=1" "start_cash=1" "rc_max_stakes=4" "rc_offer_permille" "rc_offer_permille=x" "=5" \
+	"rc_max_stakes=4294967297"; do
+	rc=0
+	"$BIN" --data build/smoke4 --mute --frames 3 --param "$bad" 2>build/smoke-err.txt || rc=$?
+	if [ "$rc" != 2 ] || [ ! -s build/smoke-err.txt ]; then
+		echo "smoke: --param $bad should exit 2 with a message (exit $rc)" >&2
+		exit 1
+	fi
+done
+echo "smoke: bad --param is a usage error: ok"
+rm -rf build/smoke4
+"$BIN" --data build/smoke4 --seed 1 --mute --frames 80 --param rc_offer_permille=1000 --param cohort_od_permille=0 \
+	--keys "$NEW $MOVE"
+"$CHECK" build/smoke4/save.dat 2 15 1000
+"$BIN" --data build/smoke4 --mute --frames 3 --keys "D" >/dev/null	# a resumed game keeps its own params
+"$CHECK" build/smoke4/save.dat 2 15 1000
+
+# --record: one 320 x 240 RGB24 frame per tick (39 ticks in 40 frames), to a file or stdout.
+FRAME=$((320 * 240 * 3))
+rm -rf build/smoke5
+"$BIN" --data build/smoke5 --seed 1 --mute --frames 40 --keys "$NEW" --record build/smoke5.raw
+[ "$(wc -c < build/smoke5.raw)" = "$((39 * FRAME))" ] || { echo "smoke: --record FILE size is wrong" >&2; exit 1; }
+rm -rf build/smoke5
+"$BIN" --data build/smoke5 --seed 1 --mute --frames 40 --keys "$NEW" --record - >build/smoke5b.raw 2>build/smoke-err.txt
+cmp build/smoke5.raw build/smoke5b.raw || { echo "smoke: --record - differs from --record FILE" >&2; exit 1; }
+[ ! -s build/smoke-err.txt ] || { echo "smoke: --record - logged on stderr" >&2; exit 1; }
+rm -f build/smoke5.raw build/smoke5b.raw build/smoke-err.txt
+echo "smoke: --record: ok"
+
+# --pace 600 puts a press every 12 frames and --nowait skips the sleeping: the same game as
+# smoke2 (same seed, same keys), to the byte. --pace 150 plays in real time.
+rm -rf build/smoke6
+"$BIN" --data build/smoke6 --seed 1 --mute --frames 80 --keys "$NEW $MOVE" --pace 600 --nowait
+cmp build/smoke2/save.dat build/smoke6/save.dat || { echo "smoke: --pace changed the game" >&2; exit 1; }
+rm -rf build/smoke6
+t0=$(date +%s%N)
+"$BIN" --data build/smoke6 --seed 1 --mute --frames 30 --keys "D A" --pace 150
+t1=$(date +%s%N)
+[ $(((t1 - t0) / 1000000)) -ge 1000 ] || { echo "smoke: --pace 150 did not run in real time" >&2; exit 1; }
+for bad in "--pace 0 --frames 3" "--pace 100" "--nowait --frames 3"; do
+	rc=0
+	"$BIN" --data build/smoke6 --mute $bad 2>/dev/null || rc=$?
+	[ "$rc" = 2 ] || { echo "smoke: $bad should exit 2 (exit $rc)" >&2; exit 1; }
+done
+echo "smoke: --pace: ok"
+
 # plat_poll returns several clicks queued in one poll, in order.
 cc -std=c99 -Wall -Wextra -Werror -Isrc -D_POSIX_C_SOURCE=200809L $(pkg-config --cflags sdl2) \
 	-o build/host/smoke-clicks tools/smoke/clicks.c src/plat/plat_sdl.c $(pkg-config --libs sdl2)

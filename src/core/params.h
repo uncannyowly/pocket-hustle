@@ -43,5 +43,8 @@ typedef struct {
 Params params_default(void);
 /* 1 if every value is in a range the rules can work with (used on loaded saves). */
 int    params_sane(const Params *p);
+/* Sets one wild card or crew param by its field name (the scripted runs' --param). Other
+ * fields are not settable by name. 0, or -1 for an unknown name or a value the field cannot hold. */
+int    params_set(Params *p, const char *name, long long value);
 
 #endif

@@ -404,8 +404,35 @@ static void test_wild_params(void)
 	CHECK(!params_sane(&p));
 }
 
+/* params_set: the wild card names only, by name, checked by the caller with params_sane. */
+static void test_params_set_names(void)
+{
+	Params p = params_default();
+
+	CHECK_EQ(params_set(&p, "rc_offer_permille", 1000), 0);
+	CHECK_EQ(p.rc_offer_permille, 1000);
+	CHECK_EQ(params_set(&p, "rc_find_permille", 0), 0);
+	CHECK_EQ(p.rc_find_permille, 0);
+	CHECK_EQ(params_set(&p, "cohort_od_permille", 1000), 0);
+	CHECK_EQ(p.cohort_od_permille, 1000);
+	CHECK_EQ(params_set(&p, "cohort_min_stash", 123456789012LL), 0);
+	CHECK_EQ(p.cohort_min_stash, 123456789012LL);
+	CHECK_EQ(params_set(&p, "cohort_max", 1), 0);
+	CHECK_EQ(p.cohort_max, 1);
+	CHECK(params_sane(&p));
+	/* not a wild card param, or not a name at all */
+	CHECK_EQ(params_set(&p, "start_cash", 1), -1);
+	CHECK_EQ(p.start_cash, 2600);
+	CHECK_EQ(params_set(&p, "no_such_param", 1), -1);
+	CHECK_EQ(params_set(&p, "", 1), -1);
+	/* a value that does not fit the field is refused, not truncated */
+	CHECK_EQ(params_set(&p, "rc_max_stakes", 4294967297LL), -1);
+	CHECK_EQ(p.rc_max_stakes, 3);
+}
+
 void tests_content(void)
 {
+	test_params_set_names();
 	test_cities_in_plan_order();
 	test_original_seven_keep_biases();
 	test_short_names_and_codes_unique();

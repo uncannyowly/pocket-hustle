@@ -1,5 +1,7 @@
 /* Starting values: our own picks in the genre's general shape. Task 14 tunes them
  * with ph-sim. Change them here, never in the rules code. */
+#include <string.h>
+
 #include "core/game.h"
 #include "core/params.h"
 
@@ -113,4 +115,17 @@ int params_sane(const Params *p)
 	       IN(p->cohort_max, 0, 10) && IN(p->cohort_offer_permille, 0, 1000) &&
 	       IN(p->cohort_min_stash, 0, MONEY_MAX) && IN(p->cohort_od_permille, 0, 1000) &&
 	       IN(p->cohort_mult_pct, 0, 10000) && IN(p->cohort_min_payout, 0, 1000000000000LL);
+}
+
+int params_set(Params *p, const char *name, long long value)
+{
+#define I32(f) if (!strcmp(name, #f)) { if (value < INT32_MIN || value > INT32_MAX) return -1; p->f = (int32_t)value; return 0; }
+#define I64(f) if (!strcmp(name, #f)) { p->f = value; return 0; }
+	I32(rc_offer_permille) I32(rc_max_stakes) I32(rc_days_lo) I32(rc_days_hi)
+	I32(rc_find_permille) I64(rc_find_lo) I64(rc_find_hi)
+	I32(cohort_max) I32(cohort_offer_permille) I64(cohort_min_stash)
+	I32(cohort_od_permille) I32(cohort_mult_pct) I64(cohort_min_payout)
+#undef I32
+#undef I64
+	return -1;
 }

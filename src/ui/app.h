@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "core/game.h"
+#include "core/params.h"
 #include "core/save.h"
 
 typedef struct {
@@ -18,6 +19,7 @@ typedef struct {
 	int sound_on;
 	int last_rank;			/* rank of the score just recorded, -1 if none */
 	uint64_t next_seed;
+	Params params;			/* what the next new game starts with: params_default() unless a scripted run sets some */
 	int scores_dirty;		/* a recorded score is not on disk yet; the save is kept until it is */
 	int io_failed;			/* the last save, score or options write failed (cleared by a success) */
 } App;

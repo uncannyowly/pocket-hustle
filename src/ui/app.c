@@ -60,6 +60,7 @@ int app_init(App *a, const char *dir)
 	a->sound_on = 1;
 	a->last_rank = -1;
 	a->next_seed = 1;
+	a->params = params_default();
 	if (!dir)
 		return 0;
 	if (mkdir_p(dir) != 0)
@@ -102,10 +103,9 @@ void app_load(App *a)
 
 int app_new_game(App *a, int days, const char *name)
 {
-	Params p = params_default();
 	int r;
 
-	r = game_new(&a->g, &p, a->next_seed, days, name);
+	r = game_new(&a->g, &a->params, a->next_seed, days, name);
 	if (r != 0)
 		return r;
 	a->next_seed = splitmix_next(&a->next_seed);
