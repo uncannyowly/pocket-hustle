@@ -4,6 +4,11 @@
 #include "gfx/panel.h"
 #include "sfx/halve.h"
 #include "ui/hold.h"
+#include "ui/switcher.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 static void test_hold_quits_after_two_seconds(void)
 {
@@ -127,6 +132,37 @@ static void test_halve_never_overflows(void)
 	CHECK_EQ(dst[3], 0);
 }
 
+/* Holding MENU on OnionOS leaves through its GameSwitcher: the game creates the flag file
+ * OnionOS's own MENU handling sets for RetroArch. Without the folder (any other system)
+ * nothing is created. */
+static void test_switcher_flag(void)
+{
+	char dir[64], path[96], missing[128];
+	FILE *f;
+
+	CHECK_STR(SWITCHER_FLAG_ONION, "/mnt/SDCARD/.tmp_update/.runGameSwitcher");
+	system("mkdir -p build");
+	snprintf(dir, sizeof dir, "build/switcher-XXXXXX");
+	if (!mkdtemp(dir)) {
+		CHECK(0);
+		return;
+	}
+	snprintf(path, sizeof path, "%s/.runGameSwitcher", dir);
+	CHECK_EQ(switcher_request(path), 1);
+	f = fopen(path, "r");
+	CHECK(f != NULL);
+	if (f)
+		fclose(f);
+	CHECK_EQ(switcher_request(path), 1);		/* already set: still fine */
+	snprintf(missing, sizeof missing, "%s/no-such-dir/.runGameSwitcher", dir);
+	CHECK_EQ(switcher_request(missing), 0);
+	CHECK(fopen(missing, "r") == NULL);
+	CHECK_EQ(switcher_request(""), 0);
+	CHECK_EQ(switcher_request(NULL), 0);
+	remove(path);
+	rmdir(dir);
+}
+
 void tests_mini(void)
 {
 	test_halve_averages_pairs_per_channel();
@@ -136,6 +172,7 @@ void tests_mini(void)
 	test_hold_release_resets();
 	test_hold_survives_clock_start_at_zero();
 	test_hold_wraps_with_the_clock();
+	test_switcher_flag();
 	test_rot180_exact_size();
 	test_rot180_centers_on_larger_panel();
 	test_rot180_odd_margin_is_symmetric();

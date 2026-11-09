@@ -37,10 +37,24 @@ static int card_kind(const Game *g, int msg_kind)
 	}
 }
 
+/* The sound a card makes as it comes up: the fanfare when a backed chemical pays off, the
+ * fail sting for a real setback, the blip for everything else. The crew's payout stays a
+ * blip: no cheer on the crew's path. */
+static SfxId card_sfx(int msg_kind)
+{
+	switch (msg_kind) {
+	case M_RC_HIT: return SFX_WIN;
+	case M_GOONS: case M_MUGGED: case M_DEAD: case M_RC_BUST: case M_OVERDOSE: case M_DEBT_SOLD:
+		return SFX_FAIL;
+	default: return SFX_MOVE;
+	}
+}
+
 /* Fills a card from a message already known to make one (kind k). */
 static void fill_card(const Game *g, const Msg *m, int k, Card *cd)
 {
 	cd->kind = (CardKind)k;
+	cd->sfx = (int8_t)card_sfx(m->kind);
 	cd->good = (m->kind == M_SPIKE || m->kind == M_CRASH) && m->a >= 0 && m->a < NUM_GOODS ? (int8_t)m->a : -1;
 	cd->choice = m->kind == M_RC_OFFER ? CHOICE_RC : m->kind == M_CREW_OFFER ? CHOICE_CREW : CHOICE_NONE;
 	text_msg(g, m, cd->text, sizeof cd->text);
@@ -95,6 +109,8 @@ void ui_collect_news(Ui *u, Screen after)
 	u->news.after = after;
 	u->news.ask = 0;
 	overlay(u, SCR_NEWS, SCR_MARKET);
+	if (u->news.cards[0].sfx != SFX_MOVE)	/* the action already made its own sound */
+		play(u, (SfxId)u->news.cards[0].sfx);
 }
 
 void ui_after_action(Ui *u, int16_t day_before, Phase phase_before)
@@ -334,7 +350,7 @@ void news_press(Ui *u, int pad)
 	}
 	if (u->news.i < u->news.n - 1) {
 		u->news.i++;
-		play(u, SFX_MOVE);
+		play(u, (SfxId)u->news.cards[u->news.i].sfx);
 		return;
 	}
 	u->news.n = u->news.i = 0;

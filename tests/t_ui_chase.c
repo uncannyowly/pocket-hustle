@@ -96,6 +96,7 @@ static void test_run_and_escape(void)
 	CHECK_EQ(app.g.phase, PH_TRADING);
 	CHECK_EQ(ui.scr, SCR_CHASE);
 	CHECK_EQ(ui.chase_done, CR_ESCAPED);
+	CHECK(heard(SFX_WIN));			/* outrunning the cops is a win */
 	ui_draw(&ui, &cv);
 	CHECK_EQ(cv.overflow, 0);
 	CHECK(hit_find(&ui, HIT_PAD, PAD_A) >= 0);
@@ -157,9 +158,12 @@ static void test_fight_wins(void)
 	cash = app.g.cash;
 	/* power is below 1000 so loop until the hit lands */
 	press_seq(&ui, "R");
-	while (app.g.phase == PH_CHASE && ui.chase_done == CR_NONE)
+	while (app.g.phase == PH_CHASE && ui.chase_done == CR_NONE) {
+		drain();			/* a full queue would drop the last sound */
 		press_seq(&ui, "A");
+	}
 	CHECK_EQ(ui.chase_done, CR_WON);
+	CHECK(heard(SFX_WIN));
 	CHECK(app.g.cash > cash);
 	press_seq(&ui, "A");
 	through_news();
@@ -183,6 +187,7 @@ static void test_surrender_jail(void)
 	CHECK_EQ(app.g.day, day + 1);
 	CHECK_EQ(ui.chase_done, CR_JAILED);
 	CHECK_EQ(ui.scr, SCR_CHASE);
+	CHECK(heard(SFX_FAIL));
 	press_seq(&ui, "A");
 	through_news();
 	CHECK_EQ(ui.scr, SCR_MARKET);
@@ -215,6 +220,7 @@ static void test_death_in_chase_records_once(void)
 	CHECK_EQ(app.g.phase, PH_OVER);
 	CHECK_EQ(ui.chase_done, CR_DEAD);
 	CHECK_EQ(ui.scr, SCR_CHASE);
+	CHECK(heard(SFX_FAIL));
 	ui_draw(&ui, &cv);
 	CHECK_EQ(cv.overflow, 0);
 	press_seq(&ui, "A");

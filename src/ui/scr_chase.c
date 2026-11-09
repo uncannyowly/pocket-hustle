@@ -107,12 +107,10 @@ static void act(Ui *u, int row)
 	collect(u);
 	for (i = 0; i < g->nmsgs; i++)
 		hurt |= g->msgs[i].kind == M_HIT_YOU;
-	if (u->chase_done == CR_WON)
-		play(u, SFX_CASH);
-	else if (u->chase_done == CR_JAILED)
-		play(u, SFX_DENY);
-	else if (u->chase_done == CR_ESCAPED)
-		play(u, SFX_OK);
+	if (u->chase_done == CR_WON || u->chase_done == CR_ESCAPED)
+		play(u, SFX_WIN);			/* beat them or outran them */
+	else if (u->chase_done == CR_JAILED || u->chase_done == CR_DEAD)
+		play(u, SFX_FAIL);
 	else if (hurt)
 		play(u, SFX_HURT);
 	else

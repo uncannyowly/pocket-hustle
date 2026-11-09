@@ -17,7 +17,9 @@ typedef enum { PK_BUY, PK_SELL, PK_HEAL, PK_DEPOSIT, PK_WITHDRAW, PK_BORROW, PK_
 typedef enum { CARD_TRAVEL, CARD_MARKET, CARD_TROUBLE, CARD_RUMOR, CARD_DAY, CARD_WILD } CardKind;
 /* A card that asks something: A and B answer it, and it stays until they do. */
 enum { CHOICE_NONE, CHOICE_RC, CHOICE_CREW };
-typedef struct { CardKind kind; int8_t good, choice; char text[200]; } Card;
+/* sfx: the SfxId a card makes as it comes up; SFX_MOVE (zero) for a plain card, SFX_WIN for
+ * good news, SFX_FAIL for bad. */
+typedef struct { CardKind kind; int8_t good, choice, sfx; char text[200]; } Card;
 typedef struct { int x, y, w, h, action, arg; } Hit;	/* a clickable region, canvas pixels */
 
 typedef struct Ui {

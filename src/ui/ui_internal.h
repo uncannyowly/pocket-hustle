@@ -87,6 +87,12 @@ int  bag_list(const Game *g, int out[NUM_GOODS]);	/* the goods held, in order; t
 /* Today's price against what was paid: "+12%", "-99%" (shown range -99..999) or "--" when
  * nobody buys it here or nothing was paid. Returns 1 for gains, -1 for losses, 0 for "--". */
 int  bag_pct(const Game *g, int good, char *buf, size_t n);
+/* The number behind bag_pct, rounded the same way (1000 past the shown cap); 0 with *known = 0
+ * where bag_pct shows "--". */
+int64_t stash_pct(const Game *g, int good, int *known);
+/* A sale earns the fanfare when the bag line reads at least +BIG_SALE_PCT and it clears
+ * BIG_SALE_PROFIT dollars over what the goods sold had cost. */
+enum { BIG_SALE_PCT = 100, BIG_SALE_PROFIT = 5000 };
 /* PF_SPIKE or PF_CRASH when the market roll made today's price one (the core's hist_ev),
  * else PF_NORMAL; PF_NORMAL for a good that is not on sale. */
 int  price_flag(const Game *g, int good);

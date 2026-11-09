@@ -1,6 +1,8 @@
 /* The market: the mockup's drawMarket, inMarket, buyGood, sellGood and doAction. The top
  * band is the day and health, the city skyline, then cash, bank and debt; below it the
- * MARKET and BAG panels and the six action buttons. L1/R1 cycle the three. */
+ * MARKET and BAG panels and the six action buttons. L1/R1 cycle the three. LEFT and RIGHT
+ * never cross between MARKET and BAG: A buys in one and sells in the other, so a sideways
+ * press must not quietly turn the next A into the opposite trade. */
 #include <stdio.h>
 
 #include "gfx/art.h"
@@ -28,24 +30,32 @@ static int64_t floor_div(int64_t a, int64_t b)	/* b > 0 */
 	return a >= 0 ? a / b : -((-a + b - 1) / b);
 }
 
+int64_t stash_pct(const Game *g, int good, int *known)
+{
+	int64_t value, paid = g->stash_paid[good];
+
+	*known = g->price[good] > 0 && g->stash[good] > 0 && paid > 0;
+	if (!*known)
+		return 0;
+	value = (int64_t)g->price[good] * g->stash[good];	/* under 2^62 */
+	if (value / paid >= 11)
+		return 1000;					/* past the shown cap */
+	while (paid > ((int64_t)1 << 50)) {			/* keeps 200 * value in range */
+		value >>= 1;
+		paid >>= 1;
+	}
+	/* Math.round((value - paid) * 100 / paid), the mockup's rounding */
+	return floor_div(200 * (value - paid) + paid, 2 * paid);
+}
+
 int bag_pct(const Game *g, int good, char *buf, size_t n)
 {
-	int64_t value, paid = g->stash_paid[good], pct;
+	int known;
+	int64_t pct = stash_pct(g, good, &known);
 
-	if (g->price[good] <= 0 || g->stash[good] <= 0 || paid <= 0) {
+	if (!known) {
 		snprintf(buf, n, "--");
 		return 0;
-	}
-	value = (int64_t)g->price[good] * g->stash[good];	/* under 2^62 */
-	if (value / paid >= 11) {
-		pct = 1000;					/* past the shown cap */
-	} else {
-		while (paid > ((int64_t)1 << 50)) {		/* keeps 200 * value in range */
-			value >>= 1;
-			paid >>= 1;
-		}
-		/* Math.round((value - paid) * 100 / paid), the mockup's rounding */
-		pct = floor_div(200 * (value - paid) + paid, 2 * paid);
 	}
 	snprintf(buf, n, "%s%d%%", pct >= 0 ? "+" : "", (int)(pct > 999 ? 999 : pct < -99 ? -99 : pct));
 	return pct >= 0 ? 1 : -1;
@@ -271,17 +281,13 @@ void market_press(Ui *u, int pad)
 			u->panel = 2;
 		else if (pad == PAD_DOWN)
 			u->mrow++;
-		else if (pad == PAD_RIGHT)
-			u->panel = 1;
 		else if (pad == PAD_A) {
 			buy_good(u, u->mrow);
 			return;
 		} else
 			return;
 	} else if (u->panel == 1) {
-		if (pad == PAD_LEFT)
-			u->panel = 0;
-		else if (!nh && pad == PAD_DOWN)
+		if (!nh && pad == PAD_DOWN)
 			u->panel = 2;
 		else if (!nh)
 			return;

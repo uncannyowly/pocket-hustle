@@ -7,7 +7,9 @@
  * 752 x 560 panel gets the picture centered with black margins.
  *
  * Buttons: read straight from evdev (/dev/input/event0), not grabbed, so OnionOS keeps its
- * POWER and volume handling. Holding MENU for two seconds sets PlatEvents.quit.
+ * POWER and volume handling. Holding MENU for two seconds sets PlatEvents.quit, and first
+ * asks OnionOS to open its GameSwitcher once the game has saved and exited (ui/switcher.h).
+ * A quit OnionOS asks for (a signal, as at power-off) does not.
  *
  * Audio: the SigmaStar MI_AO driver, loaded with dlopen (the launcher stops OnionOS's
  * audioserver first), at OnionOS's volume and mute. Without it the game plays silent.
@@ -15,6 +17,7 @@
  * Environment (for emulated tests):
  *   PH_FAKEFB=WxH:file   a stand-in framebuffer file instead of /dev/fb0
  *   PH_INPUT=dev[:dev]   evdev devices (default /dev/input/event0)
+ *   PH_SWITCHER=file     the GameSwitcher flag file (default OnionOS's; empty: none)
  */
 #include "plat/plat.h"
 
@@ -40,6 +43,7 @@
 #include "gfx/panel.h"
 #include "sfx/halve.h"
 #include "ui/hold.h"
+#include "ui/switcher.h"
 
 enum { W = 640, H = 480, MAX_INPUTS = 4 };
 
@@ -55,6 +59,7 @@ static int pages = 1, page, fake;
 static int in_fd[MAX_INPUTS], in_count;
 static uint32_t held_now, tapped;	/* tapped: pressed since the last poll, so a quick tap is not lost */
 static Hold menu_hold;
+static int switcher_asked;
 static volatile sig_atomic_t sig_quit;
 
 static void on_signal(int sig)
@@ -275,7 +280,16 @@ void plat_poll(PlatEvents *ev)
 	tapped = 0;
 	ev->nclicks = 0;
 	ev->text[0] = '\0';
-	ev->quit = sig_quit || hold_step(&menu_hold, (held_now & PAD_BIT(PAD_MENU)) != 0, plat_ms());
+	ev->quit = sig_quit;
+	if (hold_step(&menu_hold, (held_now & PAD_BIT(PAD_MENU)) != 0, plat_ms())) {
+		if (!switcher_asked && !sig_quit) {
+			const char *flag = getenv("PH_SWITCHER");
+
+			switcher_request(flag ? flag : SWITCHER_FLAG_ONION);
+			switcher_asked = 1;
+		}
+		ev->quit = 1;
+	}
 }
 
 void plat_text_input(int on)

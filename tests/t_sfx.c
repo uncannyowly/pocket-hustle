@@ -82,6 +82,24 @@ static void test_cash_pitches(void)
 	CHECK(near_hz(pitch(SFX_CASH, 0.100f, 0.170f), 1760, 0.05f));
 }
 
+/* WIN: a rising C major fanfare, C5 E5 G5 C6. */
+static void test_win_pitches(void)
+{
+	CHECK(near_hz(pitch(SFX_WIN, 0.010f, 0.070f), 523, 0.05f));
+	CHECK(near_hz(pitch(SFX_WIN, 0.085f, 0.145f), 659, 0.05f));
+	CHECK(near_hz(pitch(SFX_WIN, 0.160f, 0.220f), 784, 0.05f));
+	CHECK(near_hz(pitch(SFX_WIN, 0.240f, 0.400f), 1047, 0.05f));
+}
+
+/* FAIL: four notes stepping down a semitone each, G4 F#4 F4 E4, the last one held. */
+static void test_fail_pitches(void)
+{
+	CHECK(near_hz(pitch(SFX_FAIL, 0.020f, 0.160f), 392, 0.025f));
+	CHECK(near_hz(pitch(SFX_FAIL, 0.200f, 0.340f), 370, 0.025f));
+	CHECK(near_hz(pitch(SFX_FAIL, 0.380f, 0.520f), 349, 0.025f));
+	CHECK(near_hz(pitch(SFX_FAIL, 0.580f, 0.780f), 330, 0.025f));
+}
+
 static void test_siren_sweep(void)
 {
 	CHECK(near_hz(pitch(SFX_SIREN, 0.010f, 0.030f), 720, 0.15f));
@@ -209,6 +227,8 @@ void tests_sfx(void)
 	test_render_deterministic();
 	test_render_audible();
 	test_cash_pitches();
+	test_win_pitches();
+	test_fail_pitches();
 	test_siren_sweep();
 	test_mixer_silence();
 	test_mixer_plays_once();

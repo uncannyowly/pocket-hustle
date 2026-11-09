@@ -482,7 +482,7 @@ static int money_confirm(Ui *u, char *msg, size_t n)
 static void confirm(Ui *u)
 {
 	Game *g = &u->app->g;
-	int good = u->pk.good, r = E_BAD_ARG;
+	int good = u->pk.good, r = E_BAD_ARG, big = 0;
 	int32_t q = (int32_t)u->pk.q;		/* at most the max, which fits */
 	int64_t cash = g->cash;
 	char msg[96], amt[28];
@@ -502,10 +502,16 @@ static void confirm(Ui *u)
 			snprintf(msg, sizeof msg, "Bought %d %s for %s.", (int)q, GOODS[good].name, amt);
 		}
 	} else if (u->pk.kind == PK_SELL) {
+		int known;
+		int64_t pct = stash_pct(g, good, &known), paid = g->stash_paid[good];
+
 		r = game_sell(g, good, q);
 		if (r == OK) {
 			fmt_money(g->cash - cash, amt, sizeof amt);
 			snprintf(msg, sizeof msg, "Sold %d %s for %s.", (int)q, GOODS[good].name, amt);
+			/* profit over what the goods sold had cost (the core takes their share of paid) */
+			big = known && pct >= BIG_SALE_PCT &&
+			      (g->cash - cash) - (paid - g->stash_paid[good]) >= BIG_SALE_PROFIT;
 		}
 	} else if (u->pk.kind == PK_HEAL) {
 		r = game_heal(g, q);
@@ -520,7 +526,7 @@ static void confirm(Ui *u)
 		return;
 	}
 	toast(u, msg);
-	play(u, u->pk.kind == PK_HEAL ? SFX_OK : SFX_CASH);
+	play(u, big ? SFX_WIN : u->pk.kind == PK_HEAL ? SFX_OK : SFX_CASH);
 }
 
 void picker_press(Ui *u, int pad)

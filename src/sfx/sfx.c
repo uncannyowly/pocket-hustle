@@ -32,6 +32,12 @@ const SfxParams SFX_PRESETS[NUM_SFX] = {
 	/* NEWS: pleasant two-note sine chime, A5 then E6 */
 	{ WAVE_SINE, 880, 0, 0, 0.5f, 0, 0, 0, {1.498f, 0}, {0.09f, 0},
 	  0.005f, 0.115f, 0.1f, 0.220f, 0.6f, 8 },
+	/* WIN: bright C major fanfare, C5 E5 G5, then C6 held with a little shimmer */
+	{ WAVE_SQUARE, 523.25f, 0, 0, 0.25f, 0, 0.006f, 7.0f, {1.26f, 1.498f, 2.0f}, {0.075f, 0.15f, 0.225f},
+	  0.002f, 0.330f, 0.3f, 0.220f, 0.5f, 9 },
+	/* FAIL: wah-wah-wah-waaah, G4 F#4 F4 down to a wobbling E4 */
+	{ WAVE_SAW, 392, 0, 0, 0.5f, 0, 0.012f, 5.0f, {0.944f, 0.891f, 0.841f}, {0.18f, 0.36f, 0.54f},
+	  0.005f, 0.800f, 0.1f, 0.250f, 0.45f, 10 },
 };
 
 static uint32_t xorshift(uint32_t *s)
@@ -65,7 +71,7 @@ int sfx_render(const SfxParams *p, int rate, int16_t *out, int max)
 		int k;
 
 		/* arp multipliers are relative to the base pitch; the last jump passed wins */
-		for (k = 0; k < 2; k++)
+		for (k = 0; k < 3; k++)
 			if (p->arp_time[k] > 0 && t >= p->arp_time[k])
 				jump = p->arp_mult[k];
 		f *= jump;

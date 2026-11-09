@@ -255,6 +255,66 @@ static void test_news_advance_sounds(void)
 	CHECK_EQ(ui.scr, SCR_MARKET);
 }
 
+/* The one sound a card makes as it comes up: the first card on collection, the rest on A. */
+static int card_sound(void)
+{
+	int s, got = -1, n = 0;
+
+	while ((s = ui_take_sfx(&ui)) >= 0) {
+		got = s;
+		n++;
+	}
+	return n == 1 ? got : -1;
+}
+
+/* Good news plays the fanfare and bad news the fail sting as the card comes up; anything
+ * else, the crew's payout included (no cheer on the crew's path), keeps the blip. */
+static void test_news_mood_sounds(void)
+{
+	static const struct { uint8_t kind; int16_t a; int sfx; } cards[] = {
+		{ M_MUGGED, 0, SFX_FAIL },
+		{ M_RC_HIT, 0, SFX_WIN },
+		{ M_SPIKE, 1, SFX_MOVE },
+		{ M_OVERDOSE, 2, SFX_FAIL },	/* the city bans you */
+		{ M_CREW_PAID, 0, SFX_MOVE },
+		{ M_GOONS, 0, SFX_FAIL },
+		{ M_RC_BUST, 0, SFX_FAIL },
+		{ M_DEBT_SOLD, 3, SFX_FAIL },
+		{ M_RODE, 1, SFX_MOVE },
+	};
+	enum { N = sizeof cards / sizeof cards[0] };
+	Msg m;
+	int i;
+
+	ui_test_setup(&app, &ui, 30);
+	for (i = 0; i < N; i++) {
+		memset(&m, 0, sizeof m);
+		m.kind = cards[i].kind;
+		m.a = cards[i].a;
+		m.amount = 5000;
+		app.g.msgs[i] = m;
+	}
+	app.g.nmsgs = N;
+	drain();
+	ui_collect_news(&ui, SCR_MARKET);
+	CHECK_EQ(ui.news.n, N);
+	CHECK_EQ(card_sound(), SFX_FAIL);	/* the mugging card is up first */
+	for (i = 1; i < N; i++) {
+		press_seq(&ui, "A");
+		CHECK_EQ(ui.news.i, i);
+		CHECK_EQ(card_sound(), cards[i].sfx);
+	}
+
+	ui_test_setup(&app, &ui, 30);		/* a plain first card is silent on collection */
+	memset(&m, 0, sizeof m);
+	m.kind = M_RODE;
+	app.g.msgs[0] = m;
+	app.g.nmsgs = 1;
+	drain();
+	ui_collect_news(&ui, SCR_MARKET);
+	CHECK_EQ(ui_take_sfx(&ui), -1);
+}
+
 static void test_move_autosaves(void)
 {
 	char dir[64];
@@ -1281,6 +1341,7 @@ void tests_ui_travel(void)
 	test_after_action_routing();
 	test_news_draws_each_kind();
 	test_news_advance_sounds();
+	test_news_mood_sounds();
 	test_move_autosaves();
 	test_fly_opens_on_current_country();
 	test_fly_grid_lists_the_tab();

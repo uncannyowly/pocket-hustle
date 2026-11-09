@@ -28,6 +28,16 @@ static void drain(void)
 		;
 }
 
+/* Takes every queued sound; a bit per SfxId heard. */
+static int heard_mask(void)
+{
+	int s, mask = 0;
+
+	while ((s = ui_take_sfx(&ui)) >= 0)
+		mask |= 1 << s;
+	return mask;
+}
+
 /* Takes every queued sound; 1 if id was among them. */
 static int heard(int id)
 {
@@ -63,9 +73,17 @@ static void test_market_panels_cycle(void)
 	CHECK_EQ(ui.panel, 0);
 	CHECK(heard(SFX_MOVE));
 
-	press_seq(&ui, "R");			/* RIGHT from the market: the bag */
+	drain();				/* LEFT and RIGHT never switch between the market and */
+	press_seq(&ui, "R");			/* the bag, where A buys on one and sells on the other */
+	CHECK_EQ(ui.panel, 0);
+	press_seq(&ui, "L");
+	CHECK_EQ(ui.panel, 0);
+	press_seq(&ui, "R1 L");
 	CHECK_EQ(ui.panel, 1);
-	press_seq(&ui, "L");			/* LEFT from the bag: the market */
+	press_seq(&ui, "R");
+	CHECK_EQ(ui.panel, 1);
+	CHECK_EQ(heard_mask(), 1 << SFX_MOVE);	/* R1's blip only */
+	press_seq(&ui, "L1");
 	CHECK_EQ(ui.panel, 0);
 
 	ui.mrow = 0;
@@ -163,6 +181,58 @@ static void test_sell_from_bag(void)
 	CHECK_EQ(ui.scr, SCR_MARKET);
 	CHECK_STR(ui.toast, "Sold 1 Acid for $2,000.");
 	CHECK(heard(SFX_CASH));
+}
+
+/* A sale that at least doubles the money (+100% on the bag line) and clears $5,000 of profit
+ * gets the fanfare; every other sale keeps the cash register. */
+static void test_big_sale_fanfare(void)
+{
+	static const struct { int64_t buy, sell; int qty, win; } cases[] = {
+		{ 300, 1000, 10, 1 },	/* +233%, $7,000 profit */
+		{ 1000, 2000, 5, 1 },	/* exactly +100% and $5,000 */
+		{ 300, 900, 2, 0 },	/* +200%, but $1,200 profit */
+		{ 1000, 1600, 10, 0 },	/* $6,000 profit, but +60% */
+		{ 1000, 1990, 6, 0 },	/* +99%, $5,940 profit */
+		{ 1000, 500, 10, 0 },	/* a loss */
+	};
+	size_t k;
+
+	for (k = 0; k < sizeof cases / sizeof cases[0]; k++) {
+		int mask;
+
+		ui_test_setup(&app, &ui, 30);
+		app.g.cash = 100000;
+		app.g.price[1] = cases[k].buy;
+		CHECK_EQ(game_buy(&app.g, 1, cases[k].qty), OK);
+		app.g.price[1] = cases[k].sell;
+		press_seq(&ui, "R1");
+		drain();
+		press_seq(&ui, "A Y A");
+		CHECK_EQ(app.g.stash[1], 0);
+		mask = heard_mask();
+		CHECK_EQ(!!(mask & (1 << SFX_WIN)), cases[k].win);
+		CHECK_EQ(!!(mask & (1 << SFX_CASH)), !cases[k].win);
+	}
+}
+
+/* Selling part of a stash judges the part sold: half of a doubled stash at $3,000 profit is not
+ * a big sale, the other half on a better day is. */
+static void test_big_sale_partial(void)
+{
+	ui_test_setup(&app, &ui, 30);
+	app.g.cash = 100000;
+	app.g.price[1] = 1000;
+	CHECK_EQ(game_buy(&app.g, 1, 6), OK);	/* $6,000 paid */
+	app.g.price[1] = 2000;
+	press_seq(&ui, "R1");
+	drain();
+	press_seq(&ui, "A Y D D D A");		/* sell 3: $3,000 profit */
+	CHECK_EQ(app.g.stash[1], 3);
+	CHECK(!(heard_mask() & (1 << SFX_WIN)));
+	app.g.price[1] = 3000;
+	press_seq(&ui, "A Y A");		/* the other 3: $6,000 profit, +200% */
+	CHECK_EQ(app.g.stash[1], 0);
+	CHECK(heard_mask() & (1 << SFX_WIN));
 }
 
 static void test_absent_good_toast(void)
@@ -699,7 +769,7 @@ static void test_bag_navigation(void)
 
 	CHECK_EQ(game_buy(&app.g, 0, 1), OK);
 	CHECK_EQ(game_buy(&app.g, 2, 1), OK);
-	press_seq(&ui, "U R");			/* the market, then RIGHT to the bag */
+	press_seq(&ui, "U R1");			/* the market, then R1 to the bag */
 	CHECK_EQ(ui.panel, 1);
 	press_seq(&ui, "U");			/* up from line 0 wraps to line 1 */
 	CHECK_EQ(ui.brow, 1);
@@ -722,6 +792,8 @@ void tests_ui_market(void)
 	test_buy_max();
 	test_picker_steps();
 	test_sell_from_bag();
+	test_big_sale_fanfare();
+	test_big_sale_partial();
 	test_absent_good_toast();
 	test_picker_back_changes_nothing();
 	test_click_row_opens_picker();
