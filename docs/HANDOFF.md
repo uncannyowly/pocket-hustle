@@ -135,7 +135,7 @@ section below).
 
 `src/plat/plat_miyoo.c` (fb0 double buffer via `src/gfx/panel.c`, evdev, MENU hold via
 `src/ui/hold.c`, MI_AO by dlopen, no SDL 1.2 fallback: no MI_AO means silent). Test hooks:
-`PH_FAKEFB=WxH:file`, `PH_INPUT=dev`. Package sources are in `pkg/`; version 0.2.0 (VERSION).
+`PH_FAKEFB=WxH:file`, `PH_INPUT=dev`. Package sources are in `pkg/`; version 0.2.1 (VERSION; 0.2.1 makes meth a regional bargain, see docs/balance.md).
 Only the device can show: the picture orientation, buttons, MENU hold, audio and volume.
 
 ## Next

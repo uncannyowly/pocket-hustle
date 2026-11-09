@@ -85,6 +85,29 @@ the digit (greedy 752202 median, 5.4% died; cautious 325714, 0.2%), `--strict --
 | 60 | 6547621 | 24.4% | 2765189 | 2.0% |
 | 90 | 18177076 | 35.0% | 9414307 | 3.6% |
 
+## Meth as a regional bargain (2026-11-08, Seth's call; 0.2.1; seed 1)
+
+Meth used to sell at 80% of its base price or less in 9 of the 18 cities. Seth chose to make it a
+regional bargain: it is now cheap only in Texas and northern Mexico (Houston 80, Dallas 80, Tijuana
+70, Sinaloa 60) and normal or dear elsewhere. Five cities lost cheap meth, and each got one other
+bargain so every city still has two cheap and two dear goods: Cincinnati (meth 105, Ketamine 80),
+Dayton (meth 110, Weed 80), Destin (meth 125, Carts 80), Cozumel (meth 115, Shrooms 80) and Los Cabos
+(meth 120, DMT 80). (The Task 1 note above says the new biases are exactly the plan's values; the
+Task 1 review had already nudged five of them for the two-cheap, two-dear rule.)
+
+| 30 days, 2,000 games | Greedy before | Greedy after | Cautious before | Cautious after |
+|---|---|---|---|---|
+| Median score | 752202 | 733377 | 325714 | 316075 |
+| 10th / 90th percentile | -36828 / 3607767 | -36559 / 3361654 | 20 / 1415723 | 21 / 1325078 |
+| Died | 5.4% | 5.5% | 0.2% | 0.2% |
+| Cop chases per game | 5.63 | 5.56 | 4.42 | 4.32 |
+| Spikes / crashes per game | 7.26 / 1.36 | 7.25 / 1.36 | 7.29 / 1.40 | 7.27 / 1.39 |
+| Muggings / goon visits per game | 1.13 / 0.63 | 1.15 / 0.63 | 1.23 / 0.22 | 1.24 / 0.22 |
+
+`--strict --targets` reports all 21 comparisons OK for both bots. 500 game runs at other lengths
+(greedy median and died, cautious median and died): 15 days 14767 / 0.4%, 10227 / 0.0%; 60 days
+6547875 / 22.4%, 2499892 / 2.0%; 90 days 16768175 / 36.2%, 8498793 / 3.6%. None crashed.
+
 ## Known limits
 
 - The feel targets are provisional: they come from only 20 observed days over two games,

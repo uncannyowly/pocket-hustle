@@ -83,14 +83,32 @@ static const int16_t NEW_BIAS[11][NUM_GOODS] = {
 	{110,  60,  70, 105, 110,  75,  90, 120, 125, 130},
 	{ 80,  65,  90,  95, 125, 100, 100, 110, 100, 125},
 	{100,  65,  60, 100, 100,  90,  95, 120, 125, 125},
-	{ 90, 105, 115, 105, 100, 110, 125,  80,  80, 125},
-	{ 80, 100, 110, 110, 105, 110, 125,  80,  85, 125},
-	{110, 120, 125, 115, 130, 120, 120,  80,  80, 135},
+	{ 90, 105, 115,  80, 100, 110, 125, 105,  80, 125},
+	{ 80,  80, 110, 110, 105, 110, 125, 110,  85, 125},
+	{ 80, 120, 125, 115, 130, 120, 120, 125,  80, 135},
 	{100,  70, 100,  90, 125, 125, 100,  70,  80,  65},
-	{115, 125, 120, 110, 125, 115, 110,  80, 105,  80},
-	{115, 115, 120, 110, 135, 125, 110,  80, 110,  80},
+	{115, 125,  80, 110, 125, 115, 110, 115, 105,  80},
+	{115, 115, 120, 110, 135, 125,  80, 120, 110,  80},
 	{125,  60,  95,  95, 125, 100, 100,  60,  75,  55},
 };
+
+/* Seth, 2026-11-08: meth is a regional bargain, cheap only in Texas and northern Mexico. */
+static void test_meth_is_a_regional_bargain(void)
+{
+	static const int cheap[4] = {1, 7, 14, 17};	/* Houston, Dallas, Tijuana, Sinaloa */
+	int c, i, n = 0;
+	for (c = 0; c < NUM_CITIES; c++) {
+		int want = 0;
+		for (i = 0; i < 4; i++)
+			if (cheap[i] == c)
+				want = 1;
+		if (CITIES[c].bias_pct[7] <= 80)
+			n++;
+		CHECK_EQ(CITIES[c].bias_pct[7] <= 80, want);
+	}
+	CHECK_EQ(n, 4);
+	CHECK_STR(GOODS[7].name, "Meth");
+}
 
 static void test_cities_in_plan_order(void)
 {
@@ -442,6 +460,7 @@ void tests_content(void)
 	test_nyc_not_the_classic_list();
 	test_price_ranges_sane();
 	test_city_tendencies();
+	test_meth_is_a_regional_bargain();
 	test_lenders_differ();
 	test_bank_branches();
 	test_gear_mix();

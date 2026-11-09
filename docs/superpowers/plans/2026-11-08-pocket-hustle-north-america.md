@@ -54,13 +54,15 @@ Price tendencies (bias percent, in GOODS order Carts, Weed, Shrooms, Ketamine, M
 | 8 San Francisco | 110, 60, 70, 105, 110, 75, 90, 120, 125, 130 |
 | 9 Los Angeles | 80, 65, 90, 95, 125, 100, 100, 110, 100, 125 |
 | 10 Seattle | 100, 65, 60, 100, 100, 90, 95, 120, 125, 125 |
-| 11 Cincinnati | 90, 105, 115, 105, 100, 110, 125, 80, 80, 125 |
-| 12 Dayton | 80, 100, 110, 110, 105, 110, 125, 80, 85, 125 |
-| 13 Destin | 110, 120, 125, 115, 130, 120, 120, 80, 80, 135 |
+| 11 Cincinnati | 90, 105, 115, 80, 100, 110, 125, 105, 80, 125 |
+| 12 Dayton | 80, 80, 110, 110, 105, 110, 125, 110, 85, 125 |
+| 13 Destin | 80, 120, 125, 115, 130, 120, 120, 125, 80, 135 |
 | 14 Tijuana | 100, 70, 100, 90, 125, 125, 100, 70, 80, 65 |
-| 15 Cozumel | 115, 125, 120, 110, 125, 115, 110, 80, 105, 80 |
-| 16 Los Cabos | 115, 115, 120, 110, 135, 125, 110, 80, 110, 80 |
+| 15 Cozumel | 115, 125, 80, 110, 125, 115, 110, 115, 105, 80 |
+| 16 Los Cabos | 115, 115, 120, 110, 135, 125, 80, 120, 110, 80 |
 | 17 Sinaloa | 125, 60, 95, 95, 125, 100, 100, 60, 75, 55 |
+
+Ruling 2026-11-08 (Seth): meth is a regional bargain, cheap only in Houston, Dallas, Tijuana and Sinaloa. Cincinnati, Dayton, Destin, Cozumel and Los Cabos lost cheap meth and each gained one other bargain (Ketamine, Weed, Carts, Shrooms, DMT), so every city keeps two cheap and two dear goods. Sinaloa's row and the crew odds stay as they are (Seth's answers). Numbers in docs/balance.md.
 
 Podcast Pete's local jokes for the new cities (C(city, ...) lines in `src/content/text.c`, exact text):
 
