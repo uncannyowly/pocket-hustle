@@ -1,10 +1,10 @@
 # Pocket Hustle (working title)
 
 An original buy-low, sell-high trading game for the Miyoo Mini and other ARM handhelds.
-You start broke and in debt, with a fixed number of days to work eighteen cities: fourteen in
+You start broke and in debt, with a fixed number of days to work twenty cities: sixteen in
 the USA (Oklahoma City, Houston, San Jose, New York City, Miami, New Orleans, Portland, Dallas,
-San Francisco, Los Angeles, Seattle, Cincinnati, Dayton and Destin) and four across the border
-in Mexico (Tijuana, Cozumel, Los Cabos and Sinaloa). Flights across the border cost more, and
+San Francisco, Los Angeles, Seattle, Cincinnati, Dayton, Destin, Chicago and Detroit) and four
+across the border in Mexico (Tijuana, Cozumel, Los Cabos and Sinaloa). Flights across the border cost more, and
 your bank charges its out-of-network fee at every ATM in Mexico. Dodge the cops, keep the loan
 sharks happy, think twice before backing a chemist's new research chemical or taking the shady
 crew's deal, and finish with the biggest pile of cash.

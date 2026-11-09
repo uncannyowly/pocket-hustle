@@ -2,18 +2,21 @@ POCKET HUSTLE FOR MIYOO MINI / MINI PLUS
 ========================================
 
 An original buy-low, sell-high trading game. You start broke and in debt, with a
-fixed number of days to work eighteen cities: fourteen in the USA (Oklahoma City,
+fixed number of days to work twenty cities: sixteen in the USA (Oklahoma City,
 Houston, San Jose, New York City, Miami, New Orleans, Portland, Dallas, San
-Francisco, Los Angeles, Seattle, Cincinnati, Dayton and Destin) and four across
-the border in Mexico (Tijuana, Cozumel, Los Cabos and Sinaloa). Dodge the cops,
-keep the loan sharks happy and finish with the biggest pile of cash. Everything
-in it (name, jokes, art, sounds, cities) is original.
+Francisco, Los Angeles, Seattle, Cincinnati, Dayton, Destin, Chicago and
+Detroit) and four across the border in Mexico (Tijuana, Cozumel, Los Cabos and
+Sinaloa). Dodge the cops, keep the loan sharks happy and finish with the
+biggest pile of cash. Everything in it (name, jokes, art, sounds, cities) is
+original.
 
 INSTALL
 -------
 For OnionOS on the Miyoo Mini, Mini v4 and Mini Plus. Extract the release zip to
 the root of the SD card: it holds a Roms folder, which merges with the card's own.
-To update, do the same; your saved game, high scores and options are kept.
+To update, do the same; your saved game, high scores and options are kept. (A
+game saved by 0.2.x cannot be continued in 0.3.0, which has two more cities:
+start a new one.)
 To remove the game, delete Roms/PORTS/Games/PocketHustle,
 Roms/PORTS/Shortcuts/Strategy/Pocket Hustle.port and
 Roms/PORTS/Imgs/Pocket Hustle.png.

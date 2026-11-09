@@ -1,6 +1,6 @@
 # Balance
 
-Last tuned: 2026-11-06 (Plan 1, Task 14); rerun 2026-11-08 for the 18-city map (Plan 4, Task 1). Our numbers and our simulator's results only.
+Last tuned: 2026-11-06 (Plan 1, Task 14); rerun 2026-11-08 for the 18-city map (Plan 4, Task 1) and 2026-11-09 for 20 cities (0.3.0). Our numbers and our simulator's results only.
 
 ## How it was tuned
 
@@ -107,6 +107,39 @@ Task 1 review had already nudged five of them for the two-cheap, two-dear rule.)
 `--strict --targets` reports all 21 comparisons OK for both bots. 500 game runs at other lengths
 (greedy median and died, cautious median and died): 15 days 14767 / 0.4%, 10227 / 0.0%; 60 days
 6547875 / 22.4%, 2499892 / 2.0%; 90 days 16768175 / 36.2%, 8498793 / 3.6%. None crashed.
+
+## Chicago and Detroit (2026-11-09, Seth's request; 0.3.0; seed 1)
+
+Seth asked for Chicago and Detroit, for an even twenty cities. They are appended after Sinaloa
+(indices 18 and 19), so every earlier city keeps its index. Their tendencies follow 2026 local
+prices where there is a story to tell:
+
+- Chicago: weed is dear (125; Illinois taxes make its legal weed some of the priciest in the
+  country), DMT 125; heroin 75 and cocaine 80 are cheap. Meth 110. Lender Deep Dish Dom, 9.25%
+  a day, up to $35,000.
+- Detroit: weed is cheap (60, as cheap as Oklahoma City and San Francisco; Michigan's legal weed
+  is famously the cheapest in the country), carts 75; Molly 125 and cocaine 130 are dear. Meth 120. Lender Coney Connie,
+  11.5% a day, up to $18,000.
+
+Both keep the two-cheap, two-dear rule, and meth stays a regional bargain (cheap only in Houston,
+Dallas, Tijuana and Sinaloa). Nothing else changed; the bots now draw their random flights from
+19 other cities instead of 17.
+
+| 30 days, 2,000 games | Greedy 0.2.1 | Greedy 0.3.0 | Cautious 0.2.1 | Cautious 0.3.0 |
+|---|---|---|---|---|
+| Median score | 733377 | 691712 | 316075 | 324871 |
+| 10th / 90th percentile | -36559 / 3361654 | -39388 / 3452721 | 21 / 1325078 | -2452 / 1384945 |
+| Died | 5.5% | 5.7% | 0.2% | 0.2% |
+| Cop chases per game | 5.56 | 5.50 | 4.32 | 4.33 |
+| Spikes / crashes per game | 7.25 / 1.36 | 7.19 / 1.35 | 7.27 / 1.39 | 7.28 / 1.40 |
+| Muggings / goon visits per game | 1.15 / 0.63 | 1.14 / 0.62 | 1.24 / 0.22 | 1.25 / 0.20 |
+
+`--strict --targets` reports all 21 comparisons OK for both bots. 500 game runs at other lengths
+(greedy median and died, cautious median and died): 15 days 15963 / 1.2%, 10130 / 0.0%; 60 days
+5739625 / 25.0%, 2431559 / 1.6%; 90 days 13524460 / 40.0%, 8670495 / 4.0%. None crashed. The
+moves against 0.2.1 (for example 90 day greedy deaths 36.2% to 40.0%, 6 deaths in 500 at 15
+days instead of 2) are about the size of the noise in 500 games (about 2 points at 36%); the
+2,000 game 30 day runs barely moved.
 
 ## Known limits
 

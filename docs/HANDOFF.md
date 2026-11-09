@@ -1,6 +1,6 @@
 # Handoff: Pocket Hustle
 
-Last updated: 2026-11-08. Keep this file current; it is the notes the next session continues from.
+Last updated: 2026-11-09. Keep this file current; it is the notes the next session continues from.
 
 ## Goal
 
@@ -17,7 +17,7 @@ terminal version, a balance simulator), Plan 2 (screens and sound on the PC, don
 
 | What | Where |
 |---|---|
-| This repo | `/mnt/data/git/MiYoo-Mini/pocket-hustle` (local git; GitHub comes in Plan 3) |
+| This repo | `/mnt/data/git/MiYoo-Mini/pocket-hustle`, public at github.com/uncannyowly/pocket-hustle (releases there, first one v0.3.0) |
 | Research notes, Beermat observation logs, targets | `/mnt/data/git/MiYoo-Mini/pocket-hustle-research/` (never in the repo) |
 | Beermat installer (Seth's copy) | `/mnt/scratch/Games_Wine/drive_c/Games/Dope Wars 2.1/dw21.exe` (never run it: it carries Gator adware) |
 | Mini plumbing to reuse in Plan 3 | `../scorched-emiyoolator/src/platform_miyoo.c` |
@@ -135,7 +135,7 @@ section below).
 
 `src/plat/plat_miyoo.c` (fb0 double buffer via `src/gfx/panel.c`, evdev, MENU hold via
 `src/ui/hold.c`, MI_AO by dlopen, no SDL 1.2 fallback: no MI_AO means silent). Test hooks:
-`PH_FAKEFB=WxH:file`, `PH_INPUT=dev`. Package sources are in `pkg/`; version 0.2.1 (VERSION; 0.2.1 makes meth a regional bargain, see docs/balance.md).
+`PH_FAKEFB=WxH:file`, `PH_INPUT=dev`. Package sources are in `pkg/`; version 0.3.0 (VERSION; 0.3.0 adds Chicago and Detroit, 0.2.1 made meth a regional bargain, see docs/balance.md).
 Only the device can show: the picture orientation, buttons, MENU hold, audio and volume.
 
 ## Next
@@ -190,3 +190,20 @@ To write a new round, drive the UI with a scratch program or the keys by hand an
 screens (record-rounds' sheet is the quick look); the opening cards vary by seed (one or two A
 presses after START), and a card that asks something stays until A or B answers it.
 
+## Twenty cities (2026-11-09, 0.3.0)
+
+Seth asked for Chicago and Detroit, for an even twenty. They are indices 18 and 19, after Sinaloa:
+an index is content (saved games, the rumor jokes in `src/content/text.c`, the portraits in
+`src/gfx/sprites.c`, the line colors in `src/ui/scr_travel.c`, the skylines and `tools/shots`
+all key on it), so new cities append and nothing is reordered. The flight grid follows the table
+order, so they still list after Destin in the USA tab.
+
+- Save version 5 (20 debts and debt ages); a version 4 save is refused like version 3 was.
+- The flight grid is two columns of up to eight (`GRID_ROWS`, `GRID_Y`, `GRID_STEP` in
+  scr_travel.c): from Mexico the USA tab lists all sixteen US cities.
+- Art: `chi` and `det` in `src/gfx/skyline2.c` (snow and an L train; a river, a freighter and a
+  People Mover car), portraits 18 and 19 in sprites.c. `ART_CITIES` in `src/gfx/art.h` must equal
+  `NUM_CITIES` (the gfx layer does not include the content headers; t_art checks it).
+- Rounds: `okc-dallas-seattle` reaches Seattle with one less D (the column is longer);
+  `wild-overdose` now wakes up in Dallas instead of Seattle (the relocation draws from 19 cities),
+  so its cash and debt end differently. Balance numbers: docs/balance.md.
