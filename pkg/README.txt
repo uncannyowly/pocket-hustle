@@ -31,12 +31,12 @@ BUTTONS
   D-pad     move the highlight, change values (hold to repeat)
   A         select, confirm
   B         back
-  L1 / R1   previous / next panel
+  L1 / R1   previous / next panel (market, bag, buttons)
   Y         "max" in the amount picker
   X         "zero" in the amount picker
   SELECT    price chart
   START     pause menu (SAVE AND QUIT is there)
-  MENU      hold for 2 seconds to leave the game at any time (it saves first)
+  MENU      hold for 2 seconds to save and leave to the GameSwitcher
 
 SAVES
 -----

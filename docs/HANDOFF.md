@@ -1,6 +1,6 @@
 # Handoff: Pocket Hustle
 
-Last updated: 2026-11-09. Keep this file current; it is the notes the next session continues from.
+Last updated: 2026-11-09 (0.3.1). Keep this file current; it is the notes the next session continues from.
 
 ## Goal
 
@@ -135,7 +135,7 @@ section below).
 
 `src/plat/plat_miyoo.c` (fb0 double buffer via `src/gfx/panel.c`, evdev, MENU hold via
 `src/ui/hold.c`, MI_AO by dlopen, no SDL 1.2 fallback: no MI_AO means silent). Test hooks:
-`PH_FAKEFB=WxH:file`, `PH_INPUT=dev`. Package sources are in `pkg/`; version 0.3.0 (VERSION; 0.3.0 adds Chicago and Detroit, 0.2.1 made meth a regional bargain, see docs/balance.md).
+`PH_FAKEFB=WxH:file`, `PH_INPUT=dev`, `PH_SWITCHER=file`. Package sources are in `pkg/`; version 0.3.1 (VERSION; 0.3.1 adds the win and fail sounds and the GameSwitcher exit, 0.3.0 adds Chicago and Detroit, 0.2.1 made meth a regional bargain, see docs/balance.md).
 Only the device can show: the picture orientation, buttons, MENU hold, audio and volume.
 
 ## Next
@@ -207,3 +207,29 @@ order, so they still list after Destin in the USA tab.
 - Rounds: `okc-dallas-seattle` reaches Seattle with one less D (the column is longer);
   `wild-overdose` now wakes up in Dallas instead of Seattle (the relocation draws from 19 cities),
   so its cash and debt end differently. Balance numbers: docs/balance.md.
+
+## Win and fail sounds, the GameSwitcher, panels (2026-11-09, 0.3.1)
+
+Seth played 0.3.0 on the device (the sound works) and asked for three things.
+
+- Sounds: `SFX_WIN` (a C major fanfare, C5 E5 G5 C6) and `SFX_FAIL` (G4 F#4 F4 down to a wobbling
+  E4). `SfxParams` has three arpeggio steps now (four notes). WIN plays for a big sale (the bag line
+  at `BIG_SALE_PCT` +100% or more and at least `BIG_SALE_PROFIT` $5,000 over what the goods sold
+  cost; `stash_pct` in scr_market.c is the bag's own number), outrunning or beating the cops, and a
+  backed chemical paying off (M_RC_HIT). FAIL plays for jail, death, a mugging, the lender's goons,
+  a lost stake (M_RC_BUST), a ban (M_OVERDOSE) and debt sold on (M_DEBT_SOLD). A card makes its
+  sound as it comes up (`Card.sfx`, SFX_MOVE for a plain card; a plain first card stays silent);
+  the crew's payout stays a blip, no cheer on the crew's path. SFX_NEWS is still never played.
+- MENU hold: OnionOS's keymon only handles MENU in MainUI, RetroArch and DraStic, so a port has to
+  ask for the GameSwitcher itself. After any port exits, OnionOS's runtime.sh (`check_switcher`)
+  opens it when `/mnt/SDCARD/.tmp_update/.runGameSwitcher` exists, the flag keymon sets for
+  RetroArch. `src/ui/switcher.c` creates it (fails quietly when the folder is missing, so only on
+  OnionOS); plat_miyoo.c calls it on the MENU hold, not on a signal quit (power-off). Without a
+  live screenshot (a PNG at `Saves/CurrentProfile/romScreens/<FNV-1a hash of the rom path>.png`)
+  the GameSwitcher falls back to the recent list's image path; whether MainUI records our box
+  art there for a port is not checked on the device yet. Checked end to end under
+  qemu with a MENU press fed through `PH_INPUT` and `PH_SWITCHER` pointed into build/.
+- Panels: LEFT and RIGHT no longer cross between MARKET and BAG (A buys in one and sells in the
+  other, and a sideways press there made the next A the opposite trade during Seth's VNC watch).
+  L1/R1 switch panels; DOWN from a list's last line and UP from the buttons still move between the
+  lists and the buttons.

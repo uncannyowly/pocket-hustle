@@ -50,7 +50,7 @@ scripts/deploy-sd.sh /run/media/$USER/CARD # or extract the zip at the card root
 
 Then Games > Ports > Strategy > Pocket Hustle (run "~Import ports" if it is not listed). Buttons:
 D-pad, A confirm, B back, L1/R1 panels, Y max, X zero, SELECT chart, START menu; hold MENU for
-2 seconds to save and leave. Saves are in `Roms/PORTS/Games/PocketHustle/data`. The install
+2 seconds to save and leave to the OnionOS GameSwitcher. Saves are in `Roms/PORTS/Games/PocketHustle/data`. The install
 touches only the game folder, the `.port` shortcut and the box art, and keeps `data/`.
 `make miyoo` (inside the toolchain container) or `scripts/build-miyoo.sh` builds only the binary.
 
