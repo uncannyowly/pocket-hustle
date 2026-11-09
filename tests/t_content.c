@@ -13,7 +13,8 @@ static const char *const DENYLIST[] = {
 	"catapult", "chainsaw", "handbag", "monkey", "chicken", "old lady",
 };
 
-/* The plan's content table, one row per city (Plan 4). */
+/* The plan's content table, one row per city (Plan 4; Chicago and Detroit appended 2026-11-09
+ * so every earlier index keeps its meaning). */
 typedef struct {
 	const char *name, *nick, *shortn, *code, *airport, *transit, *hoods[6], *lender;
 	int bp;
@@ -21,7 +22,7 @@ typedef struct {
 	int branch_mask, country;
 } Row;
 
-static const Row ROWS[18] = {
+static const Row ROWS[20] = {
 	{"Oklahoma City", "Loud City", "OKC", "OKC", "Will Rogers", "OKC Streetcar",
 	 {"Bricktown", "Midtown", "Deep Deuce", "Plaza District", "Paseo Arts", "Stockyards City"},
 	 "Tornado Terry", 950, 15000, 0x03, 0},
@@ -76,9 +77,15 @@ static const Row ROWS[18] = {
 	{"Sinaloa", "La Perla", "Sinaloa", "MZT", "Mazatlan International", "a pulmonia",
 	 {"El Malecon", "Olas Altas", "Zona Dorada", "El Centro", "Stone Island", "Playa Norte"},
 	 "Banda Bea", 1200, 15000, 0, 1},
+	{"Chicago", "Chi-Town", "Chicago", "ORD", "O'Hare", "the L train",
+	 {"The Loop", "Wicker Park", "Pilsen", "Wrigleyville", "Logan Square", "River North"},
+	 "Deep Dish Dom", 925, 35000, 0x21, 0},
+	{"Detroit", "Motor City", "Detroit", "DTW", "Detroit Metro", "the People Mover",
+	 {"Downtown", "Corktown", "Midtown", "Eastern Market", "Greektown", "Belle Isle"},
+	 "Coney Connie", 1150, 18000, 0x05, 0},
 };
 
-static const int16_t NEW_BIAS[11][NUM_GOODS] = {
+static const int16_t NEW_BIAS[13][NUM_GOODS] = {
 	{ 75, 110, 100, 100, 125, 100, 100,  80, 100, 125},
 	{110,  60,  70, 105, 110,  75,  90, 120, 125, 130},
 	{ 80,  65,  90,  95, 125, 100, 100, 110, 100, 125},
@@ -90,6 +97,8 @@ static const int16_t NEW_BIAS[11][NUM_GOODS] = {
 	{115, 125,  80, 110, 125, 115, 110, 115, 105,  80},
 	{115, 115, 120, 110, 135, 125,  80, 120, 110,  80},
 	{125,  60,  95,  95, 125, 100, 100,  60,  75,  55},
+	{100, 125, 115, 105, 110, 100, 125, 110,  75,  80},	/* Chicago: Illinois taxes make weed dear */
+	{ 75,  60,  90, 110, 125, 120, 105, 120, 100, 130},	/* Detroit: Michigan weed is the cheapest legal weed */
 };
 
 /* Seth, 2026-11-08: meth is a regional bargain, cheap only in Texas and northern Mexico. */
@@ -113,8 +122,8 @@ static void test_meth_is_a_regional_bargain(void)
 static void test_cities_in_plan_order(void)
 {
 	int c, h, g;
-	CHECK_EQ(NUM_CITIES, 18);
-	CHECK_EQ(NUM_LOCS, 18 * HOODS_PER_CITY);
+	CHECK_EQ(NUM_CITIES, 20);
+	CHECK_EQ(NUM_LOCS, 20 * HOODS_PER_CITY);
 	for (c = 0; c < NUM_CITIES; c++) {
 		const Row *r = &ROWS[c];
 		CHECK_STR(CITIES[c].name, r->name);

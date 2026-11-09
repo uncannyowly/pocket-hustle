@@ -140,7 +140,11 @@ LINES(t_rumor_joke,
 	C(16, "{rumor} sat through a timeshare pitch for free tacos. He bought two timeshares."),
 	C(16, "{rumor} says swim at Lover's Beach, never at Divorce Beach. He learned the hard way."),
 	C(17, "{rumor} rode a pulmonia the length of the Malecon twice. The driver wants a cut."),
-	C(17, "{rumor} says the aguachile in La Perla made him cry, in a good way."));
+	C(17, "{rumor} says the aguachile in La Perla made him cry, in a good way."),
+	C(18, "{rumor} put ketchup on a hot dog in {city}. He's in witness protection now."),
+	C(18, "{rumor} spent one winter in {city} and now calls it Chiberia. He thawed out in May."),
+	C(19, "{rumor} rode the People Mover in circles for six hours and called it a road trip."),
+	C(19, "{rumor} says weed in {city} is so cheap the dispensary paid him to take it."));
 LINES(t_healed,
 	L("The doctor patches you up. (+{qty} health)"));
 LINES(t_bought_gear,

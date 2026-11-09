@@ -1,7 +1,7 @@
 # Round 6: forced crew offer that always overdoses. Take the deal, get banned from Oklahoma City and
 # driven to another city (the old debt follows you to the new lender), then try to fly back to the banned city, then fly somewhere else.
 @seed 33
-@expect day=4 city=1 cash=534 bank=0 debt=5339 over=0
+@expect day=4 city=1 cash=379 bank=0 debt=5465 over=0
 @param rc_offer_permille=0
 @param rc_find_permille=0
 @param cohort_offer_permille=1000
@@ -14,7 +14,7 @@ D D D D A Y A
 R1 R1 A D A
 A
 @shot crew-card
-# DO IT asks first (NO is highlighted), then YES: it goes wrong, Oklahoma City is closed to you and you wake up in Seattle
+# DO IT asks first (NO is highlighted), then YES: it goes wrong, Oklahoma City is closed to you and you wake up in Dallas
 A
 @shot crew-confirm
 L A
@@ -22,7 +22,7 @@ L A
 A
 @shot debt-sold
 A A
-@shot seattle-market
+@shot dallas-market
 # FLY: Oklahoma City is the first place and it says BANNED; A is refused
 R A
 @shot fly-banned-grid

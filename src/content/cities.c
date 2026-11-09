@@ -1,5 +1,6 @@
-/* The eighteen cities: the original seven first (their indices are content), then the new
- * US cities, then Mexico. bias_pct follows GOODS order:
+/* The twenty cities: the original seven first, then the new US cities, then Mexico, then
+ * Chicago and Detroit (added last, 2026-11-09: an index is content, saved games and jokes
+ * point at it, so new cities append). bias_pct follows GOODS order:
  * Carts, Weed, Shrooms, Ketamine, Molly, Acid, DMT, Meth, Heroin, Cocaine.
  * The mask marks the hoods with a bank branch (bit 0 = first hood); Mexican cities have none. */
 #include "content/content.h"
@@ -77,4 +78,12 @@ const CityDef CITIES[NUM_CITIES] = {
 	 {"El Malecon", "Olas Altas", "Zona Dorada", "El Centro", "Stone Island", "Playa Norte"},
 	 {125,  60,  95,  95, 125, 100, 100,  60,  75,  55},
 	 "Banda Bea", 1200, 15000, 0x00, COUNTRY_MX},
+	{"Chicago", "Chi-Town", "Chicago", "the L train", "O'Hare", "ORD",
+	 {"The Loop", "Wicker Park", "Pilsen", "Wrigleyville", "Logan Square", "River North"},
+	 {100, 125, 115, 105, 110, 100, 125, 110,  75,  80},
+	 "Deep Dish Dom", 925, 35000, 0x21, COUNTRY_US},
+	{"Detroit", "Motor City", "Detroit", "the People Mover", "Detroit Metro", "DTW",
+	 {"Downtown", "Corktown", "Midtown", "Eastern Market", "Greektown", "Belle Isle"},
+	 { 75,  60,  90, 110, 125, 120, 105, 120, 100, 130},
+	 "Coney Connie", 1150, 18000, 0x05, COUNTRY_US},
 };

@@ -23,9 +23,9 @@ R1 D D A Y A
 R1 R1 L A D A
 A A A A A
 @shot dallas-uptown
-# Dallas is not buying Ketamine today; take it to Seattle (right column, third place)
+# Dallas is not buying Ketamine today; take it to Seattle (right column, second place)
 L1 A Y A
-R1 R A R D D
+R1 R A R D
 @shot fly-seattle
 A
 A A A A A

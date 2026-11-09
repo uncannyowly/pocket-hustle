@@ -125,7 +125,7 @@ static void test_border_flights(void)
 				}
 		}
 	CHECK(ok);
-	CHECK_EQ(crossings, 2 * 14 * 4);
+	CHECK_EQ(crossings, 2 * 16 * 4);	/* 16 US cities, 4 across the border, both ways */
 	CHECK(domestic > 0);
 	g.loc.city = 0;
 	CHECK_EQ(game_flight_crosses(&g, -1), 0);

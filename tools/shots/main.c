@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/game_internal.h"	/* market_roll: the Detroit market shot shows Detroit prices */
 #include "core/params.h"
 #include "core/save.h"
 #include "gfx/canvas.h"
@@ -87,7 +88,7 @@ int main(int argc, char **argv)
 	char nm[32];
 	static const char *const CITY[NUM_CITIES] = {"okc", "houston", "sanjose", "nyc", "miami", "neworleans", "portland",
 		"dallas", "sanfrancisco", "losangeles", "seattle", "cincinnati", "dayton", "destin", "tijuana",
-		"cozumel", "loscabos", "sinaloa"};
+		"cozumel", "loscabos", "sinaloa", "chicago", "detroit"};
 
 	if (argc != 2) {
 		fprintf(stderr, "usage: ph-shots OUTDIR\n");
@@ -118,6 +119,17 @@ int main(int argc, char **argv)
 	setup(30);
 	move_open(&ui);
 	shot("move");
+	setup(30);
+	app.g.loc.city = 18;
+	app.g.loc.hood = 1;
+	move_open(&ui);
+	shot("move-chicago");
+	setup(30);
+	app.g.loc.city = 19;
+	app.g.loc.hood = 3;
+	market_roll(&app.g);
+	app.g.nmsgs = 0;
+	shot("market-detroit");
 	for (i = 0; i < 6; i++) {
 		setup(30);
 		fly_open(&ui);
@@ -129,6 +141,13 @@ int main(int argc, char **argv)
 	fly_open(&ui);
 	ui.fly_tab = 1;
 	shot("fly-mexico");
+	setup(30);
+	app.g.loc.city = 17;			/* from Sinaloa the USA tab is full: sixteen cities */
+	app.g.loc.hood = 0;
+	fly_open(&ui);
+	ui.fly_tab = 0;
+	ui.row = 15;
+	shot("fly-usa-full");
 	setup(30);
 	app.g.loc.city = 1;
 	app.g.loc.hood = 0;

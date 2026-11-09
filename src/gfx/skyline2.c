@@ -1,5 +1,5 @@
-/* The eleven North American backdrops: Dallas, San Francisco, Los Angeles, Seattle, Cincinnati,
- * Dayton, Destin, Tijuana, Cozumel, Los Cabos and Sinaloa.  Same recipe as skyline.c: a dithered
+/* The thirteen North American backdrops: Dallas, San Francisco, Los Angeles, Seattle, Cincinnati,
+ * Dayton, Destin, Tijuana, Cozumel, Los Cabos, Sinaloa, Chicago and Detroit.  Same recipe as skyline.c: a dithered
  * sky gradient, far and near layers, one or two landmarks, a ground strip, and motion from the
  * tick t (t = 0 is a still).  Every shape is a generic silhouette; no lettering, no marks.
  * Rows y0..gy-1 only; the last four rows are the ground strip.  Integers only. */
@@ -849,11 +849,209 @@ static void snl(Canvas *c, int y0, int gy, ArtRng *r, uint32_t t)
 	R(0, gy - 4, CV_W, 4, 0x4a3040u);
 }
 
+/* ---------------------------------------------------------------- Chicago */
+
+static void chi(Canvas *c, int y0, int gy, ArtRng *r, uint32_t t)
+{
+	static const uint32_t sky[4] = {0x1a2c5au, 0x34528au, 0x7896c0u, 0xc8d8e8u};
+	const uint32_t blk = 0x16181fu, win = 0xffe39au, steel = 0x34343eu, stone = 0xd8c8a0u;
+	long long T = t;
+	int x, i, k, cx0;
+
+	cv_grad(c, 0, y0, CV_W, gy - y0 - 4, sky, 4);
+	x = 0;
+	while (x < CV_W) {					/* far towers in the cold haze */
+		int w = 8 + art_below(r, 9), h = 12 + art_below(r, 16);
+
+		R(x, gy - 4 - h, w, h, 0x5a74a0u);
+		x += w + 1;
+	}
+	x = 96;
+	while (x < 300) {					/* the near downtown */
+		int w = 9 + art_below(r, 8), h = 14 + art_below(r, 18);
+
+		BLD(x, gy - 4 - h, w, gy - 4, 0x2a3450u, win, 24);
+		x += w + 1;
+	}
+	/* the old stone water tower, a little castle among the glass */
+	R(56, gy - 22, 9, 18, stone);
+	R(55, gy - 25, 11, 3, stone);
+	for (k = 0; k < 4; k++)
+		R(55 + k * 3, gy - 27, 2, 2, stone);
+	R(58, gy - 33, 5, 8, stone);
+	TRI(57, gy - 33, 63, gy - 33, 60, gy - 39, 0x8a8478u);
+	R(59, gy - 18, 3, 6, 0x6a5a48u);
+	/* the corncob twins: round towers ringed with balconies */
+	for (i = 0; i < 2; i++) {
+		cx0 = 104 + i * 13;
+		R(cx0 + 1, gy - 32, 7, 28, 0x8a8478u);
+		for (k = gy - 32; k < gy - 10; k += 2) {
+			R(cx0, k, 9, 1, 0xe0d8c8u);
+			if (art_below(r, 100) < 40)
+				P(cx0 + 2 + art_below(r, 5), k + 1, win);
+		}
+		R(cx0 + 1, gy - 10, 7, 6, 0x5a5650u);	/* the parking spiral */
+		for (k = gy - 9; k < gy - 4; k += 2)
+			R(cx0 + 2, k, 5, 1, 0x7a766eu);
+	}
+	/* the tall black tower: stepped bundles of tubes, twin antennas */
+	R(150, gy - 30, 18, 26, blk);
+	R(150, gy - 39, 12, 9, blk);
+	R(156, gy - 48, 6, 9, blk);
+	R(157, gy - 55, 1, 7, 0xb8bcc8u);
+	R(160, gy - 55, 1, 7, 0xb8bcc8u);
+	for (k = gy - 46; k < gy - 6; k += 3)
+		for (x = 151; x < 167; x += 3)
+			if ((k > gy - 30 || x < 162) && (k > gy - 39 || x >= 157) && art_below(r, 100) < 22)
+				P(x, k, win);
+	if ((T / 6) % 2 == 0) {
+		P(157, gy - 56, 0xff4a4au);
+		P(160, gy - 56, 0xff4a4au);
+	}
+	/* the white slab */
+	R(188, gy - 42, 10, 38, 0xdcdcd4u);
+	for (k = 0; k < 4; k++)
+		R(189 + k * 2, gy - 41, 1, 37, 0xb4b4aeu);
+	/* the tapered black tower with its X braces and two masts */
+	for (k = 0; k < 40; k++) {
+		int in = 3 - RD(3LL * k, 40);
+
+		R(220 + in, gy - 44 + k, 15 - 2 * in, 1, blk);
+	}
+	for (i = 0; i < 4; i++) {
+		int ya = gy - 44 + i * 10, ia = 3 - RD(3LL * (i * 10), 40), ib = 3 - RD(3LL * (i * 10 + 9), 40);
+
+		L(220 + ia, ya, 234 - ib, ya + 9, 0x464c60u);
+		L(234 - ia, ya, 220 + ib, ya + 9, 0x464c60u);
+	}
+	R(224, gy - 53, 1, 9, 0xb8bcc8u);
+	R(230, gy - 53, 1, 9, 0xb8bcc8u);
+	/* the L: an elevated steel deck on braced posts, and a train on it */
+	R(0, gy - 12, CV_W, 2, steel);
+	for (x = 4; x < CV_W; x += 20) {
+		R(x, gy - 10, 2, 6, steel);
+		L(x + 2, gy - 10, x + 9, gy - 5, steel);
+		L(x + 9, gy - 10, x + 2, gy - 5, steel);
+	}
+	cx0 = wrap(T * 2, CV_W + 80) - 64;
+	for (i = 0; i < 3; i++) {
+		int bx = cx0 + i * 20;
+
+		R(bx, gy - 17, 18, 5, 0xc8ccd4u);
+		R(bx, gy - 13, 18, 1, 0xa86a3au);
+		R(bx + 1, gy - 16, 16, 2, 0x2a3040u);
+		for (k = 0; k < 5; k++)
+			P(bx + 2 + k * 3, gy - 16, 0xfff2c0u);
+	}
+	R(0, gy - 4, CV_W, 4, 0x20222cu);
+	R(0, gy - 4, CV_W, 1, 0xe8eef6u);			/* snow on the curb */
+	for (k = 0; k < 44; k++) {				/* Chiberia: snow drifting down */
+		int fx = wrap(k * 61 + RD(3LL * sn(T + k * 13, 40), 1024), CV_W);
+		int fy = y0 + wrap(k * 37 + T, gy - y0 - 4);
+
+		P(fx, fy, 0xf4f8ffu);
+	}
+}
+
+/* ---------------------------------------------------------------- Detroit */
+
+/* One glass cylinder: dark on the left, a warm highlight on the right, floor lines. */
+static void det_cyl(Canvas *c, int x, int top, int w, int bot)
+{
+	int k;
+
+	R(x, top, w, bot - top, 0x34475au);
+	R(x, top, 2, bot - top, 0x1f2c3cu);
+	R(x + w - 3, top, 2, bot - top, 0xe0aa6eu);
+	R(x + w - 1, top, 1, bot - top, 0x6a7c8eu);
+	for (k = top + 2; k < bot; k += 3)
+		R(x + 2, k, w - 5, 1, 0x2a3a4cu);
+}
+
+static void det(Canvas *c, int y0, int gy, ArtRng *r, uint32_t t)
+{
+	static const uint32_t sky[4] = {0x2a4a6au, 0x4a7a8eu, 0xc89a6au, 0xf2c27au};
+	const uint32_t win = 0xffd88au, brick = 0xc0603au;
+	long long T = t;
+	int x, k, fx;
+
+	cv_grad(c, 0, y0, CV_W, gy - y0 - 4, sky, 4);
+	x = 0;
+	while (x < CV_W) {					/* the far skyline */
+		int w = 9 + art_below(r, 10), h = 10 + art_below(r, 14);
+
+		R(x, gy - 12 - h, w, h, 0x6a6a7eu);
+		x += w + 1;
+	}
+	x = 70;
+	while (x < 290) {					/* downtown */
+		int w = 9 + art_below(r, 9), h = 12 + art_below(r, 16);
+
+		BLD(x, gy - 12 - h, w, gy - 12, 0x3a3a4cu, win, 26);
+		x += w + 1;
+	}
+	/* the brick deco tower with its twin spires */
+	R(114, gy - 40, 14, 28, brick);
+	R(113, gy - 44, 4, 4, brick);
+	R(125, gy - 44, 4, 4, brick);
+	TRI(113, gy - 44, 117, gy - 44, 115, gy - 48, 0x8a3a24u);
+	TRI(125, gy - 44, 129, gy - 44, 127, gy - 48, 0x8a3a24u);
+	for (k = gy - 38; k < gy - 13; k += 3)
+		for (x = 116; x < 127; x += 3)
+			P(x, k, art_below(r, 100) < 35 ? win : 0x8a3a24u);
+	/* the stepped deco tower with a red beacon */
+	R(144, gy - 36, 16, 24, 0x8a8478u);
+	R(146, gy - 41, 12, 5, 0x8a8478u);
+	R(148, gy - 45, 8, 4, 0x8a8478u);
+	R(150, gy - 48, 4, 3, 0x8a8478u);
+	R(151, gy - 52, 2, 4, 0x6a665eu);
+	for (k = gy - 34; k < gy - 13; k += 3)
+		for (x = 146; x < 158; x += 3)
+			if (art_below(r, 100) < 30)
+				P(x, k, win);
+	if ((T / 5) % 3 != 0)
+		R(151, gy - 54, 2, 2, 0xff3a2au);
+	/* the riverfront cluster: four glass cylinders around a tall one */
+	det_cyl(c, 184, gy - 34, 10, gy - 14);
+	det_cyl(c, 236, gy - 34, 10, gy - 14);
+	det_cyl(c, 194, gy - 38, 10, gy - 14);
+	det_cyl(c, 226, gy - 38, 10, gy - 14);
+	det_cyl(c, 207, gy - 52, 16, gy - 14);
+	R(206, gy - 49, 18, 3, 0x2a3a4cu);			/* the crown, lit blue */
+	for (k = 0; k < 6; k++)
+		R(207 + k * 3, gy - 48, 2, 1, 0x7ac8ffu);
+	R(209, gy - 54, 12, 2, 0x34475au);
+	R(182, gy - 16, 66, 4, 0x2a3440u);			/* the podium */
+	/* the People Mover's guideway on posts, and its car going around */
+	R(0, gy - 22, 176, 2, 0xa8a8b0u);
+	for (x = 8; x < 176; x += 24)
+		R(x, gy - 20, 2, 8, 0x8a8a94u);
+	fx = wrap(T, 176 + 16) - 16;
+	R(fx, gy - 27, 14, 5, 0xf2f2f4u);
+	R(fx, gy - 25, 14, 1, 0x2a6ac0u);
+	R(fx + 2, gy - 26, 10, 1, 0x2a3040u);
+	/* the river, a lake freighter sliding by, the riverwalk */
+	R(0, gy - 12, CV_W, 8, 0x2a4a5au);
+	for (k = 0; k < 22; k++)
+		R(wrap(k * 29 - T, CV_W), gy - 11 + (k % 4) * 2, 4, 1, k % 3 ? 0x5a8a9au : 0xf2c27au);
+	fx = wrap(-T / 2 + 200, CV_W + 90) - 70;
+	R(fx, gy - 10, 64, 4, 0x8a2a22u);			/* hull */
+	R(fx, gy - 11, 64, 1, 0x5a1a16u);
+	R(fx + 2, gy - 15, 6, 4, 0xf2f2eeu);			/* the pilothouse up front */
+	R(fx + 3, gy - 14, 4, 1, 0x2a3040u);
+	for (k = 0; k < 7; k++)
+		R(fx + 12 + k * 6, gy - 12, 4, 1, 0x3a2a24u);	/* hatches */
+	R(fx + 52, gy - 16, 10, 5, 0xf2f2eeu);			/* the engine house aft */
+	R(fx + 55, gy - 20, 3, 4, 0x1a1a1au);
+	R(fx + 54, gy - 14, 6, 1, 0x2a3040u);
+	R(0, gy - 4, CV_W, 4, 0x1e2630u);
+}
+
 void art_backdrop2(Canvas *c, int idx, int y0, int gy, ArtRng *r, uint32_t t)
 {
-	static void (*const bd[11])(Canvas *, int, int, ArtRng *, uint32_t) = {
-		dal, sfo, lax, sea1, cvg, dtn, dst, tij, czm, sjd, snl};
+	static void (*const bd[13])(Canvas *, int, int, ArtRng *, uint32_t) = {
+		dal, sfo, lax, sea1, cvg, dtn, dst, tij, czm, sjd, snl, chi, det};
 
-	if (idx >= 0 && idx < 11)
+	if (idx >= 0 && idx < 13)
 		bd[idx](c, y0, gy, r, t);
 }

@@ -62,6 +62,8 @@ Neighborhoods ($ = bank branch): 0 Bricktown $, 1 Midtown $, 2 Deep Deuce, 3 Pla
 15 Cozumel        $428 (lands at San Miguel)
 16 Los Cabos      $678 (lands at The Marina)
 17 Sinaloa        $520 (lands at El Malecon)
+18 Chicago        $284 (lands at The Loop)
+19 Detroit        $307 (lands at Downtown)
 > store
  0 Pool Noodle            $80  aim +150
  1 Selfie Stick          $300  aim +250
@@ -196,6 +198,8 @@ Neighborhoods ($ = bank branch): 0 Montrose, 1 The Heights, 2 EaDo, 3 Galleria $
 15 Cozumel        $433 (lands at San Miguel)
 16 Los Cabos      $673 (lands at The Marina)
 17 Sinaloa        $559 (lands at El Malecon)
+18 Chicago        $386 (lands at The Loop)
+19 Detroit        $416 (lands at Downtown)
 > go 3
 You take METRORail over to Galleria.
 Day 5/15  Houston: Galleria  Health 100

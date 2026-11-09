@@ -10,7 +10,7 @@
 
 #include "core/save.h"
 
-#define SAVE_VERSION 4		/* 2: bank fee params and stat; 3: market events per day; 4: 18 cities, border fares, wild cards and the crew */
+#define SAVE_VERSION 5		/* 2: bank fee params and stat; 3: market events per day; 4: 18 cities, border fares, wild cards and the crew; 5: 20 cities */
 #define HISCORE_VERSION 1
 #define MAX_FILE (1L << 20)
 

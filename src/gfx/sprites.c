@@ -11,7 +11,7 @@
 
 typedef struct { uint32_t bg, skin, dk, shirt; } Look;
 
-static const Look LOOK[18] = {
+static const Look LOOK[ART_CITIES] = {
 	{0x3a2556u, 0xe2a878u, 0xb9805au, 0x3a7bd5u}, {0x7a3a26u, 0xc98e62u, 0x9c6a46u, 0xc0392bu},
 	{0x2b5f86u, 0xf0c49au, 0xc99a74u, 0x6b7280u}, {0x18234au, 0xd9a57cu, 0xad7f5cu, 0x2c3e50u},
 	{0x9c3a7au, 0xa86b45u, 0x7f4f31u, 0x18b5a4u}, {0x3c1d5cu, 0x8a5636u, 0x6a3f26u, 0x3a2a5au},
@@ -22,6 +22,7 @@ static const Look LOOK[18] = {
 	{0x2fa3a8u, 0xe39a78u, 0xb9704fu, 0xf4f0e0u}, {0xe08a2au, 0xb67a52u, 0x8f5a38u, 0xe0307au},
 	{0x1f8fb8u, 0xcf9468u, 0xa67046u, 0xff7a5au}, {0xf0a860u, 0xf0b890u, 0xc88e68u, 0x2fb0c0u},
 	{0x7a2a3au, 0x8a5030u, 0x683a20u, 0xf0e8d8u},
+	{0x3a8ac0u, 0xe8b48au, 0xbf8a62u, 0xf2f2f2u}, {0x2a6aa8u, 0x9a6440u, 0x74462au, 0xc8302au},
 };
 
 void art_portrait(Canvas *c, int city, int x, int y)
@@ -30,7 +31,7 @@ void art_portrait(Canvas *c, int city, int x, int y)
 	int k;
 #define Q(a, b, w, h, col) cv_rect(c, x + (a) * 2, y + (b) * 2, (w) * 2, (h) * 2, col)
 
-	if (city < 0 || city > 17)
+	if (city < 0 || city >= ART_CITIES)
 		return;
 	l = &LOOK[city];
 	Q(0, 0, 28, 28, l->bg);
@@ -160,7 +161,7 @@ void art_portrait(Canvas *c, int city, int x, int y)
 		Q(19, 16, 8, 10, 0x8a5a2bu); Q(20, 17, 6, 8, 0xf5f5f0u); Q(22, 16, 2, 1, 0xc0c0c8u);
 		Q(21, 19, 4, 1, 0x8a8a98u); Q(21, 21, 4, 1, 0x8a8a98u); Q(21, 23, 3, 1, 0x8a8a98u);
 		break;
-	default:	/* Banda Bea: black brimmed hat with a gold band, earrings, a sash */
+	case 17:	/* Banda Bea: black brimmed hat with a gold band, earrings, a sash */
 		Q(9, 1, 10, 5, 0x2a2a32u); Q(3, 6, 22, 2, 0x2a2a32u); Q(9, 5, 10, 1, 0xe8b030u); Q(3, 7, 22, 1, 0xe8b030u);
 		Q(6, 8, 2, 10, 0x140c10u); Q(20, 8, 2, 10, 0x140c10u); Q(6, 16, 1, 2, 0xe8b030u); Q(21, 16, 1, 2, 0xe8b030u);
 		Q(9, 11, 4, 1, 0x140c10u); Q(15, 11, 4, 1, 0x140c10u); Q(12, 17, 4, 1, 0xa03a4au);
@@ -168,6 +169,24 @@ void art_portrait(Canvas *c, int city, int x, int y)
 			Q(5 + k * 4, 22 + k, 5, 2, 0xd02a8au);
 			Q(5 + k * 4, 23 + k, 1, 1, 0xe8b030u);
 		}
+		break;
+	case 18:	/* Deep Dish Dom: slicked hair, a big mustache, a red star tee, a deep slice */
+		Q(8, 4, 12, 3, 0x2a1a14u); Q(7, 6, 2, 4, 0x2a1a14u); Q(19, 6, 2, 4, 0x2a1a14u); Q(10, 3, 6, 1, 0x4a3226u);
+		Q(9, 15, 10, 2, 0x2a1a14u); Q(8, 16, 2, 2, 0x2a1a14u); Q(18, 16, 2, 2, 0x2a1a14u);
+		Q(7, 22, 1, 1, 0xe03a3au); Q(5, 23, 5, 1, 0xe03a3au); Q(6, 24, 3, 1, 0xe03a3au);	/* a flag star */
+		Q(5, 25, 5, 1, 0xe03a3au); Q(7, 26, 1, 1, 0xe03a3au);
+		Q(17, 21, 9, 5, 0xd89a4au); Q(18, 21, 7, 1, 0xc8402au); Q(18, 22, 7, 2, 0xf0d890u);
+		Q(17, 26, 9, 1, 0xa86a2au); Q(19, 22, 1, 1, 0xc8402au); Q(22, 23, 1, 1, 0xc8402au);
+		break;
+	case 19:	/* Coney Connie: big curls, a paper diner cap, hoops, a coney dog with the works */
+		Q(6, 4, 16, 4, 0x1e1410u); Q(5, 7, 3, 11, 0x1e1410u); Q(20, 7, 3, 11, 0x1e1410u); Q(4, 10, 2, 6, 0x1e1410u);
+		Q(22, 10, 2, 6, 0x1e1410u);
+		Q(8, 2, 12, 3, 0xf4f4f4u); Q(9, 1, 10, 1, 0xf4f4f4u); Q(8, 4, 12, 1, 0xc8302au);
+		Q(6, 17, 1, 2, 0xe8c040u); Q(21, 17, 1, 2, 0xe8c040u); Q(12, 17, 4, 1, 0xc02a4au);
+		Q(9, 22, 10, 1, 0xf2f2f2u);
+		Q(16, 22, 11, 4, 0xe0b070u); Q(15, 21, 13, 1, 0xa0402au); Q(17, 20, 9, 1, 0x7a3a1au);
+		Q(18, 19, 1, 1, 0xf0d020u); Q(20, 20, 1, 1, 0xf0d020u); Q(22, 19, 1, 1, 0xf0d020u); Q(24, 20, 1, 1, 0xf0d020u);
+		Q(19, 20, 1, 1, 0xf8f8f0u); Q(23, 20, 1, 1, 0xf8f8f0u);
 		break;
 	}
 #undef Q

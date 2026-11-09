@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-enum { NUM_GOODS = 10, NUM_CITIES = 18, HOODS_PER_CITY = 6,
+enum { NUM_GOODS = 10, NUM_CITIES = 20, HOODS_PER_CITY = 6,
        NUM_LOCS = NUM_CITIES * HOODS_PER_CITY, MAX_GEAR = 16 };
 
 enum { COUNTRY_US = 0, COUNTRY_MX = 1 };

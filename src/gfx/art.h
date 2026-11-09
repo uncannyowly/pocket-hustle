@@ -9,6 +9,8 @@
 typedef enum { ICON_HEART, ICON_COIN, ICON_BANK, ICON_FIN, ICON_BOLT, ICON_UP, ICON_DOWN, ICON_MIC,
 	       ICON_BANG, ICON_TRAIN, ICON_SUN, ICON_CHART, ICON_CHECK, ICON_STAR, NUM_ICONS } IconId;
 
+enum { ART_CITIES = 20 };	/* skylines and lender portraits, one per city (NUM_CITIES, checked by the tests) */
+
 void art_icon(Canvas *c, IconId id, int x, int y, int scale, uint32_t tint);	/* tint used by UP/DOWN only */
 void art_backdrop(Canvas *c, int city, int y0, int h, uint32_t t);	/* draws only inside rows y0..y0+h-1 */
 void art_portrait(Canvas *c, int city, int x, int y);			/* 56 x 56, the city's lender */

@@ -15,6 +15,7 @@ static const uint32_t LINE_COL[NUM_CITIES] = {
 	0xd94f8au, 0xe0463cu, 0x3c8fe0u, 0xf2a33au, 0x3cc47au, 0x2fa36au, 0xe0b43cu,
 	0x8a5ce0u, 0x2fc4c8u, 0xb4e03cu, 0x3c6ae0u, 0xe03c5au, 0x9ad0f0u,
 	0xf0e08au, 0xe05ac8u, 0x3ce0b0u, 0xf09a5au, 0xc0a0f0u,
+	0xc07a3au, 0xb8c4d4u,	/* Chicago's brown L, Detroit's chrome */
 };
 static const Hint GO_HINTS[3] = {{"A", "Ride"}, {"B", "Back"}, {"START", "Menu"}};
 
@@ -139,7 +140,9 @@ void move_click(Ui *u, int action, int arg)
 
 /* ---- flying ---- */
 
-enum { GRID_ROWS = 7, GRID_Y = 90, GRID_STEP = 11, GRID_COL_W = 156, TAB_Y = 72 };
+/* Two columns of up to eight rows (sixteen US cities seen from Mexico), between the tabs
+ * (TAB_Y..84) and the boarding pass (from y 168). A row's band runs from y - 1 for GRID_STEP. */
+enum { GRID_ROWS = 8, GRID_Y = 88, GRID_STEP = 10, GRID_COL_W = 156, TAB_Y = 72 };
 
 int fly_count(const Ui *u)
 {
@@ -234,7 +237,7 @@ static void draw_grid(Ui *u, Canvas *c)
 		int64_t fare = game_flight_cost(g, city);
 
 		if (sel)
-			cv_rect(c, x, y - 2, GRID_COL_W - 4, GRID_STEP, PAL_HOT);
+			cv_rect(c, x, y - 1, GRID_COL_W - 4, GRID_STEP, PAL_HOT);
 		tx(c, CITIES[city].code, x + 4, y, sel ? PAL_WHITE : PAL_GOLD, 1, TX_LEFT);
 		tx(c, CITIES[city].short_name, x + 32, y, sel ? PAL_WHITE : banned ? PAL_DIM : PAL_TEXT, 1, TX_LEFT);
 		if (banned) {
@@ -244,7 +247,7 @@ static void draw_grid(Ui *u, Canvas *c)
 		}
 		tx(c, s, x + GRID_COL_W - 8, y, sel ? PAL_WHITE : banned || fare > g->cash ? PAL_CORAL : PAL_TEXT,
 		   1, TX_RIGHT);
-		hit(u, x, y - 2, GRID_COL_W - 4, GRID_STEP, HIT_FLY_ROW, i);
+		hit(u, x, y - 1, GRID_COL_W - 4, GRID_STEP, HIT_FLY_ROW, i);
 	}
 }
 
@@ -318,7 +321,7 @@ static void fly(Ui *u, int city)
 	ui_core_call(u, move_call, &dest, SFX_OK, 1);
 }
 
-/* The grid fills down the left column, then the right: place = col * 7 + row. */
+/* The grid fills down the left column, then the right: place = col * GRID_ROWS + row. */
 static int grid_move(const Ui *u, int pad)
 {
 	int n = fly_count(u), col = u->row / GRID_ROWS, row = u->row % GRID_ROWS;

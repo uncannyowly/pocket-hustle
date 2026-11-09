@@ -489,7 +489,7 @@ static void test_fly_grid_lists_the_tab(void)
 			ui.row = 0;
 			n = fly_count(&ui);
 			CHECK_EQ(n, tab_cities(origin, tab));
-			CHECK(n >= 3 && n <= 14);
+			CHECK(n >= 3 && n <= 16);
 			ui_draw(&ui, &cv);
 			CHECK_EQ(cv.overflow, 0);
 			CHECK_EQ(ui.hits_dropped, 0);
@@ -502,7 +502,7 @@ static void test_fly_grid_lists_the_tab(void)
 				prev = city;
 				CHECK(h >= 0);
 				if (h >= 0) {
-					CHECK_EQ(ui.hits[h].x < 160, i < 7);	/* two columns of up to seven */
+					CHECK_EQ(ui.hits[h].x < 160, i < 8);	/* two columns of up to eight */
 					CHECK(ui.hits[h].y + ui.hits[h].h <= 168);
 				}
 			}
@@ -539,20 +539,20 @@ static void test_fly_tabs_switch(void)
 
 static void test_fly_dpad_columns(void)
 {
-	open_fly_from(0);			/* 13 cities: 7 + 6 */
-	CHECK_EQ(fly_count(&ui), 13);
+	open_fly_from(0);			/* 15 cities: 8 + 7 */
+	CHECK_EQ(fly_count(&ui), 15);
 	press_seq(&ui, "D");
 	CHECK_EQ(ui.row, 1);
 	press_seq(&ui, "U U");
-	CHECK_EQ(ui.row, 6);			/* wraps inside the column */
+	CHECK_EQ(ui.row, 7);			/* wraps inside the column */
 	press_seq(&ui, "R");
-	CHECK_EQ(ui.row, 12);			/* row 6 of the short column is missing: its last */
+	CHECK_EQ(ui.row, 14);			/* row 7 of the short column is missing: its last */
 	press_seq(&ui, "L");
-	CHECK_EQ(ui.row, 5);
+	CHECK_EQ(ui.row, 6);
 	press_seq(&ui, "R");
-	CHECK_EQ(ui.row, 12);
+	CHECK_EQ(ui.row, 14);
 	press_seq(&ui, "D");
-	CHECK_EQ(ui.row, 7);			/* wraps inside the right column */
+	CHECK_EQ(ui.row, 8);			/* wraps inside the right column */
 	press_seq(&ui, "L");
 	CHECK_EQ(ui.row, 0);
 	press_seq(&ui, "R1");			/* four cities, one column */
@@ -567,6 +567,36 @@ static void test_fly_dpad_columns(void)
 	CHECK_EQ(ui.scr, SCR_MARKET);
 }
 
+/* From Mexico the USA tab is full: sixteen cities, two columns of eight. */
+static void test_fly_full_usa_tab(void)
+{
+	int i, h;
+
+	open_fly_from(17);
+	CHECK_EQ(ui.fly_tab, 1);
+	press_seq(&ui, "L1");
+	CHECK_EQ(fly_count(&ui), 16);
+	CHECK_EQ(fly_city(&ui, 14), 18);	/* Chicago and Detroit close the list */
+	CHECK_EQ(fly_city(&ui, 15), 19);
+	ui_draw(&ui, &cv);
+	CHECK_EQ(cv.overflow, 0);
+	for (i = 0; i < 16; i++) {
+		h = hit_find(&ui, HIT_FLY_ROW, i);
+		CHECK(h >= 0);
+		if (h >= 0) {
+			CHECK_EQ(ui.hits[h].x < 160, i < 8);
+			CHECK(ui.hits[h].y >= 85);		/* below the tabs */
+			CHECK(ui.hits[h].y + ui.hits[h].h <= 168);	/* above the boarding pass */
+		}
+	}
+	press_seq(&ui, "U");
+	CHECK_EQ(ui.row, 7);
+	press_seq(&ui, "R");
+	CHECK_EQ(ui.row, 15);			/* a full right column: same row */
+	press_seq(&ui, "D");
+	CHECK_EQ(ui.row, 8);
+}
+
 /* Every destination can be reached by the D-pad and by a click, from every city. */
 static void test_fly_everything_reachable(void)
 {
@@ -574,7 +604,7 @@ static void test_fly_everything_reachable(void)
 
 	for (origin = 0; origin < NUM_CITIES; origin++)
 		for (tab = 0; tab < 2; tab++) {
-			int n, i, seen[14] = {0}, stack[14], sp = 0, reached = 0;
+			int n, i, seen[16] = {0}, stack[16], sp = 0, reached = 0;
 			static const int PADS[4] = {PAD_UP, PAD_DOWN, PAD_LEFT, PAD_RIGHT};
 
 			open_fly_from(origin);
@@ -724,7 +754,7 @@ static void test_fly_never_off_canvas(void)
 			open_fly_from(origin);
 			app.g.cash = mode == 1 ? 0 : MONEY_MAX;
 			if (mode == 2)
-				app.g.banned = 0x3ffffu & ~(1u << origin);
+				app.g.banned = ((1u << NUM_CITIES) - 1u) & ~(1u << origin);
 			for (tab = 0; tab < 2; tab++) {
 				ui.fly_tab = tab;
 				for (i = 0; i < fly_count(&ui); i++) {
@@ -1256,6 +1286,7 @@ void tests_ui_travel(void)
 	test_fly_grid_lists_the_tab();
 	test_fly_tabs_switch();
 	test_fly_dpad_columns();
+	test_fly_full_usa_tab();
 	test_fly_everything_reachable();
 	test_fly_a_flies_and_clicks_fly();
 	test_fly_boarding_pass_text();

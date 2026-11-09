@@ -2,6 +2,7 @@
 #include "tests.h"
 #include "gfx/canvas.h"
 #include "gfx/art.h"
+#include "content/content.h"
 
 #include <string.h>
 
@@ -28,12 +29,17 @@ static uint32_t city_hash(int city, int y0, int h, uint32_t t)
 	return hash_rows(y0, h);
 }
 
+static void test_one_skyline_and_portrait_per_city(void)
+{
+	CHECK_EQ(ART_CITIES, NUM_CITIES);
+}
+
 static void test_backdrop_stays_in_band(void)
 {
 	static const int bands[2][2] = {{12, 56}, {0, 240}};
 	int city, b, i, outside;
 
-	for (city = 0; city < 18; city++)
+	for (city = 0; city < NUM_CITIES; city++)
 		for (b = 0; b < 2; b++) {
 			int y0 = bands[b][0], h = bands[b][1];
 
@@ -52,7 +58,7 @@ static void test_backdrop_fills_band(void)
 	static const int bands[2][2] = {{12, 56}, {0, 240}};
 	int city, b, i, left;
 
-	for (city = 0; city < 18; city++)
+	for (city = 0; city < NUM_CITIES; city++)
 		for (b = 0; b < 2; b++) {
 			int y0 = bands[b][0], h = bands[b][1];
 
@@ -68,15 +74,15 @@ static void test_backdrop_fills_band(void)
 
 static void test_backdrops_differ(void)
 {
-	uint32_t h[18], f[18];
+	uint32_t h[NUM_CITIES], f[NUM_CITIES];
 	int a, b, same = 0;
 
-	for (a = 0; a < 18; a++) {
+	for (a = 0; a < NUM_CITIES; a++) {
 		h[a] = city_hash(a, 12, 56, 0);
 		f[a] = city_hash(a, 0, 240, 0);
 	}
-	for (a = 0; a < 18; a++)
-		for (b = a + 1; b < 18; b++)
+	for (a = 0; a < NUM_CITIES; a++)
+		for (b = a + 1; b < NUM_CITIES; b++)
 			if (h[a] == h[b] || f[a] == f[b])
 				same++;
 	CHECK_EQ(same, 0);
@@ -86,7 +92,7 @@ static void test_backdrop_deterministic(void)
 {
 	int city;
 
-	for (city = 0; city < 18; city++)
+	for (city = 0; city < NUM_CITIES; city++)
 		CHECK(city_hash(city, 12, 56, 33) == city_hash(city, 12, 56, 33));
 }
 
@@ -103,7 +109,7 @@ static void test_backdrops_animate(void)
 
 		CHECK(city_hash(cities[i], 12, 56, 0) != city_hash(cities[i], 12, 56, later[i]));
 	}
-	for (city = 7; city < 18; city++) {
+	for (city = 7; city < NUM_CITIES; city++) {
 		CHECK(city_hash(city, 12, 56, 0) != city_hash(city, 12, 56, 30));
 		CHECK(city_hash(city, 0, 240, 0) != city_hash(city, 0, 240, 30));
 	}
@@ -121,10 +127,10 @@ static int set_count(const Canvas *c)
 
 static void test_portraits(void)
 {
-	uint32_t h[18];
+	uint32_t h[NUM_CITIES];
 	int city, a, b, i, outside, same = 0;
 
-	for (city = 0; city < 18; city++) {
+	for (city = 0; city < NUM_CITIES; city++) {
 		cv_clear(&cv, SENT);
 		art_portrait(&cv, city, 100, 80);
 		outside = 0;
@@ -138,8 +144,8 @@ static void test_portraits(void)
 		CHECK(set_count(&cv) == 56 * 56);	/* the whole box is painted */
 		h[city] = hash_rows(80, 56);
 	}
-	for (a = 0; a < 18; a++)
-		for (b = a + 1; b < 18; b++)
+	for (a = 0; a < NUM_CITIES; a++)
+		for (b = a + 1; b < NUM_CITIES; b++)
 			if (h[a] == h[b])
 				same++;
 	CHECK_EQ(same, 0);
@@ -203,6 +209,7 @@ static void test_scenes_draw(void)
 
 void tests_art(void)
 {
+	test_one_skyline_and_portrait_per_city();
 	test_backdrop_stays_in_band();
 	test_backdrop_fills_band();
 	test_backdrops_differ();

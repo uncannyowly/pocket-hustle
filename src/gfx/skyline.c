@@ -455,7 +455,7 @@ void art_backdrop(Canvas *c, int city, int y0, int h, uint32_t t)
 	int sx0 = c->cx0, sy0 = c->cy0, sx1 = c->cx1, sy1 = c->cy1;
 	ArtRng r;
 
-	if (city < 0 || city > 17 || h <= 0)
+	if (city < 0 || city >= ART_CITIES || h <= 0)
 		return;
 	cv_clip(c, 0, y0, CV_W, y0 + h);
 	if (c->cx0 < sx0) c->cx0 = sx0;
